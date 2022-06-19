@@ -2,15 +2,14 @@ import React from "react";
 
 import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import Login from "../../Login/Login";
-import Register1 from "../../Login/Register/Register1";
-import Register2 from "../../Login/Register/Register2";
+import Login from "../../screens/Login/Login";
+import Register from "../../screens/Login/Register";
 import Header from "../components/Header";
-import Landing from "../../Login/Landing";
+import Landing from "../../screens/Login/Landing";
 
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import PasswordForget from "../../Login/PasswordForget";
-import Confirm from "../../Login/Confirm";
+import PasswordForget from "../../screens/Login/PasswordForget";
+import Confirm from "../../screens/Login/Confirm";
 import { KeyboardAvoidingView, Platform } from "react-native";
 
 // import Register from '../screens/Login/Register';
@@ -57,8 +56,7 @@ export default function LoginStack() {
               }}
             />
             <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="Register1" component={Register1} />
-            <Stack.Screen name="Register2" component={Register2} />
+            <Stack.Screen name="Register" component={Register} />
             <Stack.Screen
               name="PasswordForget"
               component={PasswordForget}

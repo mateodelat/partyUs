@@ -14,13 +14,13 @@ import {
   View,
 } from "react-native";
 
-import AnimatedInput from "../../components/AnimatedInput";
+import AnimatedInput from "../../../components/AnimatedInput";
 
 import LoginHeader from "../components/LoginHeader";
-import Boton from "../../components/Boton";
+import Boton from "../../../components/Boton";
 import { SafeAreaView } from "react-native-safe-area-context";
 import HidePassword from "../components/HidePassword";
-import { NavigationProp } from "../../shared/interfaces/navigation.interface";
+import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import { Auth } from "aws-amplify";
 
 export default function ({
@@ -43,7 +43,7 @@ export default function ({
   const [hidePassword, setHidePassword] = useState(true);
 
   function navigteRegister() {
-    navigation.replace("Register1");
+    navigation.replace("Register");
   }
 
   function handleForget() {

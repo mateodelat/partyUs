@@ -8,8 +8,8 @@ import {
 } from "react-native";
 import React, { useCallback, useContext, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { rojo } from "../../constants";
-import Logo from "../components/Logo";
+import { rojo } from "../../../constants";
+import Logo from "../../components/Logo";
 import AnimatedIndicator from "./components/AnimatedIndicator";
 import { NavigationProp } from "@react-navigation/native";
 import { Entypo } from "@expo/vector-icons";
@@ -22,7 +22,7 @@ export default function Landing({
   navigation: NavigationProp<any>;
 }) {
   function doneViewing() {
-    navigation.navigate("Register1");
+    navigation.navigate("Register");
   }
 
   const [currentIdx, setCurrentIdx] = useState(0);

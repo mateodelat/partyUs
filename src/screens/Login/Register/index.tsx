@@ -2,22 +2,19 @@ import { useState } from "react";
 import {
   Button,
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
-import AnimatedInput from "../../components/AnimatedInput";
+import AnimatedInput from "../../../components/AnimatedInput";
 
-import Boton from "../../components/Boton";
+import Boton from "../../../components/Boton";
 import LoginHeader from "../components/LoginHeader";
 
-import { NavigationProp } from "../../shared/interfaces/navigation.interface";
+import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import { Auth } from "aws-amplify";
 import HidePassword from "../components/HidePassword";
 
@@ -52,7 +49,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       setErrorNombre("El usuario tiene que ser mayor a 4 caracteres");
       return;
     }
-
     if (email === "") {
       clearError();
       setErrorEmail("El correo no puede estar vacio");
@@ -63,9 +59,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       setErrorPassword("La contraseña no puede estar vacia");
       return;
     }
-
     setButtonLoading(true);
-
     await Auth.signUp({
       username: email,
       password,
@@ -78,7 +72,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
         //Una vez le damos a registrar, se crea el nuevo perfil con la api key
         navigation.navigate("Confirm", { email });
         clearError();
-
         setNombre("");
         setEmail("");
         setPassword("");
@@ -88,47 +81,33 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           case "Invalid email address format.":
             clearError();
             setErrorEmail("Email no invalido");
-
             break;
-
           case "Password cannot be empty":
             clearError();
             setErrorPassword("La contraseña no puede estar vacia");
-
             break;
-
           case "User already exists":
             clearError();
             setErrorEmail("La cuenta ya existe por favor inicia sesion");
-
             break;
-
           case "Username cannot be empty":
             clearError();
             setErrorEmail("El correo puede estar vacio");
-
             break;
-
           case "Password did not conform with policy: Password must have uppercase characters":
             clearError();
             setErrorPassword(
               "La contraseña debe contener minimo una mayuscula"
             );
-
             break;
-
           case "Password did not conform with policy: Password not long enough":
             clearError();
             setErrorPassword("La contraseña debe contener minimo 8 caracteres");
-
             break;
-
           case "1 validation error detected: Value at 'password' failed to satisfy constraint: Member must satisfy regular expression pattern: ^[\\S]+.*[\\S]+$":
             clearError();
             setErrorPassword("La contraseña debe ser alfanumerica");
-
             break;
-
           default:
             clearError();
             console.log(error);

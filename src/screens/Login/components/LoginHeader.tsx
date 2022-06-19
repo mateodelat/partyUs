@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
-import Logo from "../../components/Logo";
+import Logo from "../../../components/Logo";
 
 export default function ({ register }: { register?: boolean }) {
   return (

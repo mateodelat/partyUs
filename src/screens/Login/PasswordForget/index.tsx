@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { Entypo } from "@expo/vector-icons";
 import { Auth } from "aws-amplify";
-import { rojo } from "../../../constants";
-import { NavigationProp } from "../../shared/interfaces/navigation.interface";
-import Boton from "../../components/Boton";
-import AnimatedInput from "../../components/AnimatedInput";
+import { rojo } from "../../../../constants";
+import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
+import Boton from "../../../components/Boton";
+import AnimatedInput from "../../../components/AnimatedInput";
 
 export default ({
   correo,

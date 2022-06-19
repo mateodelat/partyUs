@@ -43,6 +43,7 @@ export default function ({
             ...styles.backText,
             textAlign: title ? "center" : "left",
             paddingLeft: title ? 0 : 35,
+            fontWeight: title ? "bold" : "normal",
           }}
         >
           {title ? title : "Atras"}

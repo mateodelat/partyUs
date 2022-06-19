@@ -1,18 +1,16 @@
-import { Amplify, Auth, DataStore, Hub } from "aws-amplify";
-import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, StyleSheet, Text, View } from "react-native";
+import { Amplify, Auth, Hub } from "aws-amplify";
+import { StyleSheet } from "react-native";
 
 import awsconfig from "./src/aws-exports";
 
-import { NavigationContainer } from "@react-navigation/native";
-import { rojo } from "./constants";
 import LoginStack from "./src/navigation/LoginStack/LoginStack";
 
 import "react-native-gesture-handler";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Register1 from "./src/Login/Register/Register1";
 import { SetStateAction, useEffect, useState } from "react";
-import Boton from "./src/components/Boton";
+
+import Loading from "./src/components/Loading";
+import ContextProvider from "./src/contexts/ContextProvider";
+import Router from "./src/navigation/Router";
 
 export default function App() {
   Amplify.configure(awsconfig);
@@ -93,30 +91,16 @@ export default function App() {
     };
   }, []);
 
-  if (!authenticated)
-    return (
-      // {!authenticated &&
+  if (loading) {
+    return <Loading />;
+  }
 
-      <LoginStack />
-
-      // return <NavigationContainer>
-      // </NavigationContainer>;
-      // }
-    );
+  if (!authenticated) return <LoginStack />;
   else {
     return (
-      <View style={styles.container}>
-        <Text>Nickname: {currentUser.nickname}</Text>
-        <Text>Email: {currentUser.email}</Text>
-        <Boton
-          style={{
-            marginTop: 20,
-            padding: 10,
-          }}
-          titulo="Cerrar sesion"
-          onPress={() => Auth.signOut()}
-        />
-      </View>
+      <ContextProvider>
+        <Router />
+      </ContextProvider>
     );
   }
 }

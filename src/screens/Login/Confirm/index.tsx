@@ -11,10 +11,10 @@ import {
 } from "react-native";
 import { Auth } from "aws-amplify";
 
-import { NavigationProp } from "../../shared/interfaces/navigation.interface";
+import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 
-import AnimatedInput from "../../components/AnimatedInput";
-import Boton from "../../components/Boton";
+import AnimatedInput from "../../../components/AnimatedInput";
+import Boton from "../../../components/Boton";
 import HidePassword from "../components/HidePassword";
 
 export default function ({
