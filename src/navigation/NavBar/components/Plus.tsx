@@ -15,8 +15,7 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-
-const color = "#f34856";
+import { rojoClaro, shadowMarcada, shadowMedia } from "../../../../constants";
 
 const { width, height } = Dimensions.get("screen");
 
@@ -29,11 +28,11 @@ class PlusButton extends React.Component<MyProps> {
   buttonSize = new Animated.Value(1);
 
   handleButton1 = () => {
-    this.props.navigation.navigate("MisReservas");
+    this.props.navigation.navigate("QRCode");
   };
 
   handleButton2 = () => {
-    this.props.navigation.navigate("QRCode");
+    this.props.navigation.navigate("AgregarEventoStack");
   };
 
   handleButton3 = () => {
@@ -53,32 +52,22 @@ class PlusButton extends React.Component<MyProps> {
   render() {
     const icon1X = this.mode.interpolate({
       inputRange: [0, 1],
-      outputRange: [-24, -100],
+      outputRange: [-24, -144],
     });
 
     const icon1Y = this.mode.interpolate({
       inputRange: [0, 1],
-      outputRange: [-50, -100],
+      outputRange: [-40, -74],
     });
 
     const icon2X = this.mode.interpolate({
       inputRange: [0, 1],
-      outputRange: [-24, -24],
+      outputRange: [-24, -74],
     });
 
     const icon2Y = this.mode.interpolate({
       inputRange: [0, 1],
-      outputRange: [-50, -150],
-    });
-
-    const icon3X = this.mode.interpolate({
-      inputRange: [0, 1],
-      outputRange: [-24, 50],
-    });
-
-    const icon3Y = this.mode.interpolate({
-      inputRange: [0, 1],
-      outputRange: [-50, -100],
+      outputRange: [-50, -144],
     });
 
     const rotation = this.mode.interpolate({
@@ -106,37 +95,24 @@ class PlusButton extends React.Component<MyProps> {
               onPress={this.handleButton1}
               style={styles.secondaryButton}
             >
-              <MaterialCommunityIcons
-                name="ticket-outline"
-                size={24}
-                color="white"
-              />
+              <Ionicons name="ios-qr-code" size={24} color="white" />
             </TouchableHighlight>
           </Animated.View>
 
           {/* Boton 2 */}
           <Animated.View
-            style={{ position: "absolute", left: icon2X, top: icon2Y }}
+            style={{
+              position: "absolute",
+              left: icon2X,
+              top: icon2Y,
+            }}
           >
             <TouchableHighlight
               underlayColor={"#f13040"}
               onPress={this.handleButton2}
               style={styles.secondaryButton}
             >
-              <Ionicons name="ios-qr-code" size={24} color="white" />
-            </TouchableHighlight>
-          </Animated.View>
-
-          {/* Boton 3*/}
-          <Animated.View
-            style={{ position: "absolute", left: icon3X, top: icon3Y }}
-          >
-            <TouchableHighlight
-              underlayColor={"#f13040"}
-              onPress={this.handleButton3}
-              style={styles.secondaryButton}
-            >
-              <FontAwesome5 name="plus" size={18} color="#FFF" />
+              <MaterialCommunityIcons name="plus" size={24} color="white" />
             </TouchableHighlight>
           </Animated.View>
 
@@ -171,15 +147,13 @@ const styles = StyleSheet.create({
     width: 82,
     height: 82,
     borderRadius: 80,
-    backgroundColor: color,
+    backgroundColor: rojoClaro,
     position: "absolute",
     marginTop: -60,
-    shadowColor: color,
-    shadowRadius: 5,
-    shadowOffset: { height: 10, width: 10 },
-    shadowOpacity: 0.3,
     borderWidth: 12,
     borderColor: "#FFFFFF",
+
+    ...shadowMedia,
   },
 
   secondaryButton: {
@@ -189,6 +163,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: color,
+    backgroundColor: rojoClaro,
   },
 });

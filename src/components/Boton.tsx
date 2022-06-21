@@ -17,7 +17,7 @@ export default ({
   style,
   disabled,
 }: {
-  onPress?: () => any;
+  onPress?: (any: any) => any;
   titulo: string;
   loading?: boolean | undefined;
   done?: boolean | undefined;

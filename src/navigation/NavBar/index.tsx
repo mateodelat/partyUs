@@ -12,7 +12,7 @@ import useUser from "../../Hooks/useUser";
 import Perfil from "../../screens/Inicio/Perfil";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { colorFondo } from "../../../constants";
 const Tab = createBottomTabNavigator();
 
 function PlusScreen() {
@@ -32,6 +32,7 @@ export default function () {
           <View
             style={{
               paddingTop: insets.top,
+              backgroundColor: colorFondo,
             }}
           />
         ),
