@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 
 import awsconfig from "./src/aws-exports";
 
-import LoginStack from "./src/navigation/LoginStack/LoginStack";
+import LoginStack from "./src/navigation/LoginStack";
 
 import "react-native-gesture-handler";
 import { SetStateAction, useEffect, useState } from "react";
@@ -95,7 +95,7 @@ export default function App() {
     return <Loading />;
   }
 
-  if (!authenticated) return <LoginStack />;
+  // if (!authenticated) return <LoginStack />;
   else {
     return (
       <ContextProvider>

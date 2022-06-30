@@ -7,6 +7,7 @@ import {
   Pressable,
   Dimensions,
   ViewProps,
+  Alert,
 } from "react-native";
 import {
   FontAwesome5,
@@ -16,16 +17,18 @@ import {
 } from "@expo/vector-icons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { rojoClaro, shadowMarcada, shadowMedia } from "../../../../constants";
+import useUser from "../../../Hooks/useUser";
+import { UserType } from "../../../contexts/UserContext";
 
 const { width, height } = Dimensions.get("screen");
 
 type MyProps = {
   navigation: NavigationProp<any>;
+  user?: UserType;
 };
 
 class PlusButton extends React.Component<MyProps> {
   mode = new Animated.Value(0);
-  buttonSize = new Animated.Value(1);
 
   handleButton1 = () => {
     this.props.navigation.navigate("QRCode");
@@ -40,44 +43,60 @@ class PlusButton extends React.Component<MyProps> {
   };
 
   handlePress = () => {
-    Animated.sequence([
+    // Si el usuario no es organizador se manda alerta
+    const { user, navigation } = this.props;
+
+    const organizador = user?.organizador;
+
+    if (!organizador) {
+      Alert.alert(
+        "Atencion",
+        "¿Quieres registrarte como organizador para agrgar eventos?",
+        [
+          {
+            text: "CANCELAR",
+            style: "cancel",
+          },
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("SolicitudOrganizador"),
+          },
+        ]
+      );
+    } else {
       Animated.timing(this.mode, {
         toValue: (this.mode as any)._value === 0 ? 1 : 0,
         duration: 180,
         useNativeDriver: false,
-      }),
-    ]).start();
+      }).start();
+    }
   };
 
   render() {
     const icon1X = this.mode.interpolate({
       inputRange: [0, 1],
-      outputRange: [-24, -144],
+      outputRange: [-24, -110],
     });
 
     const icon1Y = this.mode.interpolate({
       inputRange: [0, 1],
-      outputRange: [-40, -74],
+      outputRange: [-40, -60],
     });
 
     const icon2X = this.mode.interpolate({
       inputRange: [0, 1],
-      outputRange: [-24, -74],
+      outputRange: [-24, -60],
     });
 
     const icon2Y = this.mode.interpolate({
       inputRange: [0, 1],
-      outputRange: [-50, -144],
+      outputRange: [-50, -124],
     });
 
     const rotation = this.mode.interpolate({
       inputRange: [0, 1],
       outputRange: ["0deg", "45deg"],
     });
-
-    const sizeStyle = {
-      transform: [{ scale: this.buttonSize }],
-    };
 
     return (
       <View>
@@ -116,7 +135,7 @@ class PlusButton extends React.Component<MyProps> {
             </TouchableHighlight>
           </Animated.View>
 
-          <Animated.View style={[styles.button, sizeStyle]}>
+          <Animated.View style={styles.button}>
             <View>
               <Animated.View style={{ transform: [{ rotate: rotation }] }}>
                 <FontAwesome5 name="plus" size={24} color="#FFF" />
@@ -130,10 +149,11 @@ class PlusButton extends React.Component<MyProps> {
 }
 
 // Wrap and export
-export default function () {
+export default function ({}) {
   const navigation = useNavigation();
+  const user = useUser().usuario;
 
-  return <PlusButton navigation={navigation} />;
+  return <PlusButton navigation={navigation} user={user} />;
 }
 
 const styles = StyleSheet.create({

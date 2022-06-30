@@ -3,15 +3,19 @@ import React, { useState } from "react";
 import useUser from "../../Hooks/useUser";
 
 export default function Perfil() {
-  const { organizador, setOrganizador } = useUser();
+  const usuario = useUser().usuario;
+  const setUsuario = useUser().setUsuario;
 
   return (
     <View>
       <Text>Usuario es organizador</Text>
       <Switch
-        value={organizador}
+        value={usuario.organizador}
         onChange={() => {
-          setOrganizador(!organizador);
+          setUsuario({
+            ...usuario,
+            organizador: !usuario.organizador,
+          });
         }}
       />
     </View>

@@ -2,14 +2,14 @@ import React from "react";
 
 import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import Login from "../../screens/Login/Login";
-import Register from "../../screens/Login/Register";
-import Header from "../components/Header";
-import Landing from "../../screens/Login/Landing";
+import Login from "../screens/Login/Login";
+import Register from "../screens/Login/Register";
+import Header from "./components/Header";
+import Landing from "../screens/Login/Landing";
 
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import PasswordForget from "../../screens/Login/PasswordForget";
-import Confirm from "../../screens/Login/Confirm";
+import PasswordForget from "../screens/Login/PasswordForget";
+import Confirm from "../screens/Login/Confirm";
 import { KeyboardAvoidingView, Platform } from "react-native";
 
 // import Register from '../screens/Login/Register';

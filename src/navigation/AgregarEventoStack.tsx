@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import Header from "../components/Header";
-import Agregar1 from "../../screens/AgregarEvento/Agregar1";
-import Agregar2 from "../../screens/AgregarEvento/Agregar2";
-import Agregar3 from "../../screens/AgregarEvento/Agregar3";
+import Header from "./components/Header";
+import Agregar1 from "../screens/AgregarEvento/Agregar1";
+import Agregar2 from "../screens/AgregarEvento/Agregar2";
+import Agregar3 from "../screens/AgregarEvento/Agregar3";
 
 export default function () {
   const Stack = createStackNavigator();

@@ -1,4 +1,11 @@
-import { ColorValue, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ColorValue,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextStyle,
+  View,
+} from "react-native";
 import React from "react";
 import { AntDesign } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -13,11 +20,13 @@ export default function ({
   handleBack,
   navigation,
   color,
+  textStyle,
 }: {
   title?: string | null;
-  navigation: StackNavigationProp<ParamListBase, string, undefined>;
+  navigation?: StackNavigationProp<ParamListBase, string, undefined>;
   handleBack?: undefined | (() => any);
   color?: ColorValue;
+  textStyle?: TextStyle;
 }) {
   const insets = useSafeAreaInsets();
 
@@ -26,10 +35,11 @@ export default function ({
       style={{
         paddingTop: insets.top,
         backgroundColor: color ? color : "#fff",
+        paddingBottom: 10,
       }}
     >
       <Pressable
-        onPress={() => (handleBack ? handleBack() : navigation.pop())}
+        onPress={() => (handleBack ? handleBack() : navigation?.pop())}
         style={{ ...styles.backContainer }}
       >
         <AntDesign
@@ -44,6 +54,7 @@ export default function ({
             textAlign: title ? "center" : "left",
             paddingLeft: title ? 0 : 35,
             fontWeight: title ? "bold" : "normal",
+            ...textStyle,
           }}
         >
           {title ? title : "Atras"}

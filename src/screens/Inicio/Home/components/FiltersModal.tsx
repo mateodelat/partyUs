@@ -205,11 +205,6 @@ export default function ({
       }, 1);
 
       setDateRange(undefined);
-
-      // Esconder enums
-      // setShowAmbiente(false);
-      // setShowComodities(false);
-      // setShowLugar(false);
     }
 
     close && handleCloseModal();
@@ -387,7 +382,10 @@ export default function ({
                         if (idx < 0) {
                           nMusic.push(e);
                         } else {
-                          nMusic.splice(idx, 1);
+                          // Verificar que no sea el ultimo elemento
+                          if (musica.length !== 1) {
+                            nMusic.splice(idx, 1);
+                          }
                         }
 
                         setMusica(nMusic);
@@ -417,7 +415,7 @@ export default function ({
                 )}
               </Pressable>
 
-              {/* Tipo de lugar */}
+              {/* Comodities */}
               <Pressable
                 onPress={() => setShowComodities(!showComodities)}
                 style={styles.filterContainer}
@@ -515,7 +513,9 @@ export default function ({
                         if (idx < 0) {
                           ne.push(e);
                         } else {
-                          ne.splice(idx, 1);
+                          if (lugar.length !== 1) {
+                            ne.splice(idx, 1);
+                          }
                         }
 
                         setLugar(ne);

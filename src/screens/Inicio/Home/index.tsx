@@ -14,9 +14,8 @@ import {
   enumToArray,
   placeEnum,
   musicEnum,
-  rojo,
-  verificarUbicacion,
   requestLocation,
+  rojoClaro,
 } from "../../../../constants";
 
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -76,7 +75,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     // Si se esta buscando por distancia verificar ubicacion
     const i = new Date();
     if (!!filters.dist) {
-      await requestLocation();
+      await asignarUbicacion();
     }
 
     console.log(filters);
@@ -145,22 +144,12 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
           {/* Boton de filtros */}
           <TouchableHighlight
-            underlayColor={rojo}
+            underlayColor={rojoClaro}
             onPress={() => setModalVisible(true)}
             style={styles.filterButton}
           >
             <Ionicons name="filter" size={25} color="white" />
           </TouchableHighlight>
-        </View>
-
-        <View
-          style={{
-            position: "absolute",
-            right: 40,
-            bottom: insets.bottom + 40,
-          }}
-        >
-          <Plus />
         </View>
       </Pressable>
 
@@ -181,6 +170,16 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           handleSearch={handleSearch}
         />
       </Modal>
+      <View
+        style={{
+          position: "absolute",
+          right: 60,
+          backgroundColor: "red",
+          bottom: insets.bottom + 40,
+        }}
+      >
+        <Plus />
+      </View>
     </SafeAreaView>
   );
 }
@@ -208,7 +207,7 @@ const styles = StyleSheet.create({
 
   filterButton: {
     marginLeft: 20,
-    backgroundColor: "#f34856",
+    backgroundColor: rojoClaro,
     width: 45,
     height: 45,
     borderRadius: 10,

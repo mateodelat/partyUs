@@ -20,7 +20,7 @@ function PlusScreen() {
 }
 
 export default function () {
-  const { organizador } = useUser();
+  const organizador = useUser()?.usuario;
 
   const insets = useSafeAreaInsets();
 

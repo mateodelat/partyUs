@@ -1,0 +1,15 @@
+type Usuario
+  @model
+  @auth(rules: [{ allow: owner }, { allow: private, operations: [read] }]) {
+  tipoID: tipoDocumento
+  metadataID: String
+
+  nombre: string
+  paterno: string
+  materno: string
+}
+
+enum tipoDocumento {
+  PASAPORTE
+  INE
+}

@@ -45,7 +45,6 @@ interface AnimatedInputType extends TextInputProps {
   textInputFontSize?: number;
   mask?: TextInputMaskTypeProp;
   maskOptions?: TextInputMaskOptionProp;
-  onChangeEnd?: () => any;
   others?: any;
 }
 
@@ -70,7 +69,6 @@ const AnimatedTextInput = ({
   textInputFontSize,
   mask,
   maskOptions = {},
-  onChangeEnd = () => null,
   ...others
 }: AnimatedInputType) => {
   const [showInput, setShowInput] = useState(false);
@@ -231,7 +229,6 @@ const AnimatedTextInput = ({
                     !!textInputFontSize && { fontSize: textInputFontSize },
                   ]}
                   onEndEditing={() => {
-                    onChangeEnd();
                     onBlur();
                   }}
                   type={mask || "cpf"}
