@@ -5,6 +5,7 @@ import {
   Text,
   TextStyle,
   View,
+  ViewStyle,
 } from "react-native";
 import React from "react";
 import { AntDesign } from "@expo/vector-icons";
@@ -21,12 +22,14 @@ export default function ({
   navigation,
   color,
   textStyle,
+  style,
 }: {
   title?: string | null;
   navigation?: StackNavigationProp<ParamListBase, string, undefined>;
   handleBack?: undefined | (() => any);
   color?: ColorValue;
   textStyle?: TextStyle;
+  style?: ViewStyle;
 }) {
   const insets = useSafeAreaInsets();
 
@@ -36,6 +39,7 @@ export default function ({
         paddingTop: insets.top,
         backgroundColor: color ? color : "#fff",
         paddingBottom: 10,
+        ...style,
       }}
     >
       <Pressable

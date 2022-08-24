@@ -7,7 +7,7 @@ const UserContext: Context<{
   setUsuario: Dispatch<SetStateAction<UserType>>;
 }> = createContext({
   usuario: {},
-  setUsuario: (value: SetStateAction<UserType>) => {
+  setUsuario: (v: SetStateAction<UserType>) => {
     return;
   },
 });
@@ -27,10 +27,19 @@ export type UserType = {
   fechaNacimiento?: Date;
 
   email?: string;
+
+  phoneNumber?: String;
+  phoneCode?: String;
+
+  admin?: Boolean;
+
+  calificacion?: Number;
+  numReseñas?: Number;
 };
 
 export type idData = {
   uri: string;
+  key: string;
   detectedText: string;
   tipoDocumento: tipoDocumento;
   textoAbajoPasaporte?: null | TextoAbajoPasaporteType;

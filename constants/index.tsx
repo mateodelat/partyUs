@@ -1,9 +1,15 @@
 import * as Location from "expo-location";
-import * as FileSystem from "expo-file-system";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
+import * as Haptics from "expo-haptics";
+
+import { Alert } from "react-native";
 
 export const rojo = "#f01829";
 export const rojoClaro = "#f34856";
-export const azulClaro = "#3C887E";
+export const azulClaro = "#577590";
+export const azulOscuro = "#273440";
+export const azulFondo = "#F4F6F8";
 export const amarillo = "#ffbf5e";
 ("#ffbf5e");
 ("#000000");
@@ -17,6 +23,27 @@ export const colorFondo = "#fff";
 export const msInHour = 3600000;
 export const msInMinute = 60000;
 export const msInDay = 86400000;
+
+export function isUrl(str: string) {
+  var regexp =
+    /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+  return regexp.test(str);
+}
+export const mapPlacesKey = "AIzaSyAMO0bWIDnoKqunvXjCJ65qgZdb5FBtf_s";
+
+export function formatMoney(num: number, hideCents?: boolean) {
+  if (!num) {
+    num = 0;
+  }
+
+  return (
+    "$" +
+    num?.toFixed(hideCents ? 0 : 2)?.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+  );
+}
+
+export const randomImageUri = () =>
+  "https://picsum.photos/300/200?random=" + Math.floor(1000 * Math.random());
 
 /**
  * Funcion que devuelve una cadena de texto a partir de una imagen
@@ -266,6 +293,11 @@ export const redondear = (
 
   if (!numero) return 0;
 
+  // Si no hay tipo redondear simple
+  if (!tipo) {
+    return Math.round(numero / entero) * entero;
+  }
+
   switch (tipo) {
     case tipoRedondeo.ARRIBA:
       numero = Math.ceil(numero / entero) * entero;
@@ -356,17 +388,60 @@ export enum placeEnum {
 }
 
 export enum musicEnum {
-  TECNO = "TECNO",
-  PUNK = "PUNK",
+  REGGETON = "REGGETON",
   POP = "POP",
+  TECNO = "TECNO",
   RAP = "RAP",
   BANDA = "BANDA",
-  REGGETON = "REGGETON",
+  ROCK = "ROCK",
+  OTRO = "OTRO",
 }
 
 export enum tipoDocumento {
   PASAPORTE = "PASAPORTE",
   INE = "INE",
+}
+
+export const vibrar = (tipo: VibrationType) => {
+  switch (tipo) {
+    case "light":
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      break;
+
+    case "medium":
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      break;
+
+    case "heavy":
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      break;
+
+    case "error":
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      break;
+
+    case "sucess":
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      break;
+
+    case "select":
+      Haptics.selectionAsync();
+      break;
+
+    default:
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+      break;
+  }
+};
+
+export enum VibrationType {
+  light = "light",
+  medium = "medium",
+  heavy = "heavy",
+
+  select = "select",
+  error = "error",
+  sucess = "sucess",
 }
 
 /**
@@ -378,7 +453,28 @@ export function enumToArray<T>(enumme: T) {
   return Object.keys(enumme).map((name) => enumme[name as keyof typeof enumme]);
 }
 
-export function mayusFirstLetter(string: string | undefined) {
+export function formatAMPM(
+  dateInMs: number | Date | undefined,
+  hideAMPM?: boolean
+) {
+  if (!dateInMs) return "-- : --";
+
+  const date = new Date(dateInMs);
+  var hours = date.getHours();
+  var minutes: number | string = date.getMinutes();
+  var ampm = hours >= 12 ? "pm" : "am";
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+
+  var strTime = hours + ":" + minutes;
+
+  !hideAMPM ? (strTime += " " + ampm) : null;
+
+  return strTime;
+}
+
+export function mayusFirstLetter(string: string | undefined | null) {
   if (!string) return "";
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
@@ -449,7 +545,7 @@ export const verificarUbicacion = async () => {
   }
 };
 
-export function mesAString(mesN: number | undefined) {
+export function mesAString(mesN: number | undefined | null) {
   if (typeof mesN !== "number") return null;
 
   switch (mesN) {
@@ -499,11 +595,169 @@ export function clearDate(date: Date | number) {
 }
 
 /**
+ * Toma una fecha y devuelve cadena formateada con meses ej: 30 de agosto
+ * @param ms milisegundos o fecha
+ * @returns fecha en string con el dia y el mes (dd de mmmmmmm)
+ */
+export const formatDiaMesCompleto = (ms: Date | undefined) => {
+  if (!ms) return "-";
+
+  const fecha = new Date(ms);
+
+  const mes = fecha.getMonth();
+  const dia = fecha.getDate();
+  let sMes;
+
+  switch (mes) {
+    case 0:
+      sMes = "ENERO";
+      break;
+    case 1:
+      sMes = "FEBRERO";
+      break;
+    case 2:
+      sMes = "MARZO";
+      break;
+    case 3:
+      sMes = "ABRIL";
+      break;
+    case 4:
+      sMes = "MAYO";
+      break;
+    case 5:
+      sMes = "JUNIO";
+      break;
+    case 6:
+      sMes = "JULIO";
+      break;
+    case 7:
+      sMes = "AGOSTO";
+      break;
+    case 8:
+      sMes = "SEPTIEMBRE";
+      break;
+    case 9:
+      sMes = "OCTUBRE";
+      break;
+    case 10:
+      sMes = "NOVIEMBRE";
+      break;
+    case 11:
+      sMes = "DICIEMBRE";
+      break;
+
+    default:
+      break;
+  }
+
+  return dia + " de " + mayusFirstLetter(sMes);
+};
+
+export const defaultLocation = {
+  latitude: 21.76227198730249,
+  longitude: -104.03593288734555,
+  latitudeDelta: 32.71611359157346,
+  longitudeDelta: 60.73143247514963,
+};
+
+// Buscar un lugar por su place id o por su geometria
+export async function googleMapsSearchPlace(place_id: string) {
+  let url = `https://maps.googleapis.com/maps/api/place/details/json?fields=geometry,url,name&placeid=${place_id}&key=${mapPlacesKey}`;
+
+  return await fetch(url).then((r) => {
+    return r.json().then((r) => {
+      r = r.result;
+      const { lat: latitude, lng: longitude } = r.geometry.location;
+      const latitudeDelta = Math.abs(
+        r.geometry.viewport.northeast.lat - r.geometry.viewport.southwest.lat
+      );
+      const longitudeDelta = Math.abs(
+        r.geometry.viewport.northeast.lng - r.geometry.viewport.southwest.lng
+      );
+
+      return {
+        ubicacionLink: r.url,
+        ubicacionNombre: r.name,
+        ubicacionId: place_id,
+
+        latitude,
+        longitude,
+        latitudeDelta,
+        longitudeDelta,
+      };
+    });
+  });
+}
+export const AsyncAlert = async (title: string, body: string) =>
+  new Promise((resolve, reject) => {
+    Alert.alert(title, body, [
+      {
+        text: "CANCELAR",
+        onPress: () => {
+          reject(false);
+        },
+      },
+      {
+        text: "OK",
+        onPress: () => {
+          resolve(true);
+        },
+      },
+    ]);
+  }).catch((e) => e);
+
+export const getWeekDay = (d: Date | undefined) => {
+  if (!d) return "";
+  const week = d.getDay();
+
+  let r = "";
+  switch (week) {
+    case 1:
+      r = "LUNES";
+      break;
+
+    case 2:
+      r = "MARTES";
+      break;
+
+    case 3:
+      r = "MIERCOLES";
+      break;
+
+    case 4:
+      r = "JUEVES";
+      break;
+
+    case 5:
+      r = "VIERNES";
+      break;
+
+    case 6:
+      r = "SABADO";
+      break;
+
+    case 0:
+      r = "DOMINGO";
+      break;
+
+    default:
+      r = "BLA BLA";
+  }
+
+  return mayusFirstLetter(r);
+};
+
+export const comisionApp = 0.15;
+
+/**
  * Toma el tiempo en hora UTC
  * @param date milisegunos o fecha en hora UTC
  * @returns dd mmm aaaa
  */
-export const formatDay = (date: number | Date | undefined | null) => {
+export const formatDay = (
+  date: number | Date | undefined | null,
+  noYear?: boolean
+) => {
   if (!date) {
     return "--";
   }
@@ -556,5 +810,115 @@ export const formatDay = (date: number | Date | undefined | null) => {
       break;
   }
 
-  return dia + " " + mes + " " + year;
+  return dia + " " + mes + (!noYear ? " " + year : "");
+};
+
+export const openCameraPickerAsync = async (
+  aspect: [number, number],
+  quality: number
+) => {
+  // Poner en los limites
+  quality = quality < 0 || quality > 1 ? 1 : quality;
+  let permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+  if (permissionResult.granted === false) {
+    Alert.alert(
+      "Error",
+      "Los permisos para acceder a la camara son requeridos para seleccionar imagen"
+    );
+    await ImagePicker.requestCameraPermissionsAsync();
+    return false;
+  }
+
+  let camResult;
+
+  // Si se le paso un aspect ratio, respetarlo
+  if (aspect) {
+    camResult = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      allowsMultipleSelection: false,
+      aspect,
+    });
+  } else {
+    camResult = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      allowsMultipleSelection: false,
+    });
+  }
+
+  if (camResult.cancelled === true) {
+    return false;
+  } else {
+    // Comprimir la imagen
+    camResult = await ImageManipulator.manipulateAsync(
+      camResult.uri,
+      [
+        {
+          resize: {
+            width: 1000,
+          },
+        },
+      ],
+      { compress: quality }
+    );
+
+    return camResult;
+  }
+};
+
+export const openImagePickerAsync = async (
+  denyVideos: boolean,
+  quality?: number,
+  aspect?: [number, number]
+) => {
+  await ImagePicker.requestMediaLibraryPermissionsAsync();
+  let permissionResult = await ImagePicker.getMediaLibraryPermissionsAsync();
+
+  if (permissionResult.granted === false) {
+    Alert.alert(
+      "Los permisos para acceder al carrete son requeridos para seleccionar imagen"
+    );
+    await ImagePicker.requestMediaLibraryPermissionsAsync();
+    return false;
+  }
+
+  let pickerResult;
+  if (aspect) {
+    pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: denyVideos
+        ? ImagePicker.MediaTypeOptions.Images
+        : ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect,
+    });
+  } else {
+    pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: denyVideos
+        ? ImagePicker.MediaTypeOptions.Images
+        : ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+    });
+  }
+
+  if (pickerResult.cancelled === true) {
+    return false;
+  } else {
+    // Si se le paso un modificador a la calidad se comprime la imagen
+
+    if (!!quality && quality > 0 && quality < 1) {
+      pickerResult = await ImageManipulator.manipulateAsync(
+        pickerResult.uri,
+        [
+          {
+            resize: {
+              width: 1000,
+            },
+          },
+        ],
+        { compress: quality }
+      );
+    }
+
+    return pickerResult;
+  }
 };

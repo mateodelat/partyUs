@@ -28,11 +28,17 @@ export default function ({
 }) {
   const navigation = useNavigation<any>();
   const setUsuario = useUser().setUsuario;
+  const {
+    usuario: { fechaNacimiento: fNac },
+  } = useUser();
 
   const nombre = route.params?.nombre;
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 
-  const [fechaNacimiento, setFechaNacimiento] = useState<Date | undefined>();
+  // Si ya tenemos fecha de nacimiento del usuario ponerla si no es indefinido
+  const [fechaNacimiento, setFechaNacimiento] = useState<Date | undefined>(
+    fNac ? fNac : undefined
+  );
   const [error, setError] = useState("");
 
   const hours = new Date().getTimezoneOffset() * 60 * 1000;
@@ -84,7 +90,7 @@ export default function ({
       {/* Header */}
       <HeaderSolicitud
         titulo={
-          mayusFirstLetter(nombre) + (nombre ? ", " : "") + "¿Cuanto naciste?"
+          mayusFirstLetter(nombre) + (nombre ? ", " : "") + "¿Cuando naciste?"
         }
         subTitulo="Para que nunca olvidemos tu cumpleaños"
       />

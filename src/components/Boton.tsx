@@ -16,19 +16,21 @@ export default ({
   done,
   style,
   disabled,
+  color,
 }: {
   onPress?: (any: any) => any;
   titulo: string;
-  loading?: boolean | undefined;
-  done?: boolean | undefined;
+  loading?: boolean;
+  done?: boolean;
   style?: ViewStyle;
-  disabled?: boolean | undefined;
+  disabled?: boolean;
+  color?: string;
 }) => {
   if (loading !== undefined) {
     return (
       <TouchableOpacity
         disabled={disabled !== undefined ? disabled : done || loading}
-        style={[styles.boton, style]}
+        style={[{ backgroundColor: color ? color : rojo }, styles.boton, style]}
         onPress={onPress}
       >
         {loading ? (
@@ -51,7 +53,7 @@ export default ({
 
   return (
     <TouchableOpacity
-      style={[{ backgroundColor: rojo }, styles.boton, style]}
+      style={[{ backgroundColor: color ? color : rojo }, styles.boton, style]}
       onPress={onPress}
     >
       <Text
@@ -73,6 +75,5 @@ const styles = StyleSheet.create({
     height: 50,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: rojo,
   },
 });

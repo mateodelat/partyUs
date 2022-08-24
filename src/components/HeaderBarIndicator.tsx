@@ -28,7 +28,7 @@ export default function ({
             key={idx}
             style={{
               ...styles.line,
-              backgroundColor: idx <= step ? color : bgColor,
+              backgroundColor: idx < step ? color : bgColor,
               flex: 1,
             }}
           />

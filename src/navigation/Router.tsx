@@ -10,6 +10,7 @@ import MisReservas from "../screens/Inicio/MisReservas";
 import QRCode from "../screens/Inicio/QRCode";
 import Notifications from "../screens/Inicio/Notifications";
 import Home from "../screens/Inicio/Home";
+import DetalleEvento from "../screens/Inicio/DetalleEvento";
 import Perfil from "../screens/Inicio/Perfil";
 import SolicitudOrganizador from "../screens/SolicitudOrganizador";
 import SeleccionaID from "../screens/SolicitudOrganizador/SeleccionaID";
@@ -49,6 +50,7 @@ export default function () {
   return (
     <NavigationContainer>
       <Stack.Navigator
+        // initialRouteName="AgregarEventoStack"
         screenOptions={{
           header: ({
             route: { name },
@@ -63,6 +65,13 @@ export default function () {
         <Stack.Screen
           name="Home"
           component={Home}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="DetalleEvento"
+          component={DetalleEvento}
           options={{
             headerShown: false,
           }}

@@ -1,0 +1,597 @@
+/* eslint-disable */
+// this is an auto generated file. This will be overwritten
+
+export const onCreateUsuario = /* GraphQL */ `
+  subscription OnCreateUsuario {
+    onCreateUsuario {
+      id
+      nickname
+      nombre
+      materno
+      paterno
+      email
+      foto
+      imagenFondo
+      phoneNumber
+      phoneCode
+      organizador
+      admin
+      idUploaded
+      idData
+      idKey
+      fechaNacimiento
+      calificacion
+      numResenas
+      notificationToken
+      Eventos {
+        items {
+          id
+          imagenes
+          titulo
+          detalles
+          ubicacion
+          fechaInicial
+          fechaFinal
+          boletos
+          tosAceptance
+          tipoLugar
+          musica
+          comodities
+          musOtra
+          CreatorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateUsuario = /* GraphQL */ `
+  subscription OnUpdateUsuario {
+    onUpdateUsuario {
+      id
+      nickname
+      nombre
+      materno
+      paterno
+      email
+      foto
+      imagenFondo
+      phoneNumber
+      phoneCode
+      organizador
+      admin
+      idUploaded
+      idData
+      idKey
+      fechaNacimiento
+      calificacion
+      numResenas
+      notificationToken
+      Eventos {
+        items {
+          id
+          imagenes
+          titulo
+          detalles
+          ubicacion
+          fechaInicial
+          fechaFinal
+          boletos
+          tosAceptance
+          tipoLugar
+          musica
+          comodities
+          musOtra
+          CreatorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteUsuario = /* GraphQL */ `
+  subscription OnDeleteUsuario {
+    onDeleteUsuario {
+      id
+      nickname
+      nombre
+      materno
+      paterno
+      email
+      foto
+      imagenFondo
+      phoneNumber
+      phoneCode
+      organizador
+      admin
+      idUploaded
+      idData
+      idKey
+      fechaNacimiento
+      calificacion
+      numResenas
+      notificationToken
+      Eventos {
+        items {
+          id
+          imagenes
+          titulo
+          detalles
+          ubicacion
+          fechaInicial
+          fechaFinal
+          boletos
+          tosAceptance
+          tipoLugar
+          musica
+          comodities
+          musOtra
+          CreatorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onCreateEvento = /* GraphQL */ `
+  subscription OnCreateEvento {
+    onCreateEvento {
+      id
+      imagenes
+      titulo
+      detalles
+      ubicacion
+      fechaInicial
+      fechaFinal
+      boletos
+      tosAceptance
+      tipoLugar
+      musica
+      comodities
+      musOtra
+      CreatorID
+      Creator {
+        id
+        nickname
+        nombre
+        materno
+        paterno
+        email
+        foto
+        imagenFondo
+        phoneNumber
+        phoneCode
+        organizador
+        admin
+        idUploaded
+        idData
+        idKey
+        fechaNacimiento
+        calificacion
+        numResenas
+        notificationToken
+        Eventos {
+          nextToken
+          startedAt
+        }
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateEvento = /* GraphQL */ `
+  subscription OnUpdateEvento {
+    onUpdateEvento {
+      id
+      imagenes
+      titulo
+      detalles
+      ubicacion
+      fechaInicial
+      fechaFinal
+      boletos
+      tosAceptance
+      tipoLugar
+      musica
+      comodities
+      musOtra
+      CreatorID
+      Creator {
+        id
+        nickname
+        nombre
+        materno
+        paterno
+        email
+        foto
+        imagenFondo
+        phoneNumber
+        phoneCode
+        organizador
+        admin
+        idUploaded
+        idData
+        idKey
+        fechaNacimiento
+        calificacion
+        numResenas
+        notificationToken
+        Eventos {
+          nextToken
+          startedAt
+        }
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteEvento = /* GraphQL */ `
+  subscription OnDeleteEvento {
+    onDeleteEvento {
+      id
+      imagenes
+      titulo
+      detalles
+      ubicacion
+      fechaInicial
+      fechaFinal
+      boletos
+      tosAceptance
+      tipoLugar
+      musica
+      comodities
+      musOtra
+      CreatorID
+      Creator {
+        id
+        nickname
+        nombre
+        materno
+        paterno
+        email
+        foto
+        imagenFondo
+        phoneNumber
+        phoneCode
+        organizador
+        admin
+        idUploaded
+        idData
+        idKey
+        fechaNacimiento
+        calificacion
+        numResenas
+        notificationToken
+        Eventos {
+          nextToken
+          startedAt
+        }
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onCreateReserva = /* GraphQL */ `
+  subscription OnCreateReserva {
+    onCreateReserva {
+      id
+      total
+      precioIndividual
+      comision
+      pagadoAlOrganizador
+      tituloBoleto
+      descripcionBoleto
+      cantidad
+      pagoID
+      ingreso
+      horaIngreso
+      cancelado
+      canceledAt
+      cancelReason
+      eventoID
+      usuarioID
+      organizadorID
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateReserva = /* GraphQL */ `
+  subscription OnUpdateReserva {
+    onUpdateReserva {
+      id
+      total
+      precioIndividual
+      comision
+      pagadoAlOrganizador
+      tituloBoleto
+      descripcionBoleto
+      cantidad
+      pagoID
+      ingreso
+      horaIngreso
+      cancelado
+      canceledAt
+      cancelReason
+      eventoID
+      usuarioID
+      organizadorID
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteReserva = /* GraphQL */ `
+  subscription OnDeleteReserva {
+    onDeleteReserva {
+      id
+      total
+      precioIndividual
+      comision
+      pagadoAlOrganizador
+      tituloBoleto
+      descripcionBoleto
+      cantidad
+      pagoID
+      ingreso
+      horaIngreso
+      cancelado
+      canceledAt
+      cancelReason
+      eventoID
+      usuarioID
+      organizadorID
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
