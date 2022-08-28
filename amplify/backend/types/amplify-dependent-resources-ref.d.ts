@@ -18,9 +18,17 @@ export type AmplifyDependentResourcesAttributes = {
         }
     },
     "storage": {
-        "partyUsStorage": {
+        "s3811bb064": {
             "BucketName": "string",
             "Region": "string"
+        }
+    },
+    "function": {
+        "crearUsuario": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
         }
     }
 }

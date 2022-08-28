@@ -10,7 +10,7 @@ import Landing from "../screens/Login/Landing";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import PasswordForget from "../screens/Login/PasswordForget";
 import Confirm from "../screens/Login/Confirm";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView, Platform, View } from "react-native";
 
 // import Register from '../screens/Login/Register';
 // import Landing from '../screens/Login/Landing';
@@ -28,52 +28,48 @@ export default function LoginStack() {
   const Stack = createStackNavigator();
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer theme={MyTheme}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{
-            flex: 1,
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#00000088",
+      }}
+    >
+      <Stack.Navigator
+        screenOptions={{
+          header: ({
+            route: { name },
+            navigation,
+            options: { title: tit },
+          }) => {
+            const title = tit ? tit : null;
+            return <Header title={title} navigation={navigation} />;
+          },
+        }}
+      >
+        {/* <Stack.Screen
+          name="Landing"
+          component={Landing}
+          options={{
+            headerShown: false,
           }}
-        >
-          <Stack.Navigator
-            screenOptions={{
-              header: ({
-                route: { name },
-                navigation,
-                options: { title: tit },
-              }) => {
-                const title = tit ? tit : null;
-                return <Header title={title} navigation={navigation} />;
-              },
-            }}
-          >
-            <Stack.Screen
-              name="Landing"
-              component={Landing}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="Register" component={Register} />
-            <Stack.Screen
-              name="PasswordForget"
-              component={PasswordForget}
-              options={{
-                title: "Contraseña olvidada",
-              }}
-            />
-            <Stack.Screen
-              name="Confirm"
-              component={Confirm}
-              options={{
-                title: "Confirmar codigo",
-              }}
-            />
-          </Stack.Navigator>
-        </KeyboardAvoidingView>
-      </NavigationContainer>
-    </SafeAreaProvider>
+        /> */}
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Register" component={Register} />
+        <Stack.Screen
+          name="PasswordForget"
+          component={PasswordForget}
+          options={{
+            title: "Contraseña olvidada",
+          }}
+        />
+        <Stack.Screen
+          name="Confirm"
+          component={Confirm}
+          options={{
+            title: "Confirmar codigo",
+          }}
+        />
+      </Stack.Navigator>
+    </View>
   );
 }

@@ -1,10 +1,18 @@
-import { StyleSheet, Text, View } from "react-native";
-import React, { Children, Component, useState } from "react";
-import UserContext, { UserType } from "./UserContext";
+import { Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useState } from "react";
+import UserContext from "./UserContext";
 import { PropsWithChildren } from "react";
+import { getUserSub } from "../../constants";
+import { DataStore } from "aws-amplify";
+import { Usuario } from "../models";
+import { useNavigation } from "@react-navigation/native";
 
 export default function ({ children }: PropsWithChildren<any>) {
-  const [usuario, setUsuario] = useState<UserType>({});
+  const [usuario, setUsuario] = useState<Usuario>({
+    id: "guest",
+    nickname: "guest",
+    email: "guest",
+  });
 
   return (
     <UserContext.Provider
@@ -17,5 +25,3 @@ export default function ({ children }: PropsWithChildren<any>) {
     </UserContext.Provider>
   );
 }
-
-const styles = StyleSheet.create({});

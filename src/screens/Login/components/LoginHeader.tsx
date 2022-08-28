@@ -14,7 +14,7 @@ export default function ({ register }: { register?: boolean }) {
       />
 
       <Text style={styles.descTxt}>
-        {register ? "Empieza con tu" : "Continua con tu"}
+        {register ? "Empieza con tu" : "Procede al"}
       </Text>
       <Text style={styles.loginTxt}>{register ? "Registro" : "Login"}</Text>
     </View>

@@ -13,8 +13,9 @@ import Boton from "../../components/Boton";
 import {
   azulClaro,
   azulFondo,
-  comoditiesEnum,
   enumToArray,
+  getBlob,
+  getUserSub,
   mayusFirstLetter,
   musicEnum,
   placeEnum,
@@ -29,9 +30,13 @@ import InputOnFocus from "../../components/InputOnFocus";
 import useEvento from "../../Hooks/useEvento";
 import RadioButton from "../../components/RadioButton";
 import NetInfo from "@react-native-community/netinfo";
+import { DataStore, Storage } from "aws-amplify";
+import { ComoditiesEnum, Evento } from "../../models";
+import { ImagenesType } from "./Agregar1";
+import { boletoType } from "./Agregar3";
 
 const musicList = enumToArray(musicEnum);
-const comoditiesList = enumToArray(comoditiesEnum);
+const comoditiesList = enumToArray(ComoditiesEnum);
 const lugarList = enumToArray(placeEnum);
 
 const { height } = Dimensions.get("window");
@@ -42,7 +47,7 @@ export default function Agregar2({
 }) {
   // Enums del tipo de evento
   const [musica, setMusica] = useState<musicEnum>();
-  const [comodities, setComodities] = useState<comoditiesEnum[]>([]);
+  const [comodities, setComodities] = useState<ComoditiesEnum[]>([]);
   const [lugar, setLugar] = useState<placeEnum>();
   const [otraMusica, setOtraMusica] = useState("");
   const [loading, setLoading] = useState(false);
@@ -62,9 +67,9 @@ export default function Agregar2({
     });
   });
 
-  const { evento } = useEvento();
+  const { evento }: { evento: any } = useEvento();
 
-  function handleGuardar() {
+  async function handleGuardar() {
     // Verificaciones
     if (!lugar) {
       Alert.alert("Error", "Agrega el tipo de lugar de tu evento");
@@ -113,91 +118,68 @@ export default function Agregar2({
       );
       return;
     }
-    console.log({
-      ...evento,
-      musica,
-      musOtra,
-      tipoLugar: lugar,
-      comodities,
-      tosAceptance: aceptoTerminos,
-    });
 
-    /*
-    {
-  "boletos": Array [
-    {
-      "cantidad": 50,
-      "descripcion": "",
-      "precio": 400,
-      "titulo": "Entrada normal",
-    },
-    {
-      "cantidad": 100,
-      "descripcion": "",
-      "precio": 800,
-      "titulo": "VIP",
-    }],
-    "comodities": Array [
-      "ALBERCA",
-    ],
-    "detalles": "",
-    "fechaFinal": 2022-08-27T10:00:00.000Z,
-    "fechaInicial": 2022-08-27T03:00:00.000Z,
-    "id": "43166d65-c327-48d7-b1a8-a17b1d79a026",
-    "imagenes": Array [
-      {
-        "imagenPrincipal": false,
-        "key": undefined,
-        "uri": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540mateodelat%252FpartyUs/ImageManipulator/fb315a44-641f-4f71-a766-e5906ad15ef7.jpg",
-      },
-      {
-        "imagenPrincipal": true,
-        "key": "https://static.wikia.nocookie.net/zelda/images/8/80/Link_Defending_%28Soulcalibur_II%29.png/revision/latest?cb=20090726014102",     
-        "uri": "https://static.wikia.nocookie.net/zelda/images/8/80/Link_Defending_%28Soulcalibur_II%29.png/revision/latest?cb=20090726014102",     
-      },
-    ],
-    "musOtra": undefined,
-    "musica": "POP",
-    "tipoLugar": "INTERIOR",
-    "titulo": "La buena peda",
-    "tosAceptance": Object {
-      "hora": 2022-08-22T01:28:29.123Z,
-      "ip": "10.0.2.16",
-    },
-    "ubicacion": Object {
-      "latitude": 21.363185383060518,
-      "latitudeDelta": 3.236393788060422,
-      "longitude": -104.39555022865532,
-      "longitudeDelta": 2.000001221895232,
-      "ubicacionNombre": "La Yesca, Nayarit, Mexico",
-    },
-  }
-    */
-
-    let count = 0;
-    // Subir fotos a S3 y crear el evento en la base de datos
-    evento.imagenes?.map((e) => {
-      if (!e.key) {
-        console.log("Subir imagen como: evento-" + evento.id + " | " + count);
-      }
-
-      count++;
-    });
-
-    return;
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
 
-    // navigation.navigate("Agregar3");
+    try {
+      let imagenes: ImagenesType[] = [];
+      let count = 0;
+
+      // Subir fotos a S3 y crear el evento en la base de datos
+      let promises: any = [];
+
+      evento.imagenes?.map((e: any) => {
+        delete e.uri;
+        if (!e.key) {
+          const key = "evento-" + evento.id + "|" + count + ".jpg";
+          getBlob(e?.uri).then((r) => {
+            promises.push(Storage.put(key, r).then(console.log));
+          });
+          e.key = key;
+        }
+
+        imagenes.push(e as any);
+        count++;
+      });
+
+      // Esperar a que se resuelvan todas las promesas
+      await Promise.all(promises);
+
+      DataStore.save(
+        new Evento({
+          ...evento,
+          titulo: evento.titulo ? evento.titulo : "",
+
+          ubicacion: JSON.stringify(evento.ubicacion),
+
+          imagenes: imagenes.map((e) => JSON.stringify(e)),
+          boletos: evento.boletos?.map((e: boletoType) => JSON.stringify(e)),
+
+          fechaInicial: evento.fechaInicial.getTime(),
+          fechaFinal: evento?.fechaFinal?.getTime()
+            ? evento?.fechaFinal?.getTime()
+            : 0,
+
+          musica,
+          musOtra,
+          tipoLugar: lugar,
+          comodities,
+          tosAceptance: JSON.stringify(aceptoTerminos),
+
+          CreatorID: "UsuarioID",
+        })
+      ).then(console.log);
+      navigation.popToTop();
+      navigation.navigate("Home");
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Sucedio un error creando el evento");
+    }
+    setLoading(false);
   }
 
   function handleAbrirTerminos() {
-    Alert.alert(
-      "Info",
-      "Ve nuestros terminnos en la pagina oficial de partyUs"
-    );
+    Alert.alert("Info", "Ve nuestros terminos en la pagina oficial de partyUs");
   }
 
   return (

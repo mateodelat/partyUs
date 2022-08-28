@@ -45,6 +45,20 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "foto": {
+                    "name": "foto",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "imagenFondo": {
+                    "name": "imagenFondo",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "phoneNumber": {
                     "name": "phoneNumber",
                     "isArray": false,
@@ -84,6 +98,13 @@ export const schema = {
                     "name": "idData",
                     "isArray": false,
                     "type": "AWSJSON",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "idKey": {
+                    "name": "idKey",
+                    "isArray": false,
+                    "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -211,14 +232,14 @@ export const schema = {
                 "fechaInicial": {
                     "name": "fechaInicial",
                     "isArray": false,
-                    "type": "String",
+                    "type": "AWSTimestamp",
                     "isRequired": true,
                     "attributes": []
                 },
                 "fechaFinal": {
                     "name": "fechaFinal",
                     "isArray": false,
-                    "type": "String",
+                    "type": "AWSTimestamp",
                     "isRequired": true,
                     "attributes": []
                 },
@@ -261,7 +282,7 @@ export const schema = {
                     "type": {
                         "enum": "ComoditiesEnum"
                     },
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": [],
                     "isArrayNullable": true
                 },
@@ -549,5 +570,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "cb8fee77045ef9bfdd771c6bb230e142"
+    "version": "ec94925707c4a44350cf8eb0eee6303a"
 };

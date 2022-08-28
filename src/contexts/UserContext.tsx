@@ -1,41 +1,23 @@
 import { Context, createContext, Dispatch, SetStateAction } from "react";
 import { tipoDocumento } from "../../constants";
+import { Usuario } from "../models";
 import { TextoAbajoPasaporteType } from "../screens/SolicitudOrganizador/components/functions";
 
 const UserContext: Context<{
-  usuario: UserType;
-  setUsuario: Dispatch<SetStateAction<UserType>>;
+  usuario: Usuario;
+  setUsuario: Dispatch<SetStateAction<Usuario>>;
 }> = createContext({
-  usuario: {},
-  setUsuario: (v: SetStateAction<UserType>) => {
+  usuario: {
+    id: "guest",
+    nickname: "guest",
+    email: "guest",
+  },
+  setUsuario: (v: SetStateAction<Usuario>) => {
     return;
   },
 });
 
 export default UserContext;
-
-export type UserType = {
-  nickname?: string;
-  organizador?: boolean;
-  nombre?: string;
-  materno?: string;
-  paterno?: string;
-
-  idUploaded?: boolean;
-  idData?: idData;
-
-  fechaNacimiento?: Date;
-
-  email?: string;
-
-  phoneNumber?: String;
-  phoneCode?: String;
-
-  admin?: Boolean;
-
-  calificacion?: Number;
-  numReseñas?: Number;
-};
 
 export type idData = {
   uri: string;

@@ -40,9 +40,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     console.log("Olvidada");
   }
 
-  function handleBack() {
-    navigation.pop();
-  }
   const handleRegistrarse = async () => {
     if (nombre.length < 4) {
       clearError();
@@ -70,7 +67,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     })
       .then((user) => {
         //Una vez le damos a registrar, se crea el nuevo perfil con la api key
-        navigation.navigate("Confirm", { email });
+        navigation.navigate("Confirm", { username: email });
         clearError();
         setNombre("");
         setEmail("");

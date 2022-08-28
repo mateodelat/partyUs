@@ -15,6 +15,12 @@
       "auth": {
         "partyus50a47df9": {},
         "true": {}
+      },
+      "function": {
+        "crearUsuario": {
+          "deploymentBucketName": "amplify-partyus-dev-131336-deployment",
+          "s3Key": "amplify-builds/crearUsuario-57716637715334777649-build.zip"
+        }
       }
     }
   }

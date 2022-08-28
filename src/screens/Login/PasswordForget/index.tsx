@@ -90,7 +90,7 @@ export default ({
             setCheck(true);
           }}
           editable={!check}
-          onChangeEnd={() => setError("")}
+          // onChangeEnd={() => setError("")}
           errorText={error}
           valid={check}
         />

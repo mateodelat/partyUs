@@ -29,6 +29,8 @@ export default function ({
     };
   };
 }) {
+  console.log(route.params);
+
   // Variables del texto
   const [code, setCode] = useState("");
   const [new_password, setNew_pasword] = useState("");

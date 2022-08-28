@@ -205,8 +205,6 @@ export default function () {
   }
 
   function handleAddImage(img: { uri: string; key?: string }) {
-    console.log(img);
-
     setImagenes((ne) => {
       ne = [
         ...ne,

@@ -8,18 +8,17 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
-  comoditiesEnum,
   enumToArray,
   placeEnum,
   musicEnum,
   requestLocation,
   rojoClaro,
   randomImageUri,
+  getUserSub,
 } from "../../../../constants";
 
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -36,40 +35,22 @@ import FiltersModal, { filterResult } from "./components/FiltersModal";
 import { TouchableHighlight } from "react-native-gesture-handler";
 import * as Location from "expo-location";
 import ElementoEvento from "../../../components/ElementoEvento";
-import { locationType } from "../../../components/ModalMap";
-import { boletoType } from "../../AgregarEvento/Agregar3";
 
-export type EventoType = {
-  imagenes?: { uri: string; key: string; imagenPrincipal?: boolean }[];
+import { DataStore } from "aws-amplify";
+import { ComoditiesEnum, Evento } from "../../../models";
+import useUser from "../../../Hooks/useUser";
+import EmptyProfile from "../../../components/EmptyProfile";
 
-  titulo?: string;
-  detalles?: string;
-
-  // Se detecta localmente
-  favoritos?: boolean;
-
-  id?: string;
-
-  ubicacion?: locationType;
-  fechaInicial?: Date;
-  fechaFinal?: Date;
-
-  boletos?: boletoType[];
-
-  tosAceptance?: {
-    hora: Date;
-    ip: string;
-  };
-
-  tipoLugar?: placeEnum;
-  musica?: musicEnum;
-  comodities?: comoditiesEnum[];
-
-  musOtra?: string;
+export type EventoType = Evento & {
+  favoritos: boolean;
+  imagenes: { uri: string; imagenPrincipal: string; key: string }[];
+  numPersonas: number;
 };
 
 export default function ({ navigation }: { navigation: NavigationProp }) {
   const numberNotifications = 3;
+
+  const { usuario } = useUser();
 
   // Texto de busqueda
   const [search, setSearch] = useState("");
@@ -81,65 +62,39 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   const [userLocation, setUserLocation] =
     useState<null | Location.LocationObjectCoords>(null);
 
-  const [fetchedEvents, setFetchedEvents] = useState<EventoType[]>([
-    {
-      boletos: [
-        {
-          cantidad: 50,
-          descripcion: "",
-          precio: 400,
-          titulo: "Entrada normal",
-        },
-        {
-          cantidad: 100,
-          descripcion: "",
-          precio: 800,
-          titulo: "VIP",
-        },
-      ],
-      comodities: [comoditiesEnum.ALBERCA],
-      detalles: "",
-      fechaFinal: new Date("2022-08-27T10:00:00.000Z"),
-      fechaInicial: new Date("2022-08-27T03:00:00.000Z"),
-      id: "43166d65-c327-48d7-b1a8-a17b1d79a026",
-      imagenes: [
-        {
-          imagenPrincipal: false,
-          key: "bla bla bla",
-          uri: "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540mateodelat%252FpartyUs/ImageManipulator/fb315a44-641f-4f71-a766-e5906ad15ef7.jpg",
-        },
-        {
-          imagenPrincipal: true,
-          key: "https://static.wikia.nocookie.net/zelda/images/8/80/Link_Defending_%28Soulcalibur_II%29.png/revision/latest?cb=20090726014102",
-          uri: "https://static.wikia.nocookie.net/zelda/images/8/80/Link_Defending_%28Soulcalibur_II%29.png/revision/latest?cb=20090726014102",
-        },
-      ],
-      musOtra: undefined,
-      musica: musicEnum.POP,
-      tipoLugar: placeEnum.EXTERIOR,
-      titulo: "La buena peda",
-      tosAceptance: {
-        hora: new Date("2022-08-22T01:28:29.123Z"),
-        ip: "10.0.2.16",
-      },
-      ubicacion: {
-        latitude: 21.363185383060518,
-        latitudeDelta: 3.236393788060422,
-        longitude: -104.39555022865532,
-        longitudeDelta: 2.000001221895232,
-        ubicacionNombre: "La Yesca, Nayarit, Mexico",
-      },
-    },
-  ]);
+  const [fetchedEvents, setFetchedEvents] = useState<EventoType[] | []>([]);
 
   const [eventosFiltrados, setEventosFiltrados] = useState<EventoType[] | []>(
     []
   );
 
+  async function fetchEvents() {
+    let eventos: EventoType[] = (await DataStore.query(Evento)) as any;
+
+    setEventosFiltrados(eventos);
+
+    console.log(eventos);
+
+    eventos = eventos.map((e) => {
+      e.imagenes = e.imagenes.map((r) => {
+        const s = JSON.parse(r) as any;
+
+        console.log(s);
+
+        return s;
+      });
+
+      return e;
+    });
+
+    // Borrar filtros
+    clearFilters();
+  }
+
   useEffect(() => {
     asignarUbicacion();
-    // Eventos a eventos filtrados
-    setEventosFiltrados(fetchedEvents);
+
+    fetchEvents();
   }, []);
 
   const minPrice = 100;
@@ -154,9 +109,23 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     fechaMax: undefined,
 
     lugar: enumToArray(placeEnum),
-    comodities: enumToArray(comoditiesEnum),
+    comodities: enumToArray(ComoditiesEnum),
     musica: enumToArray(musicEnum),
   });
+
+  function clearFilters() {
+    setFilters({
+      precioMin: minPrice,
+      precioMax: maxPrice,
+      dist: undefined,
+      fechaMin: undefined,
+      fechaMax: undefined,
+
+      lugar: enumToArray(placeEnum),
+      comodities: enumToArray(ComoditiesEnum),
+      musica: enumToArray(musicEnum),
+    });
+  }
 
   const insets = useSafeAreaInsets();
 
@@ -202,6 +171,8 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
   function handlePressItem(id?: string) {
     const evento = eventosFiltrados.find((i) => i.id === id);
+    if (!evento) return;
+
     navigation.navigate("DetalleEvento", {
       ...evento,
     });
@@ -219,11 +190,31 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
   function onRefresh() {
     setRefreshing(true);
+    fetchEvents();
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
   }
 
+  async function handleProfile() {
+    // Verificar que este loggeado
+    if (!(await getUserSub())) {
+      navigation.navigate("LoginStack");
+      return;
+    } else {
+      navigation.navigate("Perfil");
+    }
+  }
+
+  async function handleNotifications() {
+    // Verificar que este loggeado
+    if (!(await getUserSub())) {
+      navigation.navigate("LoginStack");
+      return;
+    } else {
+      navigation.navigate("Notifications");
+    }
+  }
   return (
     <SafeAreaView style={styles.container}>
       <Pressable
@@ -241,15 +232,19 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
         >
           <View style={styles.header}>
             {/* Imagen de perfil */}
-            <Pressable onPress={() => navigation.navigate("Perfil")}>
-              <Image
-                style={styles.profilePicture}
-                source={{
-                  uri: randomImageUri(),
-                }}
-              />
+            <Pressable onPress={handleProfile}>
+              {usuario.foto ? (
+                <Image
+                  style={styles.profilePicture}
+                  source={{
+                    uri: usuario.foto,
+                  }}
+                />
+              ) : (
+                <EmptyProfile />
+              )}
             </Pressable>
-            <Pressable onPress={() => navigation.navigate("Notifications")}>
+            <Pressable onPress={handleNotifications}>
               <FontAwesome5 name="bell" size={24} color="black" />
 
               {numberNotifications && (
@@ -290,6 +285,8 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
             <SearchBar
               setValue={(r) => {
                 setSearch(r);
+
+                console.log("Buscar " + r);
               }}
               value={search}
             />

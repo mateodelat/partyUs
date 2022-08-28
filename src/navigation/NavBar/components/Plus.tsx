@@ -16,15 +16,15 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { rojoClaro, shadowMarcada, shadowMedia } from "../../../../constants";
+import { getUserSub, rojoClaro, shadowMedia } from "../../../../constants";
 import useUser from "../../../Hooks/useUser";
-import { UserType } from "../../../contexts/UserContext";
+import { Usuario } from "../../../models";
 
 const { width, height } = Dimensions.get("screen");
 
 type MyProps = {
   navigation: NavigationProp<any>;
-  user?: UserType;
+  user?: Usuario;
 };
 
 class PlusButton extends React.Component<MyProps> {
@@ -42,11 +42,17 @@ class PlusButton extends React.Component<MyProps> {
     this.props.navigation.navigate("AgregarEventoStack");
   };
 
-  handlePress = () => {
+  handlePress = async () => {
     // Si el usuario no es organizador se manda alerta
     const { user, navigation } = this.props;
 
     const organizador = user?.organizador;
+
+    // Si no esta el usuario pasar a logearlo
+    if (!(await getUserSub())) {
+      navigation.navigate("LoginStack");
+      return;
+    }
 
     if (!organizador) {
       Alert.alert(

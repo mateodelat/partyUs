@@ -11,7 +11,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
-  comoditiesEnum,
   placeEnum,
   formatDay,
   msInDay,
@@ -30,6 +29,7 @@ import { AntDesign } from "@expo/vector-icons";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Boton from "../../../../components/Boton";
+import { ComoditiesEnum } from "../../../../models";
 
 export type filterResult = {
   precioMin: number;
@@ -38,7 +38,7 @@ export type filterResult = {
   fechaMin?: Date;
   fechaMax?: Date;
   musica: musicEnum[];
-  comodities: comoditiesEnum[];
+  comodities: ComoditiesEnum[];
   lugar: placeEnum[];
 };
 
@@ -74,7 +74,7 @@ export default function ({
   } = prevFilters;
 
   const musicList = enumToArray(musicEnum);
-  const comoditiesList = enumToArray(comoditiesEnum);
+  const comoditiesList = enumToArray(ComoditiesEnum);
   const lugarList = enumToArray(placeEnum);
 
   // Precio maximo redondeado al 50 mas alto

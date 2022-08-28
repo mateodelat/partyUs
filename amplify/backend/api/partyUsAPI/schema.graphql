@@ -44,8 +44,8 @@ type Evento @model {
   detalles: String
 
   ubicacion: AWSJSON!
-  fechaInicial: String!
-  fechaFinal: String!
+  fechaInicial: AWSTimestamp!
+  fechaFinal: AWSTimestamp!
 
   boletos: [AWSJSON!]!
 
@@ -53,7 +53,7 @@ type Evento @model {
 
   tipoLugar: placeEnum!
   musica: musicEnum!
-  comodities: [comoditiesEnum]
+  comodities: [comoditiesEnum!]
 
   musOtra: String
 

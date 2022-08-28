@@ -78,8 +78,12 @@ export default function ({
         setErrorPassword("");
         setPassword("");
         setEmail("");
+        setButtonLoading(false);
+        navigation.pop();
       })
       .catch(function (error) {
+        setButtonLoading(false);
+
         // Handle Errors here.
         var errorCode = error.code;
         switch (errorCode) {
@@ -108,7 +112,6 @@ export default function ({
             break;
         }
       });
-    setButtonLoading(false);
   };
 
   function clearErrors() {

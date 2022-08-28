@@ -10,6 +10,7 @@ import {
 } from "../../constants";
 import { Entypo } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+import { Evento } from "../models";
 
 const claros = "#00000055";
 
@@ -24,9 +25,15 @@ export default function ElementoEvento({
   handleMore?: (an: any) => void;
   handleLike?: (an: any) => void;
 }) {
-  const imagenPrincipal = data.imagenes?.find((i) => i.imagenPrincipal);
+  const imagenPrincipal = data.imagenes
+    ?.map((e: any) => {
+      const n = e as { key: string; imagenPrincipal: boolean; uri: string };
 
-  const fecha = new Date(data.fecha ? data.fecha : new Date());
+      return n;
+    })
+    .find((e) => e.imagenPrincipal);
+
+  const fecha = new Date(data.fechaInicial ? data.fechaInicial : "error");
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
@@ -38,7 +45,7 @@ export default function ElementoEvento({
             source={{
               uri: imagenPrincipal
                 ? imagenPrincipal.uri
-                : data.imagenes && data.imagenes[0].uri,
+                : "https://static3.mujerhoy.com/www/multimedia/202203/17/media/cortadas/apertura-party-kjgF-U1601347275536ie-624x624@MujerHoy.jpeg",
             }}
           />
 

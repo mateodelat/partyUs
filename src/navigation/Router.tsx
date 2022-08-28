@@ -18,6 +18,7 @@ import SubirDocumento from "../screens/SolicitudOrganizador/SubirDocumento";
 import PersonalDataStack from "./PersonalDataStack";
 import NombreApellido from "../screens/SolicitudOrganizador/DatosPersonales/NombreApellidos";
 import useUser from "../Hooks/useUser";
+import LoginStack from "./LoginStack";
 
 function NombreApellidosOnPress({ navigation }: any) {
   const setUsuario = useUser().setUsuario;
@@ -143,6 +144,14 @@ export default function () {
           name="SubirDocumento"
           component={SubirDocumento}
           options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="LoginStack"
+          component={LoginStack}
+          options={{
+            presentation: "modal",
             headerShown: false,
           }}
         />

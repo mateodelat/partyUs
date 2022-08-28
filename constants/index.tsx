@@ -4,6 +4,8 @@ import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 
 import { Alert } from "react-native";
+import { Auth, DataStore } from "aws-amplify";
+import { Usuario } from "../src/models";
 
 export const rojo = "#f01829";
 export const rojoClaro = "#f34856";
@@ -374,13 +376,37 @@ export const shadowMuyBaja = {
   elevation: 2,
 };
 
-export enum comoditiesEnum {
-  DJ = "DJ",
-  ALBERCA = "ALBERCA",
-  BARRALIBRE = "BARRA LIBRE",
-  COMIDA = "COMIDA",
-  SEGURIDAD = "SEGURIDAD",
-}
+export const getUserSub = async () => {
+  return (await Auth.currentAuthenticatedUser()
+    .then((user) => {
+      const sub = user?.attributes?.sub as string | undefined;
+
+      return sub;
+    })
+    .catch((e) => {
+      if (e !== "The user is not authenticated") {
+        console.log(e);
+      }
+    })) as string | undefined;
+};
+
+export const getBlob = async (uri: string | undefined) => {
+  if (!uri) return;
+  return (await fetch(uri))
+    .blob()
+    .then((response) => {
+      console.log(
+        JSON.parse(JSON.stringify(response))._data.size / 1000000,
+        "mb"
+      );
+      return response;
+    })
+    .catch((e) => {
+      console.log(e);
+      Alert.alert("Error", "Error obteniendo el blob");
+      return e;
+    });
+};
 
 export enum placeEnum {
   EXTERIOR = "EXTERIOR",
@@ -489,6 +515,28 @@ export function areListsEqual<T>(a: T[], b: T[]) {
   const biggest = a.length > b.length ? a : b;
   const smallest = a.length < b.length ? a : b;
   return biggest.map((e) => smallest.indexOf(e) >= 0).find((r) => !r) !== false;
+}
+
+export async function verifyUserLoggedIn() {
+  const sub = await getUserSub();
+
+  // Si ya esta loggeado entonces verificar que exista el usuario
+  if (!!sub) {
+    // Asignar al usuario el de Data
+    const usr = await DataStore.query(Usuario, sub);
+
+    if (!usr) {
+      Alert.alert(
+        "Error",
+        "Ocurrio un error: el sub existe pero no hay usuario en DB"
+      );
+      return true;
+    }
+    return true;
+  }
+
+  // Si no esta loggeado el usuario
+  return false;
 }
 
 /**
