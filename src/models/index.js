@@ -4,7 +4,8 @@ import { schema } from './schema';
 
 const PlaceEnum = {
   "EXTERIOR": "EXTERIOR",
-  "INTERIOR": "INTERIOR"
+  "INTERIOR": "INTERIOR",
+  "MIXTO": "MIXTO"
 };
 
 const MusicEnum = {
@@ -30,11 +31,12 @@ const ReservaCancelReason = {
   "CANCELADOPORCLIENTE": "CANCELADOPORCLIENTE"
 };
 
-const { Usuario, Evento, Reserva } = initSchema(schema);
+const { Usuario, Evento, Boleto, Reserva } = initSchema(schema);
 
 export {
   Usuario,
   Evento,
+  Boleto,
   Reserva,
   PlaceEnum,
   MusicEnum,

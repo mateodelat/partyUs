@@ -19,9 +19,11 @@ import PersonalDataStack from "./PersonalDataStack";
 import NombreApellido from "../screens/SolicitudOrganizador/DatosPersonales/NombreApellidos";
 import useUser from "../Hooks/useUser";
 import LoginStack from "./LoginStack";
+import { DataStore } from "aws-amplify";
+import { Usuario } from "../models";
 
 function NombreApellidosOnPress({ navigation }: any) {
-  const setUsuario = useUser().setUsuario;
+  const { setUsuario, usuario } = useUser();
 
   function handleContinuar({
     nombre,

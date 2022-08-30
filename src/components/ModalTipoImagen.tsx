@@ -1,5 +1,6 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   Pressable,
@@ -17,6 +18,7 @@ import {
 
 import { Feather } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 
@@ -26,7 +28,6 @@ export default function ({
 
   // Parametros opcionales
   video,
-  aventura,
 
   // Parametros para camara
   cameraEnabled,
@@ -38,7 +39,6 @@ export default function ({
 
   // Parametros opcionales
   video?: any;
-  aventura?: any;
 
   // Parametros para camara
   cameraEnabled?: any;
@@ -50,21 +50,14 @@ export default function ({
   const [modalType, setModalType] = useState("pick");
   const [linkImage, setLinkImage] = useState("");
 
+  const [randomLoading, setRandomLoading] = useState(false);
+
   useEffect(() => {
     setInnerModal(true);
   }, []);
 
   function handleLinkImage() {
     setModalType("inputUrl");
-  }
-
-  function handleBackgroundImage() {
-    const imagenFondo = aventura.imagenDetalle[aventura.imagenFondoIdx];
-    setImage({
-      uri: imagenFondo.uri,
-      key: imagenFondo.key,
-    });
-    handleCloseModal();
   }
 
   async function handleDeviceImage() {
@@ -100,6 +93,25 @@ export default function ({
     setImage(image);
   }
 
+  async function handleRandomImage() {
+    setRandomLoading(true);
+    await fetch("https://source.unsplash.com/random/900x500/?party")
+      .then((r) => {
+        setImage({
+          uri: r.url,
+          link: true,
+        });
+      })
+      .catch((e) => {
+        Alert.alert("Error", "Error obteniendo imagen, intenta otro metodo");
+        console.log(e);
+      })
+      .finally(() => {
+        setRandomLoading(false);
+        handleCloseModal();
+      });
+  }
+
   return (
     <View style={styles.container}>
       <Modal
@@ -116,9 +128,7 @@ export default function ({
             <Pressable onPress={handleCloseModal} style={{ flex: 1 }} />
             <View style={styles.innerContainer}>
               <View style={styles.header}>
-                <Text style={styles.title}>
-                  {video ? "Tipo del video" : "Tipo de la imagen"}
-                </Text>
+                <Text style={styles.title}>Tipo de la imagen</Text>
                 <Feather
                   onPress={handleCloseModal}
                   name="x"
@@ -127,15 +137,30 @@ export default function ({
                 />
               </View>
 
+              {/* Imagen random de fiesta */}
+              <Pressable onPress={handleRandomImage} style={styles.row}>
+                <View style={styles.icon}>
+                  {randomLoading ? (
+                    <ActivityIndicator size={"small"} color={"black"} />
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="dice-multiple-outline"
+                      size={25}
+                      color="black"
+                    />
+                  )}
+                </View>
+
+                <Text style={styles.subTitle}>Imagen aleatoria de fiesta</Text>
+              </Pressable>
+
               {/* Imagen desde camara */}
               {cameraEnabled && (
                 <Pressable onPress={handleCamera} style={styles.row}>
                   <View style={styles.icon}>
                     <Feather name="camera" size={24} color="black" />
                   </View>
-                  <Text style={styles.subTitle}>
-                    Tomar {video ? "video" : "foto"}
-                  </Text>
+                  <Text style={styles.subTitle}>Tomar foto</Text>
                 </Pressable>
               )}
 
@@ -158,21 +183,6 @@ export default function ({
                   Subir {video ? "video" : "imagen"} del dispositivo
                 </Text>
               </Pressable>
-
-              {/* Imagen de fondo de la aventura */}
-              {aventura && (
-                <Pressable onPress={handleBackgroundImage} style={styles.row}>
-                  <View style={styles.icon}>
-                    <FontAwesome5 name="mountain" size={20} color="black" />
-                  </View>
-
-                  <Text style={styles.subTitle}>
-                    {video
-                      ? "Video de la aventura"
-                      : "Imagen de fondo de la aventura"}
-                  </Text>
-                </Pressable>
-              )}
             </View>
           </>
         ) : (

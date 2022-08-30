@@ -44,6 +44,9 @@ export function formatMoney(num: number, hideCents?: boolean) {
   );
 }
 
+export const minEventPrice = 50;
+export const maxEventPrice = 8000;
+
 export const randomImageUri = () =>
   "https://picsum.photos/300/200?random=" + Math.floor(1000 * Math.random());
 
@@ -114,7 +117,14 @@ export const getBase64FromUrl = async (url: string) => {
  * @param toLower Pasar todo a minusculas
  * @returns Cadena sin acentos y en mayusculas
  */
-export function normalizeString(s: string, toLower?: boolean) {
+export function normalizeString(
+  s: string | null | undefined,
+  toLower?: boolean
+) {
+  if (!s) {
+    return "";
+  }
+
   return s
     .toUpperCase()
     .normalize("NFD")
@@ -408,21 +418,6 @@ export const getBlob = async (uri: string | undefined) => {
     });
 };
 
-export enum placeEnum {
-  EXTERIOR = "EXTERIOR",
-  INTERIOR = "INTERIOR",
-}
-
-export enum musicEnum {
-  REGGETON = "REGGETON",
-  POP = "POP",
-  TECNO = "TECNO",
-  RAP = "RAP",
-  BANDA = "BANDA",
-  ROCK = "ROCK",
-  OTRO = "OTRO",
-}
-
 export enum tipoDocumento {
   PASAPORTE = "PASAPORTE",
   INE = "INE",
@@ -504,6 +499,31 @@ export function mayusFirstLetter(string: string | undefined | null) {
   if (!string) return "";
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
+
+export const distancia2Puntos = function (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) {
+  // Grados a radianes
+  const rad = (x: number) => {
+    return (x * Math.PI) / 180;
+  };
+
+  var R = 6378.137; //Radio de la tierra en km
+  var dLat = rad(lat2 - lat1);
+  var dLong = rad(lon2 - lon1);
+  var a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(rad(lat1)) *
+      Math.cos(rad(lat2)) *
+      Math.sin(dLong / 2) *
+      Math.sin(dLong / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var d = R * c;
+  return d; //Retorna tres decimales
+};
 
 /**
  * Funcion que toma 2 listas y compara si todos los elementos de una existen en la otra
@@ -737,7 +757,7 @@ export async function googleMapsSearchPlace(place_id: string) {
   });
 }
 export const AsyncAlert = async (title: string, body: string) =>
-  new Promise((resolve, reject) => {
+  new Promise<boolean>((resolve, reject) => {
     Alert.alert(title, body, [
       {
         text: "CANCELAR",
@@ -753,6 +773,10 @@ export const AsyncAlert = async (title: string, body: string) =>
       },
     ]);
   }).catch((e) => e);
+
+export function precioConComision(inicial: number) {
+  return redondear(inicial * 1.15, 10, tipoRedondeo.ARRIBA);
+}
 
 export const getWeekDay = (d: Date | undefined) => {
   if (!d) return "";

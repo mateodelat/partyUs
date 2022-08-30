@@ -1,4 +1,11 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  NativeSyntheticEvent,
+  StyleSheet,
+  Text,
+  TextInput,
+  TextInputEndEditingEventData,
+  View,
+} from "react-native";
 import React, { Dispatch, SetStateAction } from "react";
 
 import { Feather } from "@expo/vector-icons";
@@ -6,9 +13,11 @@ import { Feather } from "@expo/vector-icons";
 export default function ({
   value,
   setValue,
+  onEndEditing,
 }: {
   value: string;
   setValue: Dispatch<SetStateAction<string>>;
+  onEndEditing: (e: string) => void;
 }) {
   return (
     <View
@@ -20,6 +29,9 @@ export default function ({
       <TextInput
         style={styles.textInput}
         value={value}
+        onEndEditing={({ nativeEvent: { text } }) => {
+          onEndEditing(text);
+        }}
         onChangeText={setValue}
         placeholderTextColor={"#bfbfbf"}
         placeholder={"Buscar"}

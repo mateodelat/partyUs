@@ -36,10 +36,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     navigation.replace("Login");
   }
 
-  function handleForget() {
-    console.log("Olvidada");
-  }
-
   const handleRegistrarse = async () => {
     if (nombre.length < 4) {
       clearError();
@@ -83,6 +79,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
             clearError();
             setErrorPassword("La contraseña no puede estar vacia");
             break;
+          case "An account with the given email already exists.":
           case "User already exists":
             clearError();
             setErrorEmail("La cuenta ya existe por favor inicia sesion");

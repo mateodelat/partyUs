@@ -16,8 +16,6 @@ export default function ({
   value,
   cambio,
 
-  onAdd,
-  onSubstract,
   onChangeValue,
 }: {
   value: number;

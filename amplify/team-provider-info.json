@@ -1,25 +1,29 @@
 {
-  "dev": {
+  "staging": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-partyus-dev-131336-authRole",
-      "UnauthRoleArn": "arn:aws:iam::832832547198:role/amplify-partyus-dev-131336-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::832832547198:role/amplify-partyus-dev-131336-authRole",
+      "AuthRoleName": "amplify-partyus-staging-204926-authRole",
+      "UnauthRoleArn": "arn:aws:iam::832832547198:role/amplify-partyus-staging-204926-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::832832547198:role/amplify-partyus-staging-204926-authRole",
       "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-partyus-dev-131336-deployment",
-      "UnauthRoleName": "amplify-partyus-dev-131336-unauthRole",
-      "StackName": "amplify-partyus-dev-131336",
-      "StackId": "arn:aws:cloudformation:us-east-1:832832547198:stack/amplify-partyus-dev-131336/b7008f80-ec0d-11ec-ac7d-126a09e165f9",
-      "AmplifyAppId": "dz6ljdw2l45rl"
+      "DeploymentBucketName": "amplify-partyus-staging-204926-deployment",
+      "UnauthRoleName": "amplify-partyus-staging-204926-unauthRole",
+      "StackName": "amplify-partyus-staging-204926",
+      "StackId": "arn:aws:cloudformation:us-east-1:832832547198:stack/amplify-partyus-staging-204926/e7d676c0-2712-11ed-afad-0a4675a43ea3",
+      "AmplifyAppId": "d2wgqt4140r1d2"
     },
     "categories": {
       "auth": {
-        "partyus50a47df9": {},
+        "partyus82cb367f": {},
         "true": {}
       },
       "function": {
-        "crearUsuario": {
-          "deploymentBucketName": "amplify-partyus-dev-131336-deployment",
-          "s3Key": "amplify-builds/crearUsuario-57716637715334777649-build.zip"
+        "postSignUpPARTYUS": {
+          "deploymentBucketName": "amplify-partyus-staging-204926-deployment",
+          "s3Key": "amplify-builds/postSignUpPARTYUS-4d322b2b686b6163434a-build.zip"
+        },
+        "partyuscapaPostSignUp": {
+          "deploymentBucketName": "amplify-partyus-staging-204926-deployment",
+          "s3Key": "amplify-builds/partyuscapaPostSignUp-LambdaLayerVersionda1d5a67-build.zip"
         }
       }
     }

@@ -10,7 +10,6 @@ import {
 } from "../../constants";
 import { Entypo } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-import { Evento } from "../models";
 
 const claros = "#00000055";
 
@@ -25,13 +24,7 @@ export default function ElementoEvento({
   handleMore?: (an: any) => void;
   handleLike?: (an: any) => void;
 }) {
-  const imagenPrincipal = data.imagenes
-    ?.map((e: any) => {
-      const n = e as { key: string; imagenPrincipal: boolean; uri: string };
-
-      return n;
-    })
-    .find((e) => e.imagenPrincipal);
+  const imagenPrincipal = data.imagenes[data.imagenPrincipalIDX] as any;
 
   const fecha = new Date(data.fechaInicial ? data.fechaInicial : "error");
 
@@ -54,7 +47,7 @@ export default function ElementoEvento({
             <Text style={styles.titulo}>
               {data.titulo ? data.titulo : "Evento"}
             </Text>
-            <Text style={styles.personTxt}>Mateo del t</Text>
+            <Text style={styles.personTxt}>{data.owner?.nickname}</Text>
           </View>
 
           {/* Botones favoritos y mas opciones */}
@@ -85,10 +78,8 @@ export default function ElementoEvento({
       </View>
       <View style={styles.infoContainer}>
         <View style={styles.infoItem}>
-          <Text style={styles.infoTitle}>
-            {data.numPersonas ? data.numPersonas : Infinity}
-          </Text>
-          <Text style={styles.infoDetails}>APUNTADOS</Text>
+          <Text style={styles.infoTitle}>{data.personasMax}</Text>
+          <Text style={styles.infoDetails}>CAPACIDAD</Text>
         </View>
         <View style={styles.verticalLine} />
         <View style={styles.infoItem}>

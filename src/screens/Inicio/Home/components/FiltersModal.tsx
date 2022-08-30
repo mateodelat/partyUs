@@ -11,10 +11,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
-  placeEnum,
   formatDay,
   msInDay,
-  musicEnum,
   redondear,
   rojoClaro,
   tipoRedondeo,
@@ -29,17 +27,17 @@ import { AntDesign } from "@expo/vector-icons";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Boton from "../../../../components/Boton";
-import { ComoditiesEnum } from "../../../../models";
+import { ComoditiesEnum, MusicEnum, PlaceEnum } from "../../../../models";
 
 export type filterResult = {
-  precioMin: number;
-  precioMax: number;
+  precioMin?: number;
+  precioMax?: number;
   dist?: number;
   fechaMin?: Date;
   fechaMax?: Date;
-  musica: musicEnum[];
+  musica: MusicEnum[];
   comodities: ComoditiesEnum[];
-  lugar: placeEnum[];
+  lugar: PlaceEnum[];
 };
 
 export default function ({
@@ -51,8 +49,8 @@ export default function ({
 
   prevFilters,
 }: {
-  maxPrice: number;
-  minPrice: number;
+  maxPrice?: number;
+  minPrice?: number;
   modalVisible: boolean;
 
   prevFilters: filterResult;
@@ -73,9 +71,9 @@ export default function ({
     lugar: prevLugar,
   } = prevFilters;
 
-  const musicList = enumToArray(musicEnum);
+  const musicList = enumToArray(MusicEnum);
   const comoditiesList = enumToArray(ComoditiesEnum);
-  const lugarList = enumToArray(placeEnum);
+  const lugarList = enumToArray(PlaceEnum);
 
   // Precio maximo redondeado al 50 mas alto
   const maximumValue = redondear(maxPrice, 50, tipoRedondeo.ARRIBA);
@@ -102,7 +100,7 @@ export default function ({
     !areListsEqual(prevLugar, lugarList)
   );
   const [showComodities, setShowComodities] = useState(
-    !areListsEqual(prevComodities, comoditiesList)
+    !areListsEqual(prevComodities, [])
   );
 
   // Variables del precio
@@ -182,13 +180,13 @@ export default function ({
 
     const mus = !resetAll && showAmbiente ? musica : musicList;
     const pl = !resetAll && showLugar ? lugar : lugarList;
-    const com = !resetAll && showComodities ? comodities : comoditiesList;
+    const com = !resetAll && showComodities ? comodities : [];
 
     if (resetAll) {
       // Reiniciar enums
       setMusica(mus);
       setLugar(pl);
-      setComodities(com);
+      setComodities([]);
 
       // Limpiar precio
       setPrecio([precioMin, precioMax]);
@@ -208,18 +206,19 @@ export default function ({
     }
 
     close && handleCloseModal();
-    handleSearch({
-      precioMin,
-      precioMax,
-      dist,
-      fechaMin,
-      fechaMax,
+    close &&
+      handleSearch({
+        precioMin,
+        precioMax,
+        dist,
+        fechaMin,
+        fechaMax,
 
-      // ENUMS
-      lugar: pl,
-      comodities: com,
-      musica: mus,
-    });
+        // ENUMS
+        lugar: pl,
+        comodities: com,
+        musica: mus,
+      });
   }
 
   const insets = useSafeAreaInsets();

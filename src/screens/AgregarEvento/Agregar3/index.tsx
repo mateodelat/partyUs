@@ -16,7 +16,9 @@ import {
   azulOscuro,
   comisionApp,
   formatMoney,
+  maxEventPrice,
   mayusFirstLetter,
+  minEventPrice,
   redondear,
   shadowMarcada,
 } from "../../../../constants";
@@ -34,6 +36,8 @@ import PlusMinus from "./PlusMinus";
 import useEvento from "../../../Hooks/useEvento";
 import Boton from "../../../components/Boton";
 import Line from "../../../components/Line";
+import { DataStore } from "aws-amplify";
+import { Boleto } from "../../../models";
 
 export type boletoType = {
   titulo: string;
@@ -63,7 +67,7 @@ export default function Agregar2({
 
   const { height } = Dimensions.get("window");
 
-  const [boletos, setBoletos] = useState<boletoType[]>(
+  const [boletos, setBoletos] = useState<any[]>(
     b
       ? b
       : [
@@ -163,6 +167,13 @@ export default function Agregar2({
     precioTotal += e.cantidad * e.precio;
   });
 
+  function handleInfoPagos() {
+    Alert.alert(
+      "",
+      "Por seguridad, el dinero de cada boleto comprado llega a tu cuenta hasta 7 dias despues de haber confirmado el pago"
+    );
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", minHeight: height }}>
       <HeaderAgregar step={3} />
@@ -253,6 +264,9 @@ export default function Agregar2({
                     value={boleto.precio}
                     cambio={50}
                     onChangeValue={(n) => {
+                      n = n < minEventPrice ? minEventPrice : n;
+                      n = n > maxEventPrice ? maxEventPrice : n;
+
                       let b = [...boletos];
                       b[index].precio = n;
 
@@ -281,61 +295,70 @@ export default function Agregar2({
       >
         {/* Detalle de precio al presionar */}
 
-        <ScrollView
-          style={{ maxHeight: 170 }}
-          showsVerticalScrollIndicator={false}
-        >
-          <TouchableOpacity
-            style={styles.footerTextContainer}
-            onPress={() => setPriceDetails(!priceDetails)}
-            activeOpacity={0.4}
+        <View>
+          <ScrollView
+            style={{ maxHeight: 170 }}
+            showsVerticalScrollIndicator={false}
           >
-            {!priceDetails && (
-              <Entypo
-                style={{ alignSelf: "center" }}
-                name="dots-three-horizontal"
-                size={24}
-                color="#777"
+            <TouchableOpacity
+              style={styles.footerTextContainer}
+              onPress={() => setPriceDetails(!priceDetails)}
+              activeOpacity={0.4}
+            >
+              {!priceDetails && (
+                <Entypo
+                  style={{ alignSelf: "center" }}
+                  name="dots-three-horizontal"
+                  size={24}
+                  color="#777"
+                />
+              )}
+
+              {/* Total evento lleno */}
+              {priceDetails && (
+                <>
+                  <View
+                    style={{
+                      marginBottom: 5,
+                    }}
+                  >
+                    {boletos.map((e, index) => {
+                      return (
+                        <TextMonney
+                          key={index}
+                          cantidad={e.cantidad * e.precio}
+                          titulo={
+                            (e.titulo ? e.titulo : "Tipo " + (index + 1)) +
+                            " (x " +
+                            e.cantidad +
+                            ")"
+                          }
+                        />
+                      );
+                    })}
+                  </View>
+                  {/* <TextMonney cantidad={comision} titulo={"Comisiones"} minus /> */}
+
+                  <Line />
+                </>
+              )}
+
+              {/* Total evento lleno */}
+              <TextMonney
+                bold
+                cantidad={precioTotal}
+                titulo={"Total evento lleno"}
               />
-            )}
-
-            {/* Total evento lleno */}
-            {priceDetails && (
-              <>
-                <View
-                  style={{
-                    marginBottom: 5,
-                  }}
-                >
-                  {boletos.map((e, index) => {
-                    return (
-                      <TextMonney
-                        key={index}
-                        cantidad={e.cantidad * e.precio}
-                        titulo={
-                          (e.titulo ? e.titulo : "Tipo " + (index + 1)) +
-                          " (x " +
-                          e.cantidad +
-                          ")"
-                        }
-                      />
-                    );
-                  })}
-                </View>
-                {/* <TextMonney cantidad={comision} titulo={"Comisiones"} minus /> */}
-
-                <Line />
-              </>
-            )}
-
-            {/* Total evento lleno */}
-            <TextMonney
-              bold
-              cantidad={precioTotal}
-              titulo={"Total evento lleno"}
-            />
-          </TouchableOpacity>
-        </ScrollView>
+            </TouchableOpacity>
+          </ScrollView>
+          <Text style={styles.infoTxt}>
+            El dinero se envia 7 dias despues de recibido
+            <Text onPress={handleInfoPagos} style={styles.masInfo}>
+              {" "}
+              mas info
+            </Text>
+          </Text>
+        </View>
 
         <Boton
           style={{ margin: 20 }}
@@ -441,5 +464,15 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 16,
     marginVertical: 2,
+  },
+
+  infoTxt: {
+    paddingHorizontal: 20,
+    paddingTop: 5,
+    textAlign: "center",
+  },
+
+  masInfo: {
+    color: azulClaro,
   },
 });

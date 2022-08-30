@@ -1,6 +1,6 @@
 import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React from "react";
-import { azulClaro, shadowBaja } from "../../../constants";
+import React, { useState } from "react";
+import { azulClaro, getBlob, shadowBaja } from "../../../constants";
 
 import { AntDesign } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -11,6 +11,8 @@ import { NavigationProp } from "../../shared/interfaces/navigation.interface";
 import HeaderSolicitud from "./components/HeaderSolicitud";
 import useUser from "../../Hooks/useUser";
 import Boton from "../../components/Boton";
+import { DataStore, Storage } from "aws-amplify";
+import { Usuario } from "../../models";
 
 export default function ({ navigation }: { navigation: NavigationProp }) {
   function handleDatosPersonales() {
@@ -26,6 +28,8 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
   const allowUpload = nombre && materno && paterno;
 
+  const [loading, setLoading] = useState(false);
+
   function handleIdentificacion() {
     // Ver si ya se tiene el curp generado para comprobar ID
 
@@ -38,13 +42,53 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
   const colorPruebaIdentidad = allowUpload ? azulClaro : azulClaro + "88";
 
-  function handleSaveInfo() {
-    console.log(usuario);
+  async function handleSaveInfo() {
+    try {
+      const { idData, fechaNacimiento } = usuario;
+
+      const key = "usr-" + usuario.id + "|id.jpg";
+
+      if (!idData) {
+        Alert.alert("Error", "Ha habido un error");
+        throw new Error(
+          "Error al guardar informacion del usuario pues no hay idData"
+        );
+      }
+      const uri = JSON.parse(idData).uri;
+      setLoading(true);
+
+      // Subir imagen de id
+      getBlob(uri).then((image) => {
+        Storage.put(key, image);
+      });
+
+      // Subir datos a datastore
+      await DataStore.query(Usuario, usuario.id).then((r) => {
+        if (!r) return;
+        return DataStore.save(
+          Usuario.copyOf(r, (ne) => {
+            ne.idUploaded = true;
+            ne.organizador = true;
+
+            ne.idKey = key;
+            ne.idData = idData;
+
+            ne.nombre = nombre;
+            ne.paterno = paterno;
+            ne.materno = materno;
+
+            ne.fechaNacimiento = fechaNacimiento;
+          })
+        ).then(setUsuario);
+      });
+    } catch (e) {
+      console.log(e);
+      Alert.alert("Error", "Hubo un error subiendo tus documentos");
+      throw new Error("Error subiendo documentos del usuario" + e);
+    }
+
+    setLoading(false);
     Alert.alert("Exito", "Ya puedes agregar eventos a Party Us!!");
-    setUsuario({
-      ...usuario,
-      organizador: true,
-    });
 
     navigation.pop();
   }
@@ -172,6 +216,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
         <Boton
           titulo="Guardar info"
           onPress={handleSaveInfo}
+          loading={loading}
           style={{ backgroundColor: azulClaro }}
         />
       )}

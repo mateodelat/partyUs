@@ -2,7 +2,8 @@ import { ModelInit, MutableModel, PersistentModelConstructor } from "@aws-amplif
 
 export enum PlaceEnum {
   EXTERIOR = "EXTERIOR",
-  INTERIOR = "INTERIOR"
+  INTERIOR = "INTERIOR",
+  MIXTO = "MIXTO"
 }
 
 export enum MusicEnum {
@@ -35,6 +36,10 @@ type UsuarioMetaData = {
 }
 
 type EventoMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
+type BoletoMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
@@ -73,24 +78,43 @@ export declare class Usuario {
 export declare class Evento {
   readonly id: string;
   readonly imagenes: string[];
+  readonly imagenPrincipalIDX: number;
   readonly titulo: string;
   readonly detalles?: string | null;
   readonly ubicacion: string;
   readonly fechaInicial: number;
   readonly fechaFinal: number;
-  readonly boletos: string[];
   readonly tosAceptance: string;
   readonly tipoLugar: PlaceEnum | keyof typeof PlaceEnum;
   readonly musica: MusicEnum | keyof typeof MusicEnum;
   readonly comodities?: ComoditiesEnum[] | keyof typeof ComoditiesEnum | null;
   readonly musOtra?: string | null;
+  readonly personasReservadas?: number | null;
+  readonly personasMax?: number | null;
+  readonly precioMin: number;
+  readonly precioMax: number;
   readonly CreatorID: string;
-  readonly Creator?: Usuario | null;
+  readonly Boletos?: Boleto[] | null;
   readonly Reservas?: Reserva[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Evento, EventoMetaData>);
   static copyOf(source: Evento, mutator: (draft: MutableModel<Evento, EventoMetaData>) => MutableModel<Evento, EventoMetaData> | void): Evento;
+}
+
+export declare class Boleto {
+  readonly id: string;
+  readonly titulo: string;
+  readonly descripcion?: string | null;
+  readonly cantidad: number;
+  readonly personasReservadas?: number | null;
+  readonly precio: number;
+  readonly eventoID: string;
+  readonly Reservas?: Reserva[] | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  constructor(init: ModelInit<Boleto, BoletoMetaData>);
+  static copyOf(source: Boleto, mutator: (draft: MutableModel<Boleto, BoletoMetaData>) => MutableModel<Boleto, BoletoMetaData> | void): Boleto;
 }
 
 export declare class Reserva {
@@ -110,6 +134,7 @@ export declare class Reserva {
   readonly cancelReason?: ReservaCancelReason | keyof typeof ReservaCancelReason | null;
   readonly eventoID: string;
   readonly usuarioID: string;
+  readonly boletoID: string;
   readonly organizadorID?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;

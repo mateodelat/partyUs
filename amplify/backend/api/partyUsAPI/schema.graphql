@@ -1,93 +1,88 @@
-input AMPLIFY {
-  globalAuthRule: AuthRule = { allow: public }
-} # FOR TESTING ONLY!
-###
-type Usuario @model {
+type Usuario @model @auth(rules: [{ allow: public }]) {
   id: ID!
-
   nickname: String!
   nombre: String
   materno: String
   paterno: String
-
   email: String!
   foto: String
   imagenFondo: String
-
   phoneNumber: String
   phoneCode: String
-
   organizador: Boolean
   admin: Boolean
-
   idUploaded: Boolean
   idData: AWSJSON
   idKey: String
-
   fechaNacimiento: String
-
   calificacion: Float
   numResenas: Int
-
   notificationToken: String
-
   Eventos: [Evento] @hasMany(indexName: "byUsuario", fields: ["id"])
   Reservas: [Reserva] @hasMany(indexName: "byUsuario", fields: ["id"])
 }
 
-type Evento @model {
+type Evento @model @auth(rules: [{ allow: public }]) {
   id: ID!
-
-  imagenes: [AWSJSON!]!
-
+  imagenes: [String!]!
+  imagenPrincipalIDX: Int!
   titulo: String!
   detalles: String
-
   ubicacion: AWSJSON!
   fechaInicial: AWSTimestamp!
   fechaFinal: AWSTimestamp!
-
-  boletos: [AWSJSON!]!
-
   tosAceptance: AWSJSON!
-
   tipoLugar: placeEnum!
   musica: musicEnum!
   comodities: [comoditiesEnum!]
-
   musOtra: String
 
-  CreatorID: ID! @index(name: "byUsuario")
-  Creator: Usuario @belongsTo
+  personasReservadas: Int
+  personasMax: Int
 
+  precioMin: Int!
+  precioMax: Int!
+
+  CreatorID: ID! @index(name: "byUsuario")
+
+  Boletos: [Boleto!] @hasMany(indexName: "byEvento", fields: ["id"])
   Reservas: [Reserva!] @hasMany(indexName: "byEvento", fields: ["id"])
 }
 
-type Reserva @model {
+type Boleto @model @auth(rules: [{ allow: public }]) {
   id: ID!
 
-  total: Float!
-  precioIndividual: Float!
-
-  comision: Float!
-  pagadoAlOrganizador: Float!
-
-  tituloBoleto: String!
-  descripcionBoleto: String
+  titulo: String!
+  descripcion: String
 
   cantidad: Int!
+  personasReservadas: Int
 
+  precio: Float!
+
+  eventoID: ID! @index(name: "byEvento")
+  Reservas: [Reserva!] @hasMany(indexName: "byBoleto", fields: ["id"])
+}
+
+type Reserva @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  total: Float!
+  precioIndividual: Float!
+  comision: Float!
+  pagadoAlOrganizador: Float!
+  tituloBoleto: String!
+  descripcionBoleto: String
+  cantidad: Int!
   pagoID: String
-
   ingreso: Boolean
   horaIngreso: AWSDateTime
-
   cancelado: Boolean
   canceledAt: AWSDateTime
   cancelReason: reservaCancelReason
 
   eventoID: ID! @index(name: "byEvento")
   usuarioID: ID! @index(name: "byUsuario")
+  boletoID: ID! @index(name: "byBoleto")
 
   organizadorID: ID
 }
@@ -100,6 +95,7 @@ enum reservaCancelReason {
 enum placeEnum {
   EXTERIOR
   INTERIOR
+  MIXTO
 }
 
 enum musicEnum {

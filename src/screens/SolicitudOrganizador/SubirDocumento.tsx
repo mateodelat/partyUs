@@ -16,6 +16,7 @@ import {
   callGoogleVisionAsync,
   tipoDocumento,
   matchWholeWord,
+  getBlob,
 } from "../../../constants";
 import HeaderSolicitud from "./components/HeaderSolicitud";
 
@@ -30,6 +31,8 @@ import useUser from "../../Hooks/useUser";
 import { textoAbajoPasaporte } from "./components/functions";
 import axios from "axios";
 import { idData } from "../../contexts/UserContext";
+import { DataStore, Storage } from "aws-amplify";
+import { Usuario } from "../../models";
 
 interface ruta extends Route {
   params: tipoDocumento;
@@ -53,11 +56,13 @@ export default function SubirDocumento({
 
   const tipoDoc = route.params;
 
-  const [estado, setEstado] = useState(estadoDocumento.INFOPRIMERAFOTO);
+  const [estado, setEstado] = useState(estadoDocumento.INFOPRIMERAFOTO + 1);
   const [scanningImage, setScanningImage] = useState(false);
   const [takenImage, setTakenImage] = useState<null | string>(null);
 
   const [dataToUpload, setDataToUpload] = useState<idData | undefined>();
+
+  const [loading, setLoading] = useState(false);
 
   function handleBack() {
     if (!estado) {
@@ -177,13 +182,14 @@ export default function SubirDocumento({
     setScanningImage(false);
   }
 
-  function handleDone() {
+  async function handleDone() {
     setUsuario({
       ...usuario,
       idUploaded: true,
-      idData: dataToUpload,
+      idData: JSON.stringify(dataToUpload),
     });
     navigation.pop(2);
+    setLoading(false);
   }
 
   async function handleTakePicture(props: CameraCapturedPicture) {
@@ -225,8 +231,8 @@ export default function SubirDocumento({
       >
         {/* Indicador del header */}
         <HeaderBarIndicator
-          step={estado}
-          totalSteps={lengthEstado - 2}
+          step={estado + 1}
+          totalSteps={lengthEstado / 2}
           style={{
             marginBottom: 20,
             paddingHorizontal: estado === estadoDocumento.PRIMERAFOTO ? 20 : 0,
@@ -296,7 +302,7 @@ export default function SubirDocumento({
                 position: "absolute",
                 bottom: 0,
               }}
-              loading={scanningImage}
+              loading={scanningImage || loading}
               titulo="Continuar"
               onPress={handleDone}
             />

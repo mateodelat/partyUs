@@ -14,6 +14,8 @@ import { useNavigation } from "@react-navigation/native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 import useUser from "../../../Hooks/useUser";
+import { DataStore } from "aws-amplify";
+import { Usuario } from "../../../models";
 
 export default function ({
   route,
@@ -30,6 +32,7 @@ export default function ({
   const setUsuario = useUser().setUsuario;
   const {
     usuario: { fechaNacimiento: fNac },
+    usuario,
   } = useUser();
 
   const nombre = route.params?.nombre;
@@ -37,7 +40,7 @@ export default function ({
 
   // Si ya tenemos fecha de nacimiento del usuario ponerla si no es indefinido
   const [fechaNacimiento, setFechaNacimiento] = useState<Date | undefined>(
-    fNac ? fNac : undefined
+    fNac ? new Date(fNac) : undefined
   );
   const [error, setError] = useState("");
 
@@ -47,7 +50,7 @@ export default function ({
     ? new Date(fechaNacimiento.getTime() + hours)
     : new Date();
 
-  function handleSaveInfo() {
+  async function handleSaveInfo() {
     if (!fechaNacimiento) {
       setError("Agrega tu fecha de nacimiento");
       return;
@@ -62,11 +65,13 @@ export default function ({
       const { materno, paterno, nombre } = route.params;
 
       setUsuario({
+        ...usuario,
         nombre,
         paterno,
         materno,
-        fechaNacimiento,
+        fechaNacimiento: fechaNacimiento.toString(),
       });
+
       navigation.navigate("SolicitudOrganizador");
     } else {
       setError("Debes ser mayor de 18 años para poder estar en partyus");

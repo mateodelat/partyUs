@@ -1,17 +1,19 @@
 /* Amplify Params - DO NOT EDIT
-	API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
-	API_PARTYUSAPI_GRAPHQLAPIIDOUTPUT
-	API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT
-	ENV
-	REGION
+  API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
+  API_PARTYUSAPI_GRAPHQLAPIIDOUTPUT
+  API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT
+  ENV
+  REGION
 Amplify Params - DO NOT EDIT */
 
-/**
- * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
- */
-const { request, GraphQLClient } = require("graphql-request");
 
-function generateProfilePicture(nombre: string) {
+const axios = require('axios');
+const { GraphQLClient } = require('graphql-request');
+
+
+
+
+function generateProfilePicture(nombre) {
   const listaColores = [
     "f34856",
     "273440",
@@ -33,28 +35,32 @@ function generateProfilePicture(nombre: string) {
 }
 
 async function generateBGIMG() {
-  return await fetch("https://source.unsplash.com/random/900x500/?party").then(
-    async (r) => {
-      const data = r.url;
+  return await axios
+    .get("https://source.unsplash.com/random/900x500/?party").then(
+      async (r) => {
+        const data = r.url;
+        console.log(data)
 
-      return data;
-    }
-  );
+        return data;
+      }
+    );
 }
 
 const crearUsr = `
-  mutation CreateUsuario(
-    $input: CreateUsuarioInput!
-  ) {
-    createUsuario(input: $input) {
-      id
+    mutation CreateUsuario(
+      $input: CreateUsuarioInput!
+    ) {
+      createUsuario(input: $input) {
+        id
+      }
     }
-  }
-`;
+  `;
 
-exports.handler = async (event: any) => {
+
+exports.handler = async (event, context, callback) => {
   const sub = event.userName;
   const attributes = event.request.userAttributes;
+
 
   const input = {
     id: sub,
@@ -80,10 +86,10 @@ exports.handler = async (event: any) => {
 
     client
       .request(crearUsr, { input })
-      .then((r: any) => {
+      .then((r) => {
         console.log("Resultado crear usuario: ", r);
       })
-      .catch((err: any) => {
+      .catch((err) => {
         console.log("Error creando usuario: ", err);
       });
 
@@ -103,4 +109,5 @@ exports.handler = async (event: any) => {
   } else {
     console.log("Error creando el usuario");
   }
-};
+}
+

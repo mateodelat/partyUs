@@ -1,6 +1,13 @@
 export type AmplifyDependentResourcesAttributes = {
+    "api": {
+        "partyUsAPI": {
+            "GraphQLAPIKeyOutput": "string",
+            "GraphQLAPIIdOutput": "string",
+            "GraphQLAPIEndpointOutput": "string"
+        }
+    },
     "auth": {
-        "partyus50a47df9": {
+        "partyus82cb367f": {
             "IdentityPoolId": "string",
             "IdentityPoolName": "string",
             "UserPoolId": "string",
@@ -10,25 +17,21 @@ export type AmplifyDependentResourcesAttributes = {
             "AppClientID": "string"
         }
     },
-    "api": {
-        "partyUsAPI": {
-            "GraphQLAPIKeyOutput": "string",
-            "GraphQLAPIIdOutput": "string",
-            "GraphQLAPIEndpointOutput": "string"
-        }
-    },
-    "storage": {
-        "s3811bb064": {
-            "BucketName": "string",
-            "Region": "string"
-        }
-    },
     "function": {
-        "crearUsuario": {
+        "postSignUpPARTYUS": {
             "Name": "string",
             "Arn": "string",
             "Region": "string",
             "LambdaExecutionRole": "string"
+        },
+        "partyuscapaPostSignUp": {
+            "Arn": "string"
+        }
+    },
+    "storage": {
+        "partyUsStorage": {
+            "BucketName": "string",
+            "Region": "string"
         }
     }
 }

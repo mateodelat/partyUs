@@ -27,17 +27,21 @@ export const getUsuario = /* GraphQL */ `
         items {
           id
           imagenes
+          imagenPrincipalIDX
           titulo
           detalles
           ubicacion
           fechaInicial
           fechaFinal
-          boletos
           tosAceptance
           tipoLugar
           musica
           comodities
           musOtra
+          personasReservadas
+          personasMax
+          precioMin
+          precioMax
           CreatorID
           createdAt
           updatedAt
@@ -66,6 +70,7 @@ export const getUsuario = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
+          boletoID
           organizadorID
           createdAt
           updatedAt
@@ -187,51 +192,39 @@ export const getEvento = /* GraphQL */ `
     getEvento(id: $id) {
       id
       imagenes
+      imagenPrincipalIDX
       titulo
       detalles
       ubicacion
       fechaInicial
       fechaFinal
-      boletos
       tosAceptance
       tipoLugar
       musica
       comodities
       musOtra
+      personasReservadas
+      personasMax
+      precioMin
+      precioMax
       CreatorID
-      Creator {
-        id
-        nickname
-        nombre
-        materno
-        paterno
-        email
-        foto
-        imagenFondo
-        phoneNumber
-        phoneCode
-        organizador
-        admin
-        idUploaded
-        idData
-        idKey
-        fechaNacimiento
-        calificacion
-        numResenas
-        notificationToken
-        Eventos {
-          nextToken
-          startedAt
+      Boletos {
+        items {
+          id
+          titulo
+          descripcion
+          cantidad
+          personasReservadas
+          precio
+          eventoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
         }
-        Reservas {
-          nextToken
-          startedAt
-        }
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
+        nextToken
+        startedAt
       }
       Reservas {
         items {
@@ -251,6 +244,7 @@ export const getEvento = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
+          boletoID
           organizadorID
           createdAt
           updatedAt
@@ -279,43 +273,25 @@ export const listEventos = /* GraphQL */ `
       items {
         id
         imagenes
+        imagenPrincipalIDX
         titulo
         detalles
         ubicacion
         fechaInicial
         fechaFinal
-        boletos
         tosAceptance
         tipoLugar
         musica
         comodities
         musOtra
+        personasReservadas
+        personasMax
+        precioMin
+        precioMax
         CreatorID
-        Creator {
-          id
-          nickname
-          nombre
-          materno
-          paterno
-          email
-          foto
-          imagenFondo
-          phoneNumber
-          phoneCode
-          organizador
-          admin
-          idUploaded
-          idData
-          idKey
-          fechaNacimiento
-          calificacion
-          numResenas
-          notificationToken
-          createdAt
-          updatedAt
-          _version
-          _deleted
-          _lastChangedAt
+        Boletos {
+          nextToken
+          startedAt
         }
         Reservas {
           nextToken
@@ -348,44 +324,139 @@ export const syncEventos = /* GraphQL */ `
       items {
         id
         imagenes
+        imagenPrincipalIDX
         titulo
         detalles
         ubicacion
         fechaInicial
         fechaFinal
-        boletos
         tosAceptance
         tipoLugar
         musica
         comodities
         musOtra
+        personasReservadas
+        personasMax
+        precioMin
+        precioMax
         CreatorID
-        Creator {
+        Boletos {
+          nextToken
+          startedAt
+        }
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getBoleto = /* GraphQL */ `
+  query GetBoleto($id: ID!) {
+    getBoleto(id: $id) {
+      id
+      titulo
+      descripcion
+      cantidad
+      personasReservadas
+      precio
+      eventoID
+      Reservas {
+        items {
           id
-          nickname
-          nombre
-          materno
-          paterno
-          email
-          foto
-          imagenFondo
-          phoneNumber
-          phoneCode
-          organizador
-          admin
-          idUploaded
-          idData
-          idKey
-          fechaNacimiento
-          calificacion
-          numResenas
-          notificationToken
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          boletoID
+          organizadorID
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
         }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const listBoletos = /* GraphQL */ `
+  query ListBoletos(
+    $filter: ModelBoletoFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listBoletos(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        titulo
+        descripcion
+        cantidad
+        personasReservadas
+        precio
+        eventoID
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncBoletos = /* GraphQL */ `
+  query SyncBoletos(
+    $filter: ModelBoletoFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncBoletos(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        titulo
+        descripcion
+        cantidad
+        personasReservadas
+        precio
+        eventoID
         Reservas {
           nextToken
           startedAt
@@ -420,6 +491,7 @@ export const getReserva = /* GraphQL */ `
       cancelReason
       eventoID
       usuarioID
+      boletoID
       organizadorID
       createdAt
       updatedAt
@@ -453,6 +525,7 @@ export const listReservas = /* GraphQL */ `
         cancelReason
         eventoID
         usuarioID
+        boletoID
         organizadorID
         createdAt
         updatedAt
@@ -495,6 +568,7 @@ export const syncReservas = /* GraphQL */ `
         cancelReason
         eventoID
         usuarioID
+        boletoID
         organizadorID
         createdAt
         updatedAt

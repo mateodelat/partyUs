@@ -187,7 +187,7 @@ export default function () {
     }
 
     // Actualizar estado
-    setEvento((prev) => {
+    setEvento((prev: any) => {
       return {
         ...prev,
         id: id,
@@ -261,6 +261,7 @@ export default function () {
           style={styles.inputContainer}
           titulo={"Titulo"}
           value={titulo}
+          maxLength={30}
           onChangeText={setTitulo}
         />
 

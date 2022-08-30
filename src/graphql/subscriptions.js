@@ -27,17 +27,21 @@ export const onCreateUsuario = /* GraphQL */ `
         items {
           id
           imagenes
+          imagenPrincipalIDX
           titulo
           detalles
           ubicacion
           fechaInicial
           fechaFinal
-          boletos
           tosAceptance
           tipoLugar
           musica
           comodities
           musOtra
+          personasReservadas
+          personasMax
+          precioMin
+          precioMax
           CreatorID
           createdAt
           updatedAt
@@ -66,6 +70,7 @@ export const onCreateUsuario = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
+          boletoID
           organizadorID
           createdAt
           updatedAt
@@ -110,17 +115,21 @@ export const onUpdateUsuario = /* GraphQL */ `
         items {
           id
           imagenes
+          imagenPrincipalIDX
           titulo
           detalles
           ubicacion
           fechaInicial
           fechaFinal
-          boletos
           tosAceptance
           tipoLugar
           musica
           comodities
           musOtra
+          personasReservadas
+          personasMax
+          precioMin
+          precioMax
           CreatorID
           createdAt
           updatedAt
@@ -149,6 +158,7 @@ export const onUpdateUsuario = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
+          boletoID
           organizadorID
           createdAt
           updatedAt
@@ -193,17 +203,21 @@ export const onDeleteUsuario = /* GraphQL */ `
         items {
           id
           imagenes
+          imagenPrincipalIDX
           titulo
           detalles
           ubicacion
           fechaInicial
           fechaFinal
-          boletos
           tosAceptance
           tipoLugar
           musica
           comodities
           musOtra
+          personasReservadas
+          personasMax
+          precioMin
+          precioMax
           CreatorID
           createdAt
           updatedAt
@@ -232,6 +246,7 @@ export const onDeleteUsuario = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
+          boletoID
           organizadorID
           createdAt
           updatedAt
@@ -255,51 +270,39 @@ export const onCreateEvento = /* GraphQL */ `
     onCreateEvento {
       id
       imagenes
+      imagenPrincipalIDX
       titulo
       detalles
       ubicacion
       fechaInicial
       fechaFinal
-      boletos
       tosAceptance
       tipoLugar
       musica
       comodities
       musOtra
+      personasReservadas
+      personasMax
+      precioMin
+      precioMax
       CreatorID
-      Creator {
-        id
-        nickname
-        nombre
-        materno
-        paterno
-        email
-        foto
-        imagenFondo
-        phoneNumber
-        phoneCode
-        organizador
-        admin
-        idUploaded
-        idData
-        idKey
-        fechaNacimiento
-        calificacion
-        numResenas
-        notificationToken
-        Eventos {
-          nextToken
-          startedAt
+      Boletos {
+        items {
+          id
+          titulo
+          descripcion
+          cantidad
+          personasReservadas
+          precio
+          eventoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
         }
-        Reservas {
-          nextToken
-          startedAt
-        }
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
+        nextToken
+        startedAt
       }
       Reservas {
         items {
@@ -319,6 +322,7 @@ export const onCreateEvento = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
+          boletoID
           organizadorID
           createdAt
           updatedAt
@@ -342,51 +346,39 @@ export const onUpdateEvento = /* GraphQL */ `
     onUpdateEvento {
       id
       imagenes
+      imagenPrincipalIDX
       titulo
       detalles
       ubicacion
       fechaInicial
       fechaFinal
-      boletos
       tosAceptance
       tipoLugar
       musica
       comodities
       musOtra
+      personasReservadas
+      personasMax
+      precioMin
+      precioMax
       CreatorID
-      Creator {
-        id
-        nickname
-        nombre
-        materno
-        paterno
-        email
-        foto
-        imagenFondo
-        phoneNumber
-        phoneCode
-        organizador
-        admin
-        idUploaded
-        idData
-        idKey
-        fechaNacimiento
-        calificacion
-        numResenas
-        notificationToken
-        Eventos {
-          nextToken
-          startedAt
+      Boletos {
+        items {
+          id
+          titulo
+          descripcion
+          cantidad
+          personasReservadas
+          precio
+          eventoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
         }
-        Reservas {
-          nextToken
-          startedAt
-        }
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
+        nextToken
+        startedAt
       }
       Reservas {
         items {
@@ -406,6 +398,7 @@ export const onUpdateEvento = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
+          boletoID
           organizadorID
           createdAt
           updatedAt
@@ -429,51 +422,39 @@ export const onDeleteEvento = /* GraphQL */ `
     onDeleteEvento {
       id
       imagenes
+      imagenPrincipalIDX
       titulo
       detalles
       ubicacion
       fechaInicial
       fechaFinal
-      boletos
       tosAceptance
       tipoLugar
       musica
       comodities
       musOtra
+      personasReservadas
+      personasMax
+      precioMin
+      precioMax
       CreatorID
-      Creator {
-        id
-        nickname
-        nombre
-        materno
-        paterno
-        email
-        foto
-        imagenFondo
-        phoneNumber
-        phoneCode
-        organizador
-        admin
-        idUploaded
-        idData
-        idKey
-        fechaNacimiento
-        calificacion
-        numResenas
-        notificationToken
-        Eventos {
-          nextToken
-          startedAt
+      Boletos {
+        items {
+          id
+          titulo
+          descripcion
+          cantidad
+          personasReservadas
+          precio
+          eventoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
         }
-        Reservas {
-          nextToken
-          startedAt
-        }
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
+        nextToken
+        startedAt
       }
       Reservas {
         items {
@@ -493,6 +474,148 @@ export const onDeleteEvento = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
+          boletoID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onCreateBoleto = /* GraphQL */ `
+  subscription OnCreateBoleto {
+    onCreateBoleto {
+      id
+      titulo
+      descripcion
+      cantidad
+      personasReservadas
+      precio
+      eventoID
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          boletoID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateBoleto = /* GraphQL */ `
+  subscription OnUpdateBoleto {
+    onUpdateBoleto {
+      id
+      titulo
+      descripcion
+      cantidad
+      personasReservadas
+      precio
+      eventoID
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          boletoID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteBoleto = /* GraphQL */ `
+  subscription OnDeleteBoleto {
+    onDeleteBoleto {
+      id
+      titulo
+      descripcion
+      cantidad
+      personasReservadas
+      precio
+      eventoID
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          boletoID
           organizadorID
           createdAt
           updatedAt
@@ -530,6 +653,7 @@ export const onCreateReserva = /* GraphQL */ `
       cancelReason
       eventoID
       usuarioID
+      boletoID
       organizadorID
       createdAt
       updatedAt
@@ -558,6 +682,7 @@ export const onUpdateReserva = /* GraphQL */ `
       cancelReason
       eventoID
       usuarioID
+      boletoID
       organizadorID
       createdAt
       updatedAt
@@ -586,6 +711,7 @@ export const onDeleteReserva = /* GraphQL */ `
       cancelReason
       eventoID
       usuarioID
+      boletoID
       organizadorID
       createdAt
       updatedAt

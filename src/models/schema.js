@@ -187,6 +187,22 @@ export const schema = {
                 {
                     "type": "model",
                     "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
                 }
             ]
         },
@@ -203,10 +219,17 @@ export const schema = {
                 "imagenes": {
                     "name": "imagenes",
                     "isArray": true,
-                    "type": "AWSJSON",
+                    "type": "String",
                     "isRequired": true,
                     "attributes": [],
                     "isArrayNullable": false
+                },
+                "imagenPrincipalIDX": {
+                    "name": "imagenPrincipalIDX",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": true,
+                    "attributes": []
                 },
                 "titulo": {
                     "name": "titulo",
@@ -242,14 +265,6 @@ export const schema = {
                     "type": "AWSTimestamp",
                     "isRequired": true,
                     "attributes": []
-                },
-                "boletos": {
-                    "name": "boletos",
-                    "isArray": true,
-                    "type": "AWSJSON",
-                    "isRequired": true,
-                    "attributes": [],
-                    "isArrayNullable": false
                 },
                 "tosAceptance": {
                     "name": "tosAceptance",
@@ -293,6 +308,34 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "personasReservadas": {
+                    "name": "personasReservadas",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "personasMax": {
+                    "name": "personasMax",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "precioMin": {
+                    "name": "precioMin",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "precioMax": {
+                    "name": "precioMax",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "CreatorID": {
                     "name": "CreatorID",
                     "isArray": false,
@@ -300,17 +343,18 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
-                "Creator": {
-                    "name": "Creator",
-                    "isArray": false,
+                "Boletos": {
+                    "name": "Boletos",
+                    "isArray": true,
                     "type": {
-                        "model": "Usuario"
+                        "model": "Boleto"
                     },
-                    "isRequired": false,
+                    "isRequired": true,
                     "attributes": [],
+                    "isArrayNullable": true,
                     "association": {
-                        "connectionType": "BELONGS_TO",
-                        "targetName": "usuarioEventosId"
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": "eventoID"
                     }
                 },
                 "Reservas": {
@@ -357,6 +401,139 @@ export const schema = {
                         "name": "byUsuario",
                         "fields": [
                             "CreatorID"
+                        ]
+                    }
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "Boleto": {
+            "name": "Boleto",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "titulo": {
+                    "name": "titulo",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "descripcion": {
+                    "name": "descripcion",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "cantidad": {
+                    "name": "cantidad",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "personasReservadas": {
+                    "name": "personasReservadas",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "precio": {
+                    "name": "precio",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "eventoID": {
+                    "name": "eventoID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "Reservas": {
+                    "name": "Reservas",
+                    "isArray": true,
+                    "type": {
+                        "model": "Reserva"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": "boletoID"
+                    }
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "Boletos",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byEvento",
+                        "fields": [
+                            "eventoID"
+                        ]
+                    }
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
                         ]
                     }
                 }
@@ -479,6 +656,13 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "boletoID": {
+                    "name": "boletoID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "organizadorID": {
                     "name": "organizadorID",
                     "isArray": false,
@@ -527,6 +711,31 @@ export const schema = {
                             "usuarioID"
                         ]
                     }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byBoleto",
+                        "fields": [
+                            "boletoID"
+                        ]
+                    }
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
                 }
             ]
         }
@@ -536,7 +745,8 @@ export const schema = {
             "name": "PlaceEnum",
             "values": [
                 "EXTERIOR",
-                "INTERIOR"
+                "INTERIOR",
+                "MIXTO"
             ]
         },
         "MusicEnum": {
@@ -570,5 +780,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "ec94925707c4a44350cf8eb0eee6303a"
+    "version": "fba76eb1515e0403d5e6bf89ef9166ae"
 };

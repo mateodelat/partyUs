@@ -11,14 +11,14 @@ import React, { useEffect, useState } from "react";
 import Boton from "../../components/Boton";
 
 import {
+  AsyncAlert,
   azulClaro,
   azulFondo,
   enumToArray,
   getBlob,
   getUserSub,
+  isUrl,
   mayusFirstLetter,
-  musicEnum,
-  placeEnum,
   vibrar,
   VibrationType,
 } from "../../../constants";
@@ -30,14 +30,22 @@ import InputOnFocus from "../../components/InputOnFocus";
 import useEvento from "../../Hooks/useEvento";
 import RadioButton from "../../components/RadioButton";
 import NetInfo from "@react-native-community/netinfo";
-import { DataStore, Storage } from "aws-amplify";
-import { ComoditiesEnum, Evento } from "../../models";
+import { API, DataStore, Storage } from "aws-amplify";
+import {
+  Boleto,
+  ComoditiesEnum,
+  Evento,
+  MusicEnum,
+  PlaceEnum,
+} from "../../models";
 import { ImagenesType } from "./Agregar1";
 import { boletoType } from "./Agregar3";
+import { Usuario } from "../../models";
+import { createEvento } from "../../graphql/mutations";
 
-const musicList = enumToArray(musicEnum);
+const musicList = enumToArray(MusicEnum);
 const comoditiesList = enumToArray(ComoditiesEnum);
-const lugarList = enumToArray(placeEnum);
+const lugarList = enumToArray(PlaceEnum);
 
 const { height } = Dimensions.get("window");
 export default function Agregar2({
@@ -45,11 +53,21 @@ export default function Agregar2({
 }: {
   navigation: NavigationProp;
 }) {
+  const { evento, setEvento } = useEvento();
+
   // Enums del tipo de evento
-  const [musica, setMusica] = useState<musicEnum>();
-  const [comodities, setComodities] = useState<ComoditiesEnum[]>([]);
-  const [lugar, setLugar] = useState<placeEnum>();
-  const [otraMusica, setOtraMusica] = useState("");
+  const [musica, setMusica] = useState<MusicEnum | undefined>(
+    evento.musica ? (evento.musica as MusicEnum) : undefined
+  );
+  const [comodities, setComodities] = useState<ComoditiesEnum[]>(
+    evento.comodities ? (evento.comodities as ComoditiesEnum[]) : []
+  );
+  const [lugar, setLugar] = useState<PlaceEnum | undefined>(
+    evento.tipoLugar ? (evento.tipoLugar as PlaceEnum) : undefined
+  );
+  const [otraMusica, setOtraMusica] = useState(
+    evento.musOtra ? evento.musOtra : ""
+  );
   const [loading, setLoading] = useState(false);
 
   const [aceptoTerminos, setAceptoTerminos] = useState<
@@ -58,7 +76,7 @@ export default function Agregar2({
         hora: Date;
       }
     | false
-  >(false);
+  >(evento.tosAceptance ? (evento.tosAceptance as any) : false);
 
   const [ip, setIp] = useState("");
   useEffect(() => {
@@ -66,8 +84,6 @@ export default function Agregar2({
       setIp(state?.details?.ipAddress);
     });
   });
-
-  const { evento }: { evento: any } = useEvento();
 
   async function handleGuardar() {
     // Verificaciones
@@ -93,7 +109,7 @@ export default function Agregar2({
     }
 
     let musOtra: undefined | string;
-    if (musica === musicEnum.OTRO) {
+    if (musica === MusicEnum.OTRO) {
       // Verificar que este otra musica
       if (otraMusica.length === 0) {
         Alert.alert("Error", "Agrega el otro tipo de musica");
@@ -101,6 +117,25 @@ export default function Agregar2({
       }
 
       musOtra = otraMusica;
+    }
+
+    setEvento({
+      ...evento,
+
+      tosAceptance: aceptoTerminos as any,
+      musOtra,
+      comodities,
+      tipoLugar: lugar,
+      musica,
+    });
+
+    if (
+      !(await AsyncAlert(
+        "Atencion",
+        "Una vez puesta la ubicacion y fecha no se puden cambiar."
+      ))
+    ) {
+      return;
     }
 
     // Verificacion final
@@ -118,64 +153,118 @@ export default function Agregar2({
       );
       return;
     }
-
     setLoading(true);
 
     try {
-      let imagenes: ImagenesType[] = [];
+      let imagenes: string[] = [];
       let count = 0;
+      let imagenPrincipalIDX: number = 0;
 
       // Subir fotos a S3 y crear el evento en la base de datos
       let promises: any = [];
 
-      evento.imagenes?.map((e: any) => {
-        delete e.uri;
-        if (!e.key) {
+      evento.imagenes?.map((e: any, idx: number) => {
+        let url: string;
+
+        if (!isUrl(e.uri)) {
           const key = "evento-" + evento.id + "|" + count + ".jpg";
           getBlob(e?.uri).then((r) => {
-            promises.push(Storage.put(key, r).then(console.log));
+            promises.push(Storage.put(key, r));
           });
-          e.key = key;
+          url = key;
+          count++;
+        } else {
+          url = e.uri;
         }
 
-        imagenes.push(e as any);
-        count++;
+        if (e.imagenPrincipal) {
+          imagenPrincipalIDX = idx;
+        }
+
+        imagenes.push(url);
       });
 
       // Esperar a que se resuelvan todas las promesas
       await Promise.all(promises);
 
-      DataStore.save(
-        new Evento({
-          ...evento,
-          titulo: evento.titulo ? evento.titulo : "",
+      const sub = await getUserSub();
+      if (!sub) {
+        Alert.alert("Error", "Usuario no autenticado");
+        throw new Error(
+          "No se encontro el sub del usuario al crear el evento (No esta autenticado)"
+        );
+      }
 
-          ubicacion: JSON.stringify(evento.ubicacion),
+      let personasMax = 0;
+      let precioMin: number = 0;
+      let precioMax: number = 0;
 
-          imagenes: imagenes.map((e) => JSON.stringify(e)),
-          boletos: evento.boletos?.map((e: boletoType) => JSON.stringify(e)),
+      evento.boletos.map((value: Boleto) => {
+        personasMax += value.cantidad;
+        precioMin = !precioMin
+          ? value.precio
+          : value.precio < precioMin
+          ? value.precio
+          : precioMin;
+        precioMax = !precioMax
+          ? value.precio
+          : value.precio > precioMax
+          ? value.precio
+          : precioMax;
 
-          fechaInicial: evento.fechaInicial.getTime(),
-          fechaFinal: evento?.fechaFinal?.getTime()
-            ? evento?.fechaFinal?.getTime()
-            : 0,
+        DataStore.save(
+          new Boleto({
+            cantidad: value.cantidad,
+            eventoID: evento.id,
+            precio: value.precio,
+            titulo: value.titulo,
+            descripcion: value.descripcion,
+          })
+        );
+      });
+      // Crear evento con id personalizado para coincidir con los boletos y manejar las imagenes con precision
+      const eventoAEnviar = {
+        id: evento.id,
+        titulo: evento.titulo ? evento.titulo : "",
 
-          musica,
-          musOtra,
-          tipoLugar: lugar,
-          comodities,
-          tosAceptance: JSON.stringify(aceptoTerminos),
+        ubicacion: JSON.stringify(evento.ubicacion),
 
-          CreatorID: "UsuarioID",
-        })
-      ).then(console.log);
-      navigation.popToTop();
+        imagenes,
+        imagenPrincipalIDX,
+
+        fechaInicial: (evento.fechaInicial as any).getTime(),
+        fechaFinal: (evento.fechaFinal as any).getTime()
+          ? (evento.fechaFinal as any).getTime()
+          : 0,
+
+        personasMax,
+
+        precioMin,
+        precioMax,
+
+        musica,
+        musOtra,
+        tipoLugar: lugar,
+        comodities,
+        tosAceptance: JSON.stringify(aceptoTerminos),
+
+        CreatorID: sub,
+      };
+      await API.graphql({
+        query: createEvento,
+        variables: { input: eventoAEnviar },
+      });
+
       navigation.navigate("Home");
+      navigation.popToTop();
     } catch (error) {
-      console.log(error);
-      Alert.alert("Error", "Sucedio un error creando el evento");
+      if (error) {
+        console.log(error);
+        Alert.alert("Error", "Sucedio un error creando el evento");
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   function handleAbrirTerminos() {
@@ -223,7 +312,7 @@ export default function Agregar2({
         </View>
 
         {/* Tipo otro */}
-        {musica === musicEnum.OTRO && (
+        {musica === MusicEnum.OTRO && (
           <InputOnFocus
             style={{ marginTop: 5, marginBottom: 5 }}
             textStyle={{

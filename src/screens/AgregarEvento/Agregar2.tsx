@@ -99,23 +99,16 @@ export default function Agregar2({
     if (!fechaInicial || !fechaFinal) {
       Alert.alert("Error", "Agrega las fechas de tu evento");
     } else {
-      await AsyncAlert(
-        "Atencion",
-        "Una vez puesta la ubicacion y fecha no se puden cambiar."
-      )
-        .then((r) => {
-          navigation.navigate("Agregar3");
+      navigation.navigate("Agregar3");
 
-          setEvento((prev) => {
-            return {
-              ...prev,
-              ubicacion,
-              fechaFinal,
-              fechaInicial,
-            };
-          });
-        })
-        .catch((e) => e);
+      setEvento((prev) => {
+        return {
+          ...prev,
+          ubicacion,
+          fechaFinal,
+          fechaInicial,
+        };
+      });
     }
   }
 

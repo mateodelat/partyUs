@@ -21,7 +21,7 @@ export default UserContext;
 
 export type idData = {
   uri: string;
-  key: string;
+  key?: string;
   detectedText: string;
   tipoDocumento: tipoDocumento;
   textoAbajoPasaporte?: null | TextoAbajoPasaporteType;

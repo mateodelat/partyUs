@@ -37,7 +37,7 @@ export default function ({
             position: "absolute",
             zIndex: 1,
           }}
-        ></Pressable>
+        />
       )}
 
       <TouchableOpacity

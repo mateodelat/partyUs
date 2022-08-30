@@ -11,12 +11,13 @@ import { SetStateAction, useEffect, useState } from "react";
 import Loading from "./src/components/Loading";
 import ContextProvider from "./src/contexts/ContextProvider";
 import Router from "./src/navigation/Router";
+import { Usuario } from "./src/models";
+import { Evento } from "./src/models";
 
 export default function App() {
   Amplify.configure(awsconfig);
-  const [authenticated, setAuthenticated] = useState(false);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   // const [cargandoModelos, setCargandoModelos] = useState(false);
 
   // const [currentUser, setCurrentUser]: [
@@ -40,47 +41,15 @@ export default function App() {
   // }
 
   useEffect(() => {
-    // // Ver si el usuario esta autenticado
-    // Auth.currentUserCredentials()
-    //   .then((user) => {
-    //     setLoading(false);
-    //     if (user.authenticated) {
-    //       start();
-    //       setAuthenticated(true);
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     setLoading(false);
-    //     console.log("Error getting credentials", err);
-    //   });
-
-    // // Escuchar a actualizaciones de auth
-    // Hub.listen("auth", (data) => {
-    //   const { event, message } = data.payload;
-
-    //   switch (event) {
-    //     case "signIn":
-    //       setCargandoModelos(true);
-    //       start();
-    //       setLoading(false);
-    //       setAuthenticated(true);
-    //       break;
-    //     case "signOut":
-    //       // Cancelar todas las notificaciones al celular
-    //       // cancelAllScheduledNotificationsAsync();
-    //       // Bugsnag.setUser("", "", "");
-    //       setLoading(false);
-    //       setAuthenticated(false);
-    //       break;
-
-    //     default:
-    //       break;
-    //   }
-    // });
+    DataStore.start();
 
     // Crear listener para cuando se acaben de obtener los modelos de datastore
     Hub.listen("datastore", async (hubData) => {
       const { event, data } = hubData.payload;
+
+      if (event === "ready") {
+        setLoading(false);
+      }
     });
 
     return () => {
@@ -90,10 +59,7 @@ export default function App() {
 
   if (loading) {
     return <Loading />;
-  }
-
-  // if (!authenticated) return <LoginStack />;
-  else {
+  } else {
     return (
       <ContextProvider>
         <Router />
