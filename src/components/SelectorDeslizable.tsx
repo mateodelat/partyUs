@@ -122,7 +122,7 @@ function IndicadorValor({
 
   return (
     <Animated.View style={{ ...styles.container, opacity, ...style }}>
-      <Animated.Text style={{ ...styles.text, opacity }}>
+      <Animated.Text style={{ ...styles.text, opacity }} numberOfLines={1}>
         {prefix ? prefix : ""}
         {value}
         {sufix ? sufix : ""}
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   container: {
     left: -15,
     padding: 4,
-    width: 50,
+    width: 55,
     backgroundColor: rojoClaro,
     alignItems: "center",
     justifyContent: "center",

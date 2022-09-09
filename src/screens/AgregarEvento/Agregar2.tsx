@@ -53,14 +53,14 @@ export default function Agregar2({
   hoy.setHours(20, 0, 0, 0);
 
   const [fechaInicial, setFechaInicial] = useState<Date | undefined>(
-    evento.fechaInicial
+    evento.fechaInicial ? new Date(evento.fechaInicial) : undefined
   );
   const [fechaFinal, setFechaFinal] = useState<Date | undefined>(
-    evento.fechaFinal
+    evento.fechaFinal ? new Date(evento.fechaFinal) : undefined
   );
 
   const [ubicacion, setUbicacion] = useState<locationType | undefined>(
-    evento.ubicacion
+    evento.ubicacion as any
   );
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -101,7 +101,7 @@ export default function Agregar2({
     } else {
       navigation.navigate("Agregar3");
 
-      setEvento((prev) => {
+      setEvento((prev: any) => {
         return {
           ...prev,
           ubicacion,

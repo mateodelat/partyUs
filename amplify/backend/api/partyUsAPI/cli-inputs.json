@@ -4,10 +4,8 @@
     "apiName": "partyUsAPI",
     "serviceName": "AppSync",
     "defaultAuthType": {
-      "mode": "API_KEY",
-      "expirationTime": 30,
-      "apiKeyExpirationDate": "2022-09-28T14:07:20.398Z",
-      "keyDescription": "api key description"
+      "mode": "AMAZON_COGNITO_USER_POOLS",
+      "cognitoUserPoolId": "authpartyus82cb367f"
     },
     "conflictResolution": {
       "defaultResolutionStrategy": {
@@ -16,11 +14,10 @@
     },
     "additionalAuthTypes": [
       {
-        "mode": "AMAZON_COGNITO_USER_POOLS",
-        "cognitoUserPoolId": "authpartyus82cb367f"
-      },
-      {
-        "mode": "AWS_IAM"
+        "mode": "API_KEY",
+        "expirationTime": 7,
+        "apiKeyExpirationDate": "2022-09-15T00:51:03.449Z",
+        "keyDescription": ""
       }
     ]
   }

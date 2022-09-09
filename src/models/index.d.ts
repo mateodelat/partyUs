@@ -1,4 +1,4 @@
-import { ModelInit, MutableModel, PersistentModelConstructor } from "@aws-amplify/datastore";
+import { ModelInit, MutableModel } from "@aws-amplify/datastore";
 
 export enum PlaceEnum {
   EXTERIOR = "EXTERIOR",
@@ -29,8 +29,6 @@ export enum ReservaCancelReason {
   CANCELADOPORCLIENTE = "CANCELADOPORCLIENTE"
 }
 
-
-
 type UsuarioMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
@@ -47,13 +45,17 @@ type ReservaMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type CuponMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 export declare class Usuario {
   readonly id: string;
-  readonly nickname: string;
+  readonly nickname?: string | null;
   readonly nombre?: string | null;
   readonly materno?: string | null;
   readonly paterno?: string | null;
-  readonly email: string;
+  readonly email?: string | null;
   readonly foto?: string | null;
   readonly imagenFondo?: string | null;
   readonly phoneNumber?: string | null;
@@ -67,6 +69,7 @@ export declare class Usuario {
   readonly calificacion?: number | null;
   readonly numResenas?: number | null;
   readonly notificationToken?: string | null;
+  readonly verified?: boolean | null;
   readonly Eventos?: (Evento | null)[] | null;
   readonly Reservas?: (Reserva | null)[] | null;
   readonly createdAt?: string | null;
@@ -95,7 +98,7 @@ export declare class Evento {
   readonly precioMax: number;
   readonly CreatorID: string;
   readonly Boletos?: Boleto[] | null;
-  readonly Reservas?: Reserva[] | null;
+  readonly Reservas?: (Reserva | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Evento, EventoMetaData>);
@@ -110,7 +113,7 @@ export declare class Boleto {
   readonly personasReservadas?: number | null;
   readonly precio: number;
   readonly eventoID: string;
-  readonly Reservas?: Reserva[] | null;
+  readonly Reservas?: (Reserva | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Boleto, BoletoMetaData>);
@@ -135,9 +138,23 @@ export declare class Reserva {
   readonly eventoID: string;
   readonly usuarioID: string;
   readonly boletoID: string;
+  readonly cuponID: string;
   readonly organizadorID?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Reserva, ReservaMetaData>);
   static copyOf(source: Reserva, mutator: (draft: MutableModel<Reserva, ReservaMetaData>) => MutableModel<Reserva, ReservaMetaData> | void): Reserva;
+}
+
+export declare class Cupon {
+  readonly id: string;
+  readonly restantes: number;
+  readonly vencimiento: number;
+  readonly porcentajeDescuento?: number | null;
+  readonly cantidadDescuento?: number | null;
+  readonly Reservas?: Reserva[] | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  constructor(init: ModelInit<Cupon, CuponMetaData>);
+  static copyOf(source: Cupon, mutator: (draft: MutableModel<Cupon, CuponMetaData>) => MutableModel<Cupon, CuponMetaData> | void): Cupon;
 }

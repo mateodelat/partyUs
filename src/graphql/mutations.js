@@ -1,97 +1,6 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const createUsuario = /* GraphQL */ `
-  mutation CreateUsuario(
-    $input: CreateUsuarioInput!
-    $condition: ModelUsuarioConditionInput
-  ) {
-    createUsuario(input: $input, condition: $condition) {
-      id
-      nickname
-      nombre
-      materno
-      paterno
-      email
-      foto
-      imagenFondo
-      phoneNumber
-      phoneCode
-      organizador
-      admin
-      idUploaded
-      idData
-      idKey
-      fechaNacimiento
-      calificacion
-      numResenas
-      notificationToken
-      Eventos {
-        items {
-          id
-          imagenes
-          imagenPrincipalIDX
-          titulo
-          detalles
-          ubicacion
-          fechaInicial
-          fechaFinal
-          tosAceptance
-          tipoLugar
-          musica
-          comodities
-          musOtra
-          personasReservadas
-          personasMax
-          precioMin
-          precioMax
-          CreatorID
-          createdAt
-          updatedAt
-          _version
-          _deleted
-          _lastChangedAt
-        }
-        nextToken
-        startedAt
-      }
-      Reservas {
-        items {
-          id
-          total
-          precioIndividual
-          comision
-          pagadoAlOrganizador
-          tituloBoleto
-          descripcionBoleto
-          cantidad
-          pagoID
-          ingreso
-          horaIngreso
-          cancelado
-          canceledAt
-          cancelReason
-          eventoID
-          usuarioID
-          boletoID
-          organizadorID
-          createdAt
-          updatedAt
-          _version
-          _deleted
-          _lastChangedAt
-        }
-        nextToken
-        startedAt
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-    }
-  }
-`;
 export const updateUsuario = /* GraphQL */ `
   mutation UpdateUsuario(
     $input: UpdateUsuarioInput!
@@ -117,6 +26,7 @@ export const updateUsuario = /* GraphQL */ `
       calificacion
       numResenas
       notificationToken
+      verified
       Eventos {
         items {
           id
@@ -142,6 +52,7 @@ export const updateUsuario = /* GraphQL */ `
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -165,12 +76,14 @@ export const updateUsuario = /* GraphQL */ `
           eventoID
           usuarioID
           boletoID
+          cuponID
           organizadorID
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -180,6 +93,7 @@ export const updateUsuario = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      owner
     }
   }
 `;
@@ -208,6 +122,7 @@ export const deleteUsuario = /* GraphQL */ `
       calificacion
       numResenas
       notificationToken
+      verified
       Eventos {
         items {
           id
@@ -233,6 +148,7 @@ export const deleteUsuario = /* GraphQL */ `
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -256,12 +172,14 @@ export const deleteUsuario = /* GraphQL */ `
           eventoID
           usuarioID
           boletoID
+          cuponID
           organizadorID
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -271,6 +189,7 @@ export const deleteUsuario = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      owner
     }
   }
 `;
@@ -312,6 +231,7 @@ export const createEvento = /* GraphQL */ `
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -335,12 +255,14 @@ export const createEvento = /* GraphQL */ `
           eventoID
           usuarioID
           boletoID
+          cuponID
           organizadorID
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -350,6 +272,7 @@ export const createEvento = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      owner
     }
   }
 `;
@@ -391,6 +314,7 @@ export const updateEvento = /* GraphQL */ `
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -414,12 +338,14 @@ export const updateEvento = /* GraphQL */ `
           eventoID
           usuarioID
           boletoID
+          cuponID
           organizadorID
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -429,6 +355,7 @@ export const updateEvento = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      owner
     }
   }
 `;
@@ -470,6 +397,7 @@ export const deleteEvento = /* GraphQL */ `
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -493,12 +421,14 @@ export const deleteEvento = /* GraphQL */ `
           eventoID
           usuarioID
           boletoID
+          cuponID
           organizadorID
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -508,6 +438,7 @@ export const deleteEvento = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      owner
     }
   }
 `;
@@ -543,12 +474,14 @@ export const createBoleto = /* GraphQL */ `
           eventoID
           usuarioID
           boletoID
+          cuponID
           organizadorID
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -558,6 +491,7 @@ export const createBoleto = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      owner
     }
   }
 `;
@@ -593,12 +527,14 @@ export const updateBoleto = /* GraphQL */ `
           eventoID
           usuarioID
           boletoID
+          cuponID
           organizadorID
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -608,6 +544,7 @@ export const updateBoleto = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      owner
     }
   }
 `;
@@ -643,12 +580,165 @@ export const deleteBoleto = /* GraphQL */ `
           eventoID
           usuarioID
           boletoID
+          cuponID
           organizadorID
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
+          owner
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      owner
+    }
+  }
+`;
+export const createCupon = /* GraphQL */ `
+  mutation CreateCupon(
+    $input: CreateCuponInput!
+    $condition: ModelCuponConditionInput
+  ) {
+    createCupon(input: $input, condition: $condition) {
+      id
+      restantes
+      vencimiento
+      porcentajeDescuento
+      cantidadDescuento
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          boletoID
+          cuponID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          owner
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const updateCupon = /* GraphQL */ `
+  mutation UpdateCupon(
+    $input: UpdateCuponInput!
+    $condition: ModelCuponConditionInput
+  ) {
+    updateCupon(input: $input, condition: $condition) {
+      id
+      restantes
+      vencimiento
+      porcentajeDescuento
+      cantidadDescuento
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          boletoID
+          cuponID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          owner
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const deleteCupon = /* GraphQL */ `
+  mutation DeleteCupon(
+    $input: DeleteCuponInput!
+    $condition: ModelCuponConditionInput
+  ) {
+    deleteCupon(input: $input, condition: $condition) {
+      id
+      restantes
+      vencimiento
+      porcentajeDescuento
+      cantidadDescuento
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          boletoID
+          cuponID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          owner
         }
         nextToken
         startedAt
@@ -684,12 +774,14 @@ export const createReserva = /* GraphQL */ `
       eventoID
       usuarioID
       boletoID
+      cuponID
       organizadorID
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      owner
     }
   }
 `;
@@ -716,12 +808,14 @@ export const updateReserva = /* GraphQL */ `
       eventoID
       usuarioID
       boletoID
+      cuponID
       organizadorID
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      owner
     }
   }
 `;
@@ -748,12 +842,110 @@ export const deleteReserva = /* GraphQL */ `
       eventoID
       usuarioID
       boletoID
+      cuponID
       organizadorID
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      owner
+    }
+  }
+`;
+export const createUsuario = /* GraphQL */ `
+  mutation CreateUsuario(
+    $input: CreateUsuarioInput!
+    $condition: ModelUsuarioConditionInput
+  ) {
+    createUsuario(input: $input, condition: $condition) {
+      id
+      nickname
+      nombre
+      materno
+      paterno
+      email
+      foto
+      imagenFondo
+      phoneNumber
+      phoneCode
+      organizador
+      admin
+      idUploaded
+      idData
+      idKey
+      fechaNacimiento
+      calificacion
+      numResenas
+      notificationToken
+      verified
+      Eventos {
+        items {
+          id
+          imagenes
+          imagenPrincipalIDX
+          titulo
+          detalles
+          ubicacion
+          fechaInicial
+          fechaFinal
+          tosAceptance
+          tipoLugar
+          musica
+          comodities
+          musOtra
+          personasReservadas
+          personasMax
+          precioMin
+          precioMax
+          CreatorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          owner
+        }
+        nextToken
+        startedAt
+      }
+      Reservas {
+        items {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          tituloBoleto
+          descripcionBoleto
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          boletoID
+          cuponID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          owner
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      owner
     }
   }
 `;

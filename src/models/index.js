@@ -31,13 +31,14 @@ const ReservaCancelReason = {
   "CANCELADOPORCLIENTE": "CANCELADOPORCLIENTE"
 };
 
-const { Usuario, Evento, Boleto, Reserva } = initSchema(schema);
+const { Usuario, Evento, Boleto, Reserva, Cupon } = initSchema(schema);
 
 export {
   Usuario,
   Evento,
   Boleto,
   Reserva,
+  Cupon,
   PlaceEnum,
   MusicEnum,
   ComoditiesEnum,

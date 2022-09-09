@@ -1,11 +1,30 @@
-import { Animated, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Animated,
+  ColorValue,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import React from "react";
 import Logo from "./Logo";
 
-export default function () {
+export default function ({
+  indicator,
+  color,
+}: {
+  indicator?: boolean;
+  color?: ColorValue;
+}) {
+  color = color ? color : "#000";
+
   return (
     <View style={styles.container}>
-      <Logo size={200} />
+      {indicator ? (
+        <ActivityIndicator size={"large"} color={color} />
+      ) : (
+        <Logo size={200} />
+      )}
 
       {/* Bolita animada */}
       {/* <Animated.View

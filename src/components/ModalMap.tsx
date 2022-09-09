@@ -51,17 +51,22 @@ export default ({
   setModalVisible,
   modalVisible,
   handleSelectPlace,
+
+  titulo,
 }: {
-  handleSelectPlace: (p: locationType) => any;
+  handleSelectPlace?: (p: locationType) => any;
   selectedPlace?: locationType;
   style?: ViewStyle;
 
   setModalVisible: Dispatch<SetStateAction<boolean>>;
   modalVisible: boolean;
+
+  titulo?: string;
 }) => {
   const map = useRef<any>(null);
 
-  const [region, setRegion] = useState<Region>(selectedPlace as Region);
+  const [region, setRegion] = useState(selectedPlace as Region);
+  const [actualRegion, setActualRegion] = useState(selectedPlace as Region);
 
   // Variables del buscador
   const [buscar, setBuscar] = useState<string>();
@@ -71,54 +76,57 @@ export default ({
 
   const [locationPermision, setLocationPermision] = useState<boolean>();
 
-  // Checar si la ubicacion esta activada
+  // Checar si la ubicacion esta activada solo si se activa el modal
   useEffect(() => {
-    verificarUbicacion().then(async (r) => {
-      // Si no hay permisos de ubicacion
-      setLocationPermision(r);
+    modalVisible &&
+      verificarUbicacion().then(async (r) => {
+        // Si no hay permisos de ubicacion
+        setLocationPermision(r);
 
-      let latitude, longitude;
-      let coords;
+        let latitude, longitude;
+        let coords;
 
-      // Si tenemos permisos de la ubicacion se detectan
-      if (r) {
-        coords = (await getLastKnownPositionAsync())?.coords;
-      }
+        // Si tenemos permisos de la ubicacion se detectan
+        if (r) {
+          coords = (await getLastKnownPositionAsync())?.coords;
+        }
 
-      latitude = coords?.latitude;
-      longitude = coords?.longitude;
-      if (!latitude || !longitude) {
-        console.log("No hay latitud o longitud");
-        return;
-      }
+        latitude = coords?.latitude;
+        longitude = coords?.longitude;
+        if (!latitude || !longitude) {
+          console.log("No hay latitud o longitud");
+          return;
+        }
 
-      if (selectedPlace) {
-        const region = {
-          latitude: selectedPlace.latitude,
-          longitude: selectedPlace.longitude,
-          latitudeDelta: selectedPlace.latitudeDelta
-            ? selectedPlace.latitudeDelta
-            : 1,
-          longitudeDelta: selectedPlace.longitudeDelta
-            ? selectedPlace.longitudeDelta
-            : 1,
+        if (selectedPlace) {
+          const region = {
+            latitude: selectedPlace.latitude,
+            longitude: selectedPlace.longitude,
+            latitudeDelta: selectedPlace.latitudeDelta
+              ? selectedPlace.latitudeDelta
+              : 1,
+            longitudeDelta: selectedPlace.longitudeDelta
+              ? selectedPlace.longitudeDelta
+              : 1,
+          };
+          setRegion(region);
+          setActualRegion(region);
+
+          return;
+        }
+
+        const location = {
+          latitude,
+          longitude,
+          latitudeDelta: 2,
+          longitudeDelta: 2,
         };
+        const region = coords || latitude ? location : defaultLocation;
+
         setRegion(region);
-
-        return;
-      }
-
-      const location = {
-        latitude,
-        longitude,
-        latitudeDelta: 2,
-        longitudeDelta: 2,
-      };
-      const region = coords || latitude ? location : defaultLocation;
-
-      setRegion(region);
-    });
-  }, []);
+        setActualRegion(region);
+      });
+  }, [modalVisible]);
 
   const handlePressPlace = async (
     coordinate: Region,
@@ -128,13 +136,13 @@ export default ({
     if (!coordinate.latitudeDelta) {
       coordinate = {
         ...coordinate,
-        latitudeDelta: region.latitudeDelta,
+        latitudeDelta: actualRegion.latitudeDelta,
       };
     }
     if (!coordinate.longitudeDelta) {
       coordinate = {
         ...coordinate,
-        longitudeDelta: region.longitudeDelta,
+        longitudeDelta: actualRegion.longitudeDelta,
       };
     }
 
@@ -203,7 +211,7 @@ export default ({
   };
 
   function guardarLugar(pl: locationType) {
-    handleSelectPlace(pl);
+    handleSelectPlace ? handleSelectPlace(pl) : null;
     setModalVisible(false);
   }
 
@@ -264,7 +272,12 @@ export default ({
   }
 
   return (
-    <Modal visible={modalVisible} onRequestClose={handleCancel}>
+    <Modal
+      transparent={false}
+      animationType={"none"}
+      visible={modalVisible}
+      onRequestClose={handleCancel}
+    >
       <Pressable
         onPress={() => {
           Keyboard.dismiss();
@@ -281,7 +294,9 @@ export default ({
             paddingTop: 5,
           }}
         >
-          <Text style={styles.titleModal}>Selecciona la ubicacion</Text>
+          <Text style={styles.titleModal}>
+            {handleSelectPlace ? "Selecciona la ubicacion" : titulo}
+          </Text>
           <Feather
             style={styles.backIcon}
             name="x"
@@ -291,112 +306,118 @@ export default ({
           />
         </View>
 
-        <View
-          style={{
-            padding: 20,
-            paddingVertical: 0,
-          }}
-        >
+        {/* Buscador */}
+        {handleSelectPlace && (
           <View
             style={{
-              ...styles.buscarContainer,
-              borderBottomRightRadius: !!buscar ? 0 : 7,
-              borderBottomLeftRadius: !!buscar ? 0 : 7,
+              padding: 20,
+              paddingVertical: 0,
             }}
           >
-            <Feather
-              name="search"
-              size={25}
-              color="#7E7F84"
+            <View
               style={{
-                marginRight: 5,
-                position: "absolute",
-                bottom: 10,
-                left: 10,
+                ...styles.buscarContainer,
+                borderBottomRightRadius: !!buscar ? 0 : 7,
+                borderBottomLeftRadius: !!buscar ? 0 : 7,
               }}
-            />
-            <TextInput
-              style={{
-                flex: 1,
-                marginLeft: 35,
-              }}
-              value={buscar}
-              placeholder="Buscar lugar"
-              onChangeText={handleSearchPlace}
-            />
-            {!!buscar && (
+            >
               <Feather
-                onPress={clearSugested}
-                name="x"
+                name="search"
                 size={25}
                 color="#7E7F84"
                 style={{
                   marginRight: 5,
                   position: "absolute",
                   bottom: 10,
-                  right: 10,
+                  left: 10,
                 }}
               />
-            )}
-          </View>
-          {!!buscar &&
-            buscar?.length !== 0 &&
-            (suggestedPlace.length !== 0 ? (
-              <View style={[styles.sugestionsContainer]}>
-                <View style={styles.line} />
-
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  {suggestedPlace.map((e: any, i) => {
-                    const titulo = e.structured_formatting?.main_text;
-                    const descripcion = e.structured_formatting?.secondary_text;
-                    return (
-                      <Pressable
-                        onPress={() => handlePressSuggested(e)}
-                        key={i.toString()}
-                        style={styles.suggestedPlace}
-                      >
-                        <Entypo
-                          style={styles.icon}
-                          name="location-pin"
-                          size={30}
-                          color={azulClaro}
-                        />
-
-                        <Text numberOfLines={2} style={styles.tituloSugested}>
-                          {titulo}{" "}
-                          <Text style={styles.descripcionSugested}>
-                            {descripcion}
-                          </Text>
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-              </View>
-            ) : (
-              <View style={[styles.sugestionsContainer]}>
-                <View style={styles.line} />
-                <View
+              <TextInput
+                style={{
+                  flex: 1,
+                  marginLeft: 35,
+                }}
+                value={buscar}
+                placeholder="Buscar lugar"
+                onChangeText={handleSearchPlace}
+              />
+              {!!buscar && (
+                <Feather
+                  onPress={clearSugested}
+                  name="x"
+                  size={25}
+                  color="#7E7F84"
                   style={{
-                    ...styles.suggestedPlace,
-                    flex: 1,
+                    marginRight: 5,
+                    position: "absolute",
+                    bottom: 10,
+                    right: 10,
                   }}
-                >
-                  <Text
-                    numberOfLines={2}
+                />
+              )}
+            </View>
+            {!!buscar &&
+              buscar?.length !== 0 &&
+              (suggestedPlace.length !== 0 ? (
+                <View style={[styles.sugestionsContainer]}>
+                  <View style={styles.line} />
+
+                  <ScrollView showsVerticalScrollIndicator={false}>
+                    {suggestedPlace.map((e: any, i) => {
+                      const titulo = e.structured_formatting?.main_text;
+                      const descripcion =
+                        e.structured_formatting?.secondary_text;
+                      return (
+                        <Pressable
+                          onPress={() => handlePressSuggested(e)}
+                          key={i.toString()}
+                          style={styles.suggestedPlace}
+                        >
+                          <Entypo
+                            style={styles.icon}
+                            name="location-pin"
+                            size={30}
+                            color={azulClaro}
+                          />
+
+                          <Text numberOfLines={2} style={styles.tituloSugested}>
+                            {titulo}{" "}
+                            <Text style={styles.descripcionSugested}>
+                              {descripcion}
+                            </Text>
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              ) : (
+                <View style={[styles.sugestionsContainer]}>
+                  <View style={styles.line} />
+                  <View
                     style={{
-                      ...styles.tituloSugested,
-                      textAlign: "center",
+                      ...styles.suggestedPlace,
+                      flex: 1,
                     }}
                   >
-                    No se han encontrado lugares
-                  </Text>
+                    <Text
+                      numberOfLines={2}
+                      style={{
+                        ...styles.tituloSugested,
+                        textAlign: "center",
+                      }}
+                    >
+                      No se han encontrado lugares
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            ))}
-        </View>
+              ))}
+          </View>
+        )}
 
-        <View style={{ margin: 20, flex: 1, marginTop: 0 }}>
+        <View
+          style={{ margin: handleSelectPlace ? 20 : 10, flex: 1, marginTop: 0 }}
+        >
           <View style={styles.mapContainer}>
             {locationPermision !== undefined ? (
               <MapView
@@ -406,32 +427,45 @@ export default ({
                 showsUserLocation={locationPermision}
                 loadingEnabled={true}
                 onTouchStart={clearSugested}
-                onPress={({ nativeEvent }) => {
-                  const { coordinate } = nativeEvent as any;
-                  handlePressPlace(coordinate);
-                }}
-                onLongPress={({ nativeEvent }) => {
-                  const { coordinate } = nativeEvent as any;
-                  handlePressPlace(coordinate);
-                }}
+                onPress={
+                  handleSelectPlace
+                    ? ({ nativeEvent }) => {
+                        const { coordinate } = nativeEvent as any;
+                        handlePressPlace(coordinate);
+                      }
+                    : () => null
+                }
+                onLongPress={
+                  handleSelectPlace
+                    ? ({ nativeEvent }) => {
+                        const { coordinate } = nativeEvent as any;
+                        handlePressPlace(coordinate);
+                      }
+                    : () => null
+                }
                 region={region}
-                onPoiClick={({ nativeEvent }) => {
-                  const { coordinate, placeId, name } = nativeEvent as any;
-                  handlePressPlace(coordinate, placeId, name);
-                }}
+                onPoiClick={
+                  handleSelectPlace
+                    ? ({ nativeEvent }) => {
+                        const { coordinate, placeId, name } =
+                          nativeEvent as any;
+                        handlePressPlace(coordinate, placeId, name);
+                      }
+                    : () => null
+                }
                 style={{
                   ...StyleSheet.absoluteFillObject,
                 }}
-                onRegionChangeComplete={setRegion}
+                onRegionChangeComplete={setActualRegion}
               >
                 {/* Marcador */}
                 {place && <Marker coordinate={place} />}
               </MapView>
             ) : (
-              <Loading />
+              <Loading indicator color={"blue"} />
             )}
           </View>
-          {place?.ubicacionNombre && (
+          {place?.ubicacionNombre && handleSelectPlace && (
             <View style={styles.locationTxtContainer}>
               <TouchableOpacity onPress={() => guardarLugar(place)}>
                 <Text numberOfLines={2} style={styles.locationTxt}>
@@ -455,6 +489,8 @@ const styles = StyleSheet.create({
   titleModal: {
     fontSize: 18,
     color: azulClaro,
+
+    top: 5,
   },
 
   backIcon: {

@@ -19,8 +19,9 @@ import PersonalDataStack from "./PersonalDataStack";
 import NombreApellido from "../screens/SolicitudOrganizador/DatosPersonales/NombreApellidos";
 import useUser from "../Hooks/useUser";
 import LoginStack from "./LoginStack";
-import { DataStore } from "aws-amplify";
-import { Usuario } from "../models";
+
+import Boletos from "../screens/Inicio/Boletos";
+import Pagar from "../screens/Inicio/Pagar";
 
 function NombreApellidosOnPress({ navigation }: any) {
   const { setUsuario, usuario } = useUser();
@@ -53,7 +54,7 @@ export default function () {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        // initialRouteName="AgregarEventoStack"
+        initialRouteName="Boletos"
         screenOptions={{
           header: ({
             route: { name },
@@ -75,6 +76,13 @@ export default function () {
         <Stack.Screen
           name="DetalleEvento"
           component={DetalleEvento}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Boletos"
+          component={Boletos}
           options={{
             headerShown: false,
           }}
@@ -105,6 +113,13 @@ export default function () {
           component={Notifications}
           options={{
             title: "Notificaciones",
+          }}
+        />
+        <Stack.Screen
+          name="Pagar"
+          component={Pagar}
+          options={{
+            headerShown: false,
           }}
         />
         <Stack.Screen

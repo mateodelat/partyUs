@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -28,6 +29,7 @@ import { AntDesign } from "@expo/vector-icons";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Boton from "../../../../components/Boton";
 import { ComoditiesEnum, MusicEnum, PlaceEnum } from "../../../../models";
+import Switch from "../../../../components/Switch";
 
 export type filterResult = {
   precioMin?: number;
@@ -38,6 +40,8 @@ export type filterResult = {
   musica: MusicEnum[];
   comodities: ComoditiesEnum[];
   lugar: PlaceEnum[];
+
+  verified: boolean;
 };
 
 export default function ({
@@ -69,6 +73,8 @@ export default function ({
     musica: prevAmbiente,
     comodities: prevComodities,
     lugar: prevLugar,
+
+    verified: prevVerified,
   } = prevFilters;
 
   const musicList = enumToArray(MusicEnum);
@@ -103,6 +109,9 @@ export default function ({
     !areListsEqual(prevComodities, [])
   );
 
+  // Switch de
+  const [verified, setVerified] = useState(prevVerified ? prevVerified : false);
+
   // Variables del precio
   const [precio, setPrecio] = useState([
     prevPrecioMin ? prevPrecioMin : minimumValue,
@@ -133,6 +142,7 @@ export default function ({
   }
 
   function openDatePicker(type: dateType) {
+    Alert.alert("Bruno se la come");
     setFechaInicial(type === dateType.INICIAL);
     setIsDatePickerVisible(true);
   }
@@ -218,6 +228,8 @@ export default function ({
         lugar: pl,
         comodities: com,
         musica: mus,
+
+        verified,
       });
   }
 
@@ -234,6 +246,7 @@ export default function ({
         <Modal
           animationType="slide"
           transparent={true}
+          style={{ backgroundColor: "#fff" }}
           visible={innerModal}
           onRequestClose={handleCloseModal}
         >
@@ -251,8 +264,9 @@ export default function ({
             <View style={styles.line} />
           </Pressable>
 
-          <View>
+          <View style={{ backgroundColor: "#fff " }}>
             <ScrollView
+              scrollToOverflowEnabled={true}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{
                 backgroundColor: "#fff",
@@ -285,7 +299,7 @@ export default function ({
               </View>
 
               {/* Por distancia a mi ubicacion (manejar permisos de ubicacion) */}
-              <View style={styles.filterContainer}>
+              <View>
                 {/* Titulo */}
                 <Text style={styles.tituloFiltro}>Radio de distancia</Text>
                 <Text style={styles.valorFiltro}>
@@ -308,6 +322,13 @@ export default function ({
                   placeholderStyle={{ width: 55, left: -17 }}
                 />
               </View>
+
+              <Switch
+                style={styles.filterContainer}
+                text="Solo eventos verificados"
+                enabled={verified}
+                setEnabled={setVerified}
+              />
 
               {/* Por fecha (Rango de fechas)*/}
               <View style={styles.filterContainer}>

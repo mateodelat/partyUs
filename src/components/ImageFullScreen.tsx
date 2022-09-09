@@ -11,6 +11,7 @@ import ImageViewer from "react-native-image-zoom-viewer";
 
 import { Entypo } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
 // Funcion para ver las imagenes en pantalla completa
 const ImageFullScreen = ({
@@ -38,9 +39,9 @@ const ImageFullScreen = ({
       style={{
         height,
         backgroundColor: "#000",
-        paddingTop: insets.top,
       }}
     >
+      <StatusBar hideTransitionAnimation="none" hidden={true} />
       <ImageViewer
         index={initialImageIdx}
         renderHeader={() => <Fragment />}

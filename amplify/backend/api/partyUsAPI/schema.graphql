@@ -1,10 +1,18 @@
-type Usuario @model @auth(rules: [{ allow: public }]) {
+type Usuario
+  @model
+  @auth(
+    rules: [
+      { allow: owner }
+      { allow: public, provider: apiKey, operations: [create, read] }
+      { allow: private, operations: [create, read] }
+    ]
+  ) {
   id: ID!
-  nickname: String!
+  nickname: String
   nombre: String
   materno: String
   paterno: String
-  email: String!
+  email: String
   foto: String
   imagenFondo: String
   phoneNumber: String
@@ -18,11 +26,27 @@ type Usuario @model @auth(rules: [{ allow: public }]) {
   calificacion: Float
   numResenas: Int
   notificationToken: String
+
+  verified: Boolean
+
   Eventos: [Evento] @hasMany(indexName: "byUsuario", fields: ["id"])
   Reservas: [Reserva] @hasMany(indexName: "byUsuario", fields: ["id"])
 }
 
-type Evento @model @auth(rules: [{ allow: public }]) {
+type Evento
+  @model
+  @auth(
+    rules: [
+      { allow: owner }
+      {
+        allow: groups
+        groups: ["Admin"]
+        operations: [read, create, update, delete]
+      }
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: private, operations: [read] }
+    ]
+  ) {
   id: ID!
   imagenes: [String!]!
   imagenPrincipalIDX: Int!
@@ -46,10 +70,18 @@ type Evento @model @auth(rules: [{ allow: public }]) {
   CreatorID: ID! @index(name: "byUsuario")
 
   Boletos: [Boleto!] @hasMany(indexName: "byEvento", fields: ["id"])
-  Reservas: [Reserva!] @hasMany(indexName: "byEvento", fields: ["id"])
+  Reservas: [Reserva] @hasMany(indexName: "byEvento", fields: ["id"])
 }
 
-type Boleto @model @auth(rules: [{ allow: public }]) {
+type Boleto
+  @model
+  @auth(
+    rules: [
+      { allow: owner }
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: private, operations: [read] }
+    ]
+  ) {
   id: ID!
 
   titulo: String!
@@ -61,10 +93,45 @@ type Boleto @model @auth(rules: [{ allow: public }]) {
   precio: Float!
 
   eventoID: ID! @index(name: "byEvento")
-  Reservas: [Reserva!] @hasMany(indexName: "byBoleto", fields: ["id"])
+  Reservas: [Reserva] @hasMany(indexName: "byBoleto", fields: ["id"])
 }
 
-type Reserva @model @auth(rules: [{ allow: public }]) {
+type Cupon
+  @model
+  @auth(
+    rules: [
+      {
+        allow: groups
+        groups: ["Admin"]
+        operations: [read, create, update, delete]
+      }
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: private, operations: [read] }
+    ]
+  ) {
+  # ID en mayusuculas
+  id: ID!
+
+  restantes: Int!
+  vencimiento: AWSTimestamp!
+
+  # Numero menor a 1
+  porcentajeDescuento: Float
+
+  cantidadDescuento: Float
+
+  Reservas: [Reserva!] @hasMany(indexName: "byCupon", fields: ["id"])
+}
+
+type Reserva
+  @model
+  @auth(
+    rules: [
+      { allow: owner }
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: private, operations: [read] }
+    ]
+  ) {
   id: ID!
   total: Float!
   precioIndividual: Float!
@@ -83,6 +150,7 @@ type Reserva @model @auth(rules: [{ allow: public }]) {
   eventoID: ID! @index(name: "byEvento")
   usuarioID: ID! @index(name: "byUsuario")
   boletoID: ID! @index(name: "byBoleto")
+  cuponID: ID! @index(name: "byCupon")
 
   organizadorID: ID
 }

@@ -2,6 +2,7 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { EventoType } from "../screens/Inicio/Home";
 import {
+  azulClaro,
   colorFondo,
   formatAMPM,
   mayusFirstLetter,
@@ -9,20 +10,18 @@ import {
   shadowMedia,
 } from "../../constants";
 import { Entypo } from "@expo/vector-icons";
-import { AntDesign } from "@expo/vector-icons";
+import { Octicons } from "@expo/vector-icons";
 
 const claros = "#00000055";
 
 export default function ElementoEvento({
   data,
   onPress,
-  handleLike,
   handleMore,
 }: {
   data: EventoType;
   onPress: (an: any) => void;
   handleMore?: (an: any) => void;
-  handleLike?: (an: any) => void;
 }) {
   const imagenPrincipal = data.imagenes[data.imagenPrincipalIDX] as any;
 
@@ -52,7 +51,7 @@ export default function ElementoEvento({
 
           {/* Botones favoritos y mas opciones */}
           <View>
-            {handleMore && (
+            {handleMore ? (
               <Entypo
                 style={{
                   padding: 10,
@@ -61,17 +60,10 @@ export default function ElementoEvento({
                 size={20}
                 color={"#000"}
               />
-            )}
-            {handleLike && (
-              <AntDesign
-                onPress={handleLike}
-                style={{
-                  padding: 10,
-                }}
-                name={("heart" + (data.favoritos ? "" : "o")) as "heart"}
-                size={20}
-                color={"#000"}
-              />
+            ) : (
+              data.owner?.verified && (
+                <Octicons name="verified" size={24} color={azulClaro} />
+              )
             )}
           </View>
         </View>

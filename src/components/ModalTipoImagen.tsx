@@ -95,7 +95,7 @@ export default function ({
 
   async function handleRandomImage() {
     setRandomLoading(true);
-    await fetch("https://source.unsplash.com/random/900x500/?party")
+    await fetch("https://source.unsplash.com/random/1100x800/?party")
       .then((r) => {
         setImage({
           uri: r.url,

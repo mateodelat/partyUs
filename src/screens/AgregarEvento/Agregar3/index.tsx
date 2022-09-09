@@ -14,10 +14,8 @@ import {
   azulClaro,
   azulFondo,
   azulOscuro,
-  comisionApp,
   formatMoney,
   maxEventPrice,
-  mayusFirstLetter,
   minEventPrice,
   redondear,
   shadowMarcada,
@@ -38,13 +36,6 @@ import Boton from "../../../components/Boton";
 import Line from "../../../components/Line";
 import { DataStore } from "aws-amplify";
 import { Boleto } from "../../../models";
-
-export type boletoType = {
-  titulo: string;
-  descripcion: string;
-  precio: number;
-  cantidad: number;
-};
 
 export default function Agregar2({
   route,
@@ -169,8 +160,8 @@ export default function Agregar2({
 
   function handleInfoPagos() {
     Alert.alert(
-      "",
-      "Por seguridad, el dinero de cada boleto comprado llega a tu cuenta hasta 7 dias despues de haber confirmado el pago"
+      "Envio de fondos",
+      "Por contrato con la empresa de pagos, el dinero puede tardar hasta 5 dias en llegar a tu cuenta bancaria al pagarlo con pagos con OXXO"
     );
   }
 
@@ -223,6 +214,7 @@ export default function Agregar2({
                   <InputOnFocus
                     color={azulClaro}
                     style={{ flex: 1 }}
+                    maxLength={20}
                     textStyle={{ ...styles.inputStyle, borderBottomWidth: 0.5 }}
                     value={boleto.titulo}
                     numberOfLines={1}
@@ -337,7 +329,6 @@ export default function Agregar2({
                       );
                     })}
                   </View>
-                  {/* <TextMonney cantidad={comision} titulo={"Comisiones"} minus /> */}
 
                   <Line />
                 </>
@@ -352,7 +343,7 @@ export default function Agregar2({
             </TouchableOpacity>
           </ScrollView>
           <Text style={styles.infoTxt}>
-            El dinero se envia 7 dias despues de recibido
+            El dinero tarda de 3 a 5 dias en aparecer en tu cuenta
             <Text onPress={handleInfoPagos} style={styles.masInfo}>
               {" "}
               mas info

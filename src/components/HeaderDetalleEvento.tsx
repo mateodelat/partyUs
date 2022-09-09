@@ -20,6 +20,8 @@ export default ({
   handleBack,
   IconRight,
   IconLeft,
+
+  paddingTop,
 }: {
   scrollY: Animated.Value;
   height?: number;
@@ -27,6 +29,8 @@ export default ({
   handleBack?: (a: any) => void;
   IconRight?: any;
   IconLeft?: any;
+
+  paddingTop: number;
 }) => {
   height = height ? height : Dimensions.get("window").height;
 
@@ -44,7 +48,6 @@ export default ({
     outputRange: [0, 1],
   });
 
-  const insets = useSafeAreaInsets();
   return (
     <View style={styles.container}>
       {/* Header con animaciones de fondo y titulo */}
@@ -55,15 +58,15 @@ export default ({
           backgroundColor: rojoClaro,
           opacity: opacityBackground,
           width: "100%",
-          height: insets.top ? 55 + insets.top : "100%",
+          height: paddingTop + 55,
         }}
       />
 
       <View
         style={{
           ...styles.rowJustify,
-          marginTop: insets.top,
-          paddingTop: insets.top ? 0 : 10,
+          marginTop: paddingTop,
+          paddingTop: paddingTop ? 0 : 10,
         }}
       >
         {/* Texto animado cuando se pasa la imagen */}
@@ -73,9 +76,9 @@ export default ({
             ...styles.title,
             position: "absolute",
             width: "100%",
-            alignSelf: "center",
             left: 10,
             opacity: opacity,
+            bottom: 18,
           }}
         >
           {titulo}

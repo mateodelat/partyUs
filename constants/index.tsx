@@ -4,7 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 
 import { Alert } from "react-native";
-import { Auth, DataStore } from "aws-amplify";
+import { Auth, DataStore, Storage } from "aws-amplify";
 import { Usuario } from "../src/models";
 
 export const rojo = "#f01829";
@@ -26,14 +26,18 @@ export const msInHour = 3600000;
 export const msInMinute = 60000;
 export const msInDay = 86400000;
 
-export function isUrl(str: string) {
+export function isUrl(str: string | null | undefined) {
+  if (!str) {
+    return false;
+  }
+
   var regexp =
     /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
   return regexp.test(str);
 }
 export const mapPlacesKey = "AIzaSyAMO0bWIDnoKqunvXjCJ65qgZdb5FBtf_s";
 
-export function formatMoney(num: number, hideCents?: boolean) {
+export function formatMoney(num?: number | null, hideCents?: boolean) {
   if (!num) {
     num = 0;
   }
@@ -92,6 +96,57 @@ export async function callGoogleVisionAsync(
   const detectedText: string = result.responses[0].fullTextAnnotation.text;
   return detectedText ? JSON.stringify(detectedText) : "No hay texto";
 }
+
+export const formatDateShort = (msInicial: number, msFinal: number) => {
+  const dateInicial = new Date(msInicial);
+
+  var ddInicial = String(dateInicial.getDate());
+  var mmInicial = String(dateInicial.getMonth());
+
+  if (msFinal) {
+    const dateFinal = new Date(msFinal);
+
+    var ddFinal = String(dateFinal.getDate());
+    var mmFinal = String(dateFinal.getMonth());
+
+    // Si es de un solo dia se regresa un numero
+    if (ddFinal === ddInicial && mmInicial === mmFinal) {
+      return ddInicial + " " + meses[mmInicial as any];
+    }
+
+    // Si los meses son iguales se pone sin 2 veces un mes
+    if (mmInicial === mmInicial) {
+      return ddInicial + " - " + ddFinal + " " + meses[mmInicial as any];
+    } else {
+      return (
+        ddInicial +
+        " " +
+        meses[mmInicial as any] +
+        " - " +
+        ddFinal +
+        " " +
+        meses[mmFinal as any]
+      );
+    }
+  } else {
+    return ddInicial + " " + meses[mmInicial as any];
+  }
+};
+
+export const meses = [
+  "ene",
+  "feb",
+  "mar",
+  "abr",
+  "may",
+  "jun",
+  "jul",
+  "ago",
+  "sep",
+  "oct",
+  "nov",
+  "dic",
+];
 
 export const getBase64FromUrl = async (url: string) => {
   function blobToBase64(blob: Blob) {
@@ -400,6 +455,19 @@ export const getUserSub = async () => {
     })) as string | undefined;
 };
 
+let numberOfFetchs = 0;
+export async function getImageUrl(data?: string | null) {
+  if (data && !isUrl(data)) {
+    numberOfFetchs += 1;
+    // console.log({
+    //   "fetchN°": numberOfFetchs,
+    //   data
+    // })
+  }
+
+  return data ? (isUrl(data) ? data : await Storage.get(data)) : null;
+}
+
 export const getBlob = async (uri: string | undefined) => {
   if (!uri) return;
   return (await fetch(uri))
@@ -423,7 +491,7 @@ export enum tipoDocumento {
   INE = "INE",
 }
 
-export const vibrar = (tipo: VibrationType) => {
+export const vibrar = (tipo?: VibrationType) => {
   switch (tipo) {
     case "light":
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -471,7 +539,9 @@ export enum VibrationType {
  * @returns T[...tipo]
  */
 export function enumToArray<T>(enumme: T) {
-  return Object.keys(enumme).map((name) => enumme[name as keyof typeof enumme]);
+  return Object.keys(enumme as any).map(
+    (name) => enumme[name as keyof typeof enumme]
+  );
 }
 
 export function formatAMPM(

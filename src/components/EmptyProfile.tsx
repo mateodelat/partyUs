@@ -4,10 +4,16 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { azulClaro } from "../../constants";
 
-export default function EmptyProfile() {
+export default function EmptyProfile({ size }: { size?: number }) {
+  size = size ? size : 42;
   return (
-    <View style={styles.container}>
-      <Ionicons name="person" size={35} color="#333" style={styles.icon} />
+    <View style={{ ...styles.container, width: size }}>
+      <Ionicons
+        name="person"
+        size={size - 7}
+        color="#333"
+        style={styles.icon}
+      />
     </View>
   );
 }
@@ -15,7 +21,8 @@ export default function EmptyProfile() {
 const styles = StyleSheet.create({
   container: {
     width: 42,
-    height: 42,
+
+    aspectRatio: 1,
 
     borderRadius: 40,
     borderWidth: 2,

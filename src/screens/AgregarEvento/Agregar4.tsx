@@ -38,9 +38,7 @@ import {
   MusicEnum,
   PlaceEnum,
 } from "../../models";
-import { ImagenesType } from "./Agregar1";
-import { boletoType } from "./Agregar3";
-import { Usuario } from "../../models";
+
 import { createEvento } from "../../graphql/mutations";
 
 const musicList = enumToArray(MusicEnum);
@@ -153,6 +151,9 @@ export default function Agregar2({
       );
       return;
     }
+    console.log(evento);
+    return;
+
     setLoading(true);
 
     try {
@@ -241,6 +242,8 @@ export default function Agregar2({
 
         precioMin,
         precioMax,
+
+        detalles: evento.detalles,
 
         musica,
         musOtra,

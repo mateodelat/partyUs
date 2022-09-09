@@ -11,13 +11,12 @@ import {
   Text,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   enumToArray,
   requestLocation,
   rojoClaro,
   getUserSub,
-  isUrl,
   precioConComision,
   msInDay,
   distancia2Puntos,
@@ -25,6 +24,7 @@ import {
   tipoRedondeo,
   normalizeString,
   mayusFirstLetter,
+  getImageUrl,
 } from "../../../../constants";
 
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -43,18 +43,26 @@ import * as Location from "expo-location";
 import ElementoEvento from "../../../components/ElementoEvento";
 
 import { DataStore, Predicates, Storage } from "aws-amplify";
-import { Evento, MusicEnum, PlaceEnum, Usuario } from "../../../models";
+import {
+  ComoditiesEnum,
+  Evento,
+  MusicEnum,
+  PlaceEnum,
+  Usuario,
+} from "../../../models";
 import useUser from "../../../Hooks/useUser";
 import EmptyProfile from "../../../components/EmptyProfile";
 import { Boleto } from "../../../models";
 import { locationType } from "../../../components/ModalMap";
+import { StatusBar } from "expo-status-bar";
 
 export type EventoType = Evento & {
-  favoritos: boolean;
-  personasMax: number;
+  favoritos?: boolean;
   boletos: Boleto[];
   imagenes: { key: string; uri: string }[] | string[];
   owner?: Usuario;
+  comodities?: ComoditiesEnum[];
+  ubicacion: locationType;
 };
 
 export default function ({ navigation }: { navigation: NavigationProp }) {
@@ -83,7 +91,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     []
   );
 
-  async function fetchEvents(events?: Evento[]) {
+  async function fetchEvents(events?: Evento[], checkVerified?: boolean) {
     setLoading(true);
     let eventos: EventoType[] = events
       ? events
@@ -101,13 +109,10 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           e.imagenes.map(async (r: string) => {
             // Ver si es llave de s3
             let key = r;
-            if (!isUrl(r)) {
-              r = await Storage.get(r);
-            }
 
             return {
               key,
-              uri: r,
+              uri: await getImageUrl(r),
             };
           })
         );
@@ -160,6 +165,11 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       setMaxPrice(redondear(precioMax, 50, tipoRedondeo.ARRIBA));
     }
 
+    // Si se pasan eventos (checar si son solo verificados)
+    if (events && checkVerified) {
+      eventos = eventos.filter((e) => e.owner?.verified);
+    }
+
     setEventosFiltrados(eventos);
     setFetchedEvents(eventos);
 
@@ -173,7 +183,10 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   }, []);
 
   // Filtros obtenidos
-  const [filters, setFilters]: [f: filterResult, f: any] = useState({
+  const [filters, setFilters]: [
+    f: filterResult,
+    f: Dispatch<SetStateAction<any>>
+  ] = useState({
     precioMin: minPrice,
     precioMax: maxPrice,
     dist: undefined,
@@ -181,8 +194,10 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     fechaMax: undefined,
 
     lugar: enumToArray(PlaceEnum),
-    comodities: [],
+    comodities: [] as ComoditiesEnum[],
     musica: enumToArray(MusicEnum),
+
+    verified: false,
   });
 
   function clearFilters() {
@@ -192,6 +207,8 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       dist: undefined,
       fechaMin: undefined,
       fechaMax: undefined,
+
+      verified: false,
 
       lugar: enumToArray(PlaceEnum),
       comodities: [],
@@ -228,6 +245,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       fechaMin,
       dist,
       lugar: tipoLugar,
+      verified,
     } = filters;
 
     let { precioMax, precioMin } = filters;
@@ -244,6 +262,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
             // Musica
             .or((e) =>
               e
+                .musica("contains", musica[0])
                 .musica("contains", musica[1])
                 .musica("contains", musica[2])
                 .musica("contains", musica[3])
@@ -297,6 +316,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
             // Musica
             .or((e) =>
               e
+                .musica("contains", musica[0])
                 .musica("contains", musica[1])
                 .musica("contains", musica[2])
                 .musica("contains", musica[3])
@@ -375,7 +395,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
     console.log(new Date().getTime() - i.getTime());
 
-    fetchEvents(eventos);
+    fetchEvents(eventos, verified);
     setFilters(filters);
   }
 
@@ -451,6 +471,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   }
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar translucent={true} />
       <Pressable
         onPress={Keyboard.dismiss}
         style={{
@@ -589,7 +610,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
             if (!item) return <View />;
             return (
               <ElementoEvento
-                handleLike={() => handleLike(item.id)}
                 data={item}
                 onPress={() => handlePressItem(item.id)}
               />
