@@ -161,7 +161,7 @@ export default function Agregar2({
   function handleInfoPagos() {
     Alert.alert(
       "Envio de fondos",
-      "Por contrato con la empresa de pagos, el dinero puede tardar hasta 5 dias en llegar a tu cuenta bancaria al pagarlo con pagos con OXXO"
+      "Por contrato con la empresa de pagos, el dinero tarda 7 dias en llegar a tu cuenta bancaria"
     );
   }
 
@@ -343,7 +343,7 @@ export default function Agregar2({
             </TouchableOpacity>
           </ScrollView>
           <Text style={styles.infoTxt}>
-            El dinero tarda de 3 a 5 dias en aparecer en tu cuenta
+            El dinero tarda 7 dias en llegar a tu banco
             <Text onPress={handleInfoPagos} style={styles.masInfo}>
               {" "}
               mas info

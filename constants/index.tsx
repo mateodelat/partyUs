@@ -545,7 +545,7 @@ export function enumToArray<T>(enumme: T) {
 }
 
 export function formatAMPM(
-  dateInMs: number | Date | undefined,
+  dateInMs: number | Date | undefined | null,
   hideAMPM?: boolean
 ) {
   if (!dateInMs) return "-- : --";
@@ -844,8 +844,9 @@ export const AsyncAlert = async (title: string, body: string) =>
     ]);
   }).catch((e) => e);
 
-export function precioConComision(inicial: number) {
-  return redondear(inicial * 1.15, 10, tipoRedondeo.ARRIBA);
+export function precioConComision(inicial: number | undefined | null) {
+  if (!inicial) return 0;
+  return redondear(inicial * (1 + comisionApp), 10, tipoRedondeo.ARRIBA);
 }
 
 export const getWeekDay = (d: Date | undefined) => {

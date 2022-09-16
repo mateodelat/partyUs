@@ -42,7 +42,7 @@ import { TouchableHighlight } from "react-native-gesture-handler";
 import * as Location from "expo-location";
 import ElementoEvento from "../../../components/ElementoEvento";
 
-import { DataStore, Predicates, Storage } from "aws-amplify";
+import { API, DataStore, Predicates, Storage } from "aws-amplify";
 import {
   ComoditiesEnum,
   Evento,
@@ -106,7 +106,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     eventos = await Promise.all(
       eventos.map(async (e) => {
         const imagenes = Promise.all(
-          e.imagenes.map(async (r: string) => {
+          e.imagenes.map(async (r: any) => {
             // Ver si es llave de s3
             let key = r;
 
@@ -117,8 +117,10 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           })
         );
 
-        const boletos = DataStore.query(Boleto, (bo) =>
-          bo.eventoID("eq", e.id)
+        const boletos = DataStore.query(
+          Boleto,
+          (bo) => bo.eventoID("eq", e.id),
+          { sort: (e) => e.precio("DESCENDING") }
         ).then((boletos) => {
           boletos.map((bo) => {
             const precio = precioConComision(bo.precio);
@@ -138,7 +140,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           return boletos;
         });
 
-        const owner = DataStore.query(Usuario, e.CreatorID);
+        const owner = DataStore.query(Usuario, e.CreatorID ? e.CreatorID : "");
 
         await Promise.all([owner, imagenes, boletos]);
 

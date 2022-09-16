@@ -9,6 +9,8 @@ Amplify Params - DO NOT EDIT */
 
 const axios = require('axios');
 const { GraphQLClient } = require('graphql-request');
+const qs = require('qs');
+
 
 
 
@@ -34,16 +36,36 @@ function generateProfilePicture(nombre) {
   return `https://ui-avatars.com/api/?name=${nombre}&bold=true&background=${bgc}&color=${color}&length=1`;
 }
 
-async function generateBGIMG() {
-  return await axios
-    .get("https://source.unsplash.com/random/900x500/?party").then(
-      async (r) => {
-        const data = r.url;
-        console.log(data)
+async function createCustomer({
+  email,
+  name,
+  id
+}) {
 
-        return data;
-      }
-    );
+  const data = qs.stringify({
+    'email': email,
+    'name': name,
+    'metadata[id]': id
+  });
+
+
+  const config = {
+    method: 'post',
+    url: 'https://api.stripe.com//v1/customers',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': 'Bearer sk_test_51LiSyAEigD6kxjjgNIdnNGVamsKTNPCVLFWBsjFLt2CMm4O82g37XxDIlCrl1KSavtWkZ4zzh7s0NXvcDCfHpJWg00WOrci3xO'
+    },
+    data: data
+  };
+
+  return await axios(config).then(
+    (r) => {
+      console.log("Data de create customer: ", r)
+
+      return r.data;
+    }
+  );
 }
 
 const crearUsr = `
@@ -67,13 +89,19 @@ exports.handler = async (event, context, callback) => {
     nickname: attributes.nickname,
     email: attributes.email,
 
-    // Generar imagen de fondo de unsplash
-    imagenFondo: await generateBGIMG(),
-
     // Generar foto de perfil con letra inicial
     foto: generateProfilePicture(attributes.nickname),
+
+    owner: sub
   };
   console.log("Atributos recibidos en crear usuario: ", input);
+
+  // Crear customer de stripe
+  await createCustomer({
+    email: attributes.email,
+    name: attributes.nickname,
+    id: sub
+  })
 
   if (input.id) {
     // Informacion para conectarse a graphql
@@ -84,7 +112,7 @@ exports.handler = async (event, context, callback) => {
 
     const client = new GraphQLClient(endpoint, { headers });
 
-    client
+    await client
       .request(crearUsr, { input })
       .then((r) => {
         console.log("Resultado crear usuario: ", r);
@@ -109,5 +137,7 @@ exports.handler = async (event, context, callback) => {
   } else {
     console.log("Error creando el usuario");
   }
+
+  callback(null, event);
 }
 

@@ -95,7 +95,7 @@ export default function ({
 
   async function handleRandomImage() {
     setRandomLoading(true);
-    await fetch("https://source.unsplash.com/random/1100x800/?party")
+    await fetch("https://picsum.photos/1100/800")
       .then((r) => {
         setImage({
           uri: r.url,
@@ -151,7 +151,7 @@ export default function ({
                   )}
                 </View>
 
-                <Text style={styles.subTitle}>Imagen aleatoria de fiesta</Text>
+                <Text style={styles.subTitle}>Imagen aleatoria</Text>
               </Pressable>
 
               {/* Imagen desde camara */}

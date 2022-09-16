@@ -143,6 +143,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "owner": {
+                    "name": "owner",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "Eventos": {
                     "name": "Eventos",
                     "isArray": true,
@@ -222,7 +229,6 @@ export const schema = {
                             {
                                 "allow": "private",
                                 "operations": [
-                                    "create",
                                     "read"
                                 ]
                             }
@@ -245,22 +251,22 @@ export const schema = {
                     "name": "imagenes",
                     "isArray": true,
                     "type": "String",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": [],
-                    "isArrayNullable": false
+                    "isArrayNullable": true
                 },
                 "imagenPrincipalIDX": {
                     "name": "imagenPrincipalIDX",
                     "isArray": false,
                     "type": "Int",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "titulo": {
                     "name": "titulo",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "detalles": {
@@ -274,28 +280,28 @@ export const schema = {
                     "name": "ubicacion",
                     "isArray": false,
                     "type": "AWSJSON",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "fechaInicial": {
                     "name": "fechaInicial",
                     "isArray": false,
                     "type": "AWSTimestamp",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "fechaFinal": {
                     "name": "fechaFinal",
                     "isArray": false,
                     "type": "AWSTimestamp",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "tosAceptance": {
                     "name": "tosAceptance",
                     "isArray": false,
                     "type": "AWSJSON",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "tipoLugar": {
@@ -304,7 +310,7 @@ export const schema = {
                     "type": {
                         "enum": "PlaceEnum"
                     },
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "musica": {
@@ -313,7 +319,7 @@ export const schema = {
                     "type": {
                         "enum": "MusicEnum"
                     },
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "comodities": {
@@ -322,7 +328,7 @@ export const schema = {
                     "type": {
                         "enum": "ComoditiesEnum"
                     },
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": [],
                     "isArrayNullable": true
                 },
@@ -351,21 +357,21 @@ export const schema = {
                     "name": "precioMin",
                     "isArray": false,
                     "type": "Int",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "precioMax": {
                     "name": "precioMax",
                     "isArray": false,
                     "type": "Int",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "CreatorID": {
                     "name": "CreatorID",
                     "isArray": false,
                     "type": "ID",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "Boletos": {
@@ -374,7 +380,7 @@ export const schema = {
                     "type": {
                         "model": "Boleto"
                     },
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": [],
                     "isArrayNullable": true,
                     "association": {
@@ -434,8 +440,18 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
                                 "provider": "userPools",
-                                "ownerField": "owner",
+                                "ownerField": "CreatorID",
                                 "allow": "owner",
                                 "identityClaim": "cognito:username",
                                 "operations": [
@@ -491,7 +507,7 @@ export const schema = {
                     "name": "titulo",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "descripcion": {
@@ -505,7 +521,7 @@ export const schema = {
                     "name": "cantidad",
                     "isArray": false,
                     "type": "Int",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "personasReservadas": {
@@ -519,28 +535,28 @@ export const schema = {
                     "name": "precio",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "eventoID": {
                     "name": "eventoID",
                     "isArray": false,
                     "type": "ID",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "Reservas": {
                     "name": "Reservas",
                     "isArray": true,
                     "type": {
-                        "model": "Reserva"
+                        "model": "ReservasBoletos"
                     },
                     "isRequired": false,
                     "attributes": [],
                     "isArrayNullable": true,
                     "association": {
                         "connectionType": "HAS_MANY",
-                        "associatedWith": "boletoID"
+                        "associatedWith": "boleto"
                     }
                 },
                 "createdAt": {
@@ -604,6 +620,16 @@ export const schema = {
                                 "operations": [
                                     "read"
                                 ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
                             }
                         ]
                     }
@@ -646,20 +672,6 @@ export const schema = {
                     "isArray": false,
                     "type": "Float",
                     "isRequired": true,
-                    "attributes": []
-                },
-                "tituloBoleto": {
-                    "name": "tituloBoleto",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "descripcionBoleto": {
-                    "name": "descripcionBoleto",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
                     "attributes": []
                 },
                 "cantidad": {
@@ -727,19 +739,26 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
-                "boletoID": {
-                    "name": "boletoID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
                 "cuponID": {
                     "name": "cuponID",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": true,
                     "attributes": []
+                },
+                "Boletos": {
+                    "name": "Boletos",
+                    "isArray": true,
+                    "type": {
+                        "model": "ReservasBoletos"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": "reserva"
+                    }
                 },
                 "organizadorID": {
                     "name": "organizadorID",
@@ -793,15 +812,6 @@ export const schema = {
                 {
                     "type": "key",
                     "properties": {
-                        "name": "byBoleto",
-                        "fields": [
-                            "boletoID"
-                        ]
-                    }
-                },
-                {
-                    "type": "key",
-                    "properties": {
                         "name": "byCupon",
                         "fields": [
                             "cuponID"
@@ -813,16 +823,23 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
-                                "provider": "userPools",
-                                "ownerField": "owner",
-                                "allow": "owner",
-                                "identityClaim": "cognito:username",
+                                "allow": "private",
+                                "provider": "iam",
                                 "operations": [
                                     "create",
                                     "update",
                                     "delete",
                                     "read"
                                 ]
+                            },
+                            {
+                                "provider": "userPools",
+                                "ownerField": "usuarioID",
+                                "allow": "owner",
+                                "operations": [
+                                    "update"
+                                ],
+                                "identityClaim": "cognito:username"
                             },
                             {
                                 "allow": "public",
@@ -835,6 +852,162 @@ export const schema = {
                                 "allow": "private",
                                 "operations": [
                                     "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "Notificacion": {
+            "name": "Notificacion",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tipo": {
+                    "name": "tipo",
+                    "isArray": false,
+                    "type": {
+                        "enum": "TipoNotificacion"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "titulo": {
+                    "name": "titulo",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "descripcion": {
+                    "name": "descripcion",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "usuarioID": {
+                    "name": "usuarioID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "imagen": {
+                    "name": "imagen",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "leido": {
+                    "name": "leido",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "showAt": {
+                    "name": "showAt",
+                    "isArray": false,
+                    "type": "AWSTimestamp",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reservaID": {
+                    "name": "reservaID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "fechaID": {
+                    "name": "fechaID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "aventuraID": {
+                    "name": "aventuraID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "guiaID": {
+                    "name": "guiaID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "solicitudGuiaID": {
+                    "name": "solicitudGuiaID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "Notificacions",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byUsuario",
+                        "fields": [
+                            "usuarioID"
+                        ]
+                    }
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "usuarioID",
+                                "allow": "owner",
+                                "identityClaim": "cognito:username",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create"
                                 ]
                             }
                         ]
@@ -930,10 +1103,10 @@ export const schema = {
                                     "Admin"
                                 ],
                                 "operations": [
-                                    "read",
                                     "create",
                                     "update",
-                                    "delete"
+                                    "delete",
+                                    "read"
                                 ]
                             },
                             {
@@ -948,7 +1121,95 @@ export const schema = {
                                 "operations": [
                                     "read"
                                 ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "read",
+                                    "update"
+                                ]
                             }
+                        ]
+                    }
+                }
+            ]
+        },
+        "ReservasBoletos": {
+            "name": "ReservasBoletos",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "boleto": {
+                    "name": "boleto",
+                    "isArray": false,
+                    "type": {
+                        "model": "Boleto"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "boletoID"
+                    }
+                },
+                "reserva": {
+                    "name": "reserva",
+                    "isArray": false,
+                    "type": {
+                        "model": "Reserva"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "reservaID"
+                    }
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "ReservasBoletos",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byBoleto",
+                        "fields": [
+                            "boletoID"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byReserva",
+                        "fields": [
+                            "reservaID"
                         ]
                     }
                 }
@@ -992,8 +1253,23 @@ export const schema = {
                 "EVENTOCERRADO",
                 "CANCELADOPORCLIENTE"
             ]
+        },
+        "TipoNotificacion": {
+            "name": "TipoNotificacion",
+            "values": [
+                "RESERVACREADA",
+                "RESERVACANCELADA",
+                "AGREGAREVENTOS",
+                "ADMIN",
+                "BIENVENIDA",
+                "EVENTOCREADO",
+                "EVENTOACTUALIZACION",
+                "EVENTOCANCELADA",
+                "RECORDATORIOEVENTO",
+                "CALIFICAUSUARIO"
+            ]
         }
     },
     "nonModels": {},
-    "version": "0fe21c6e5ac0499780b4690f57fcb070"
+    "version": "8179e39201117178a4c00c7f91224e6f"
 };

@@ -1,0 +1,270 @@
+type Usuario
+  @model
+  @auth(
+    rules: [
+      { allow: owner, ownerField: "owner" }
+      { allow: public, provider: apiKey, operations: [create, read] }
+      { allow: private, operations: [read] }
+    ]
+  ) {
+  id: ID!
+  nickname: String
+  nombre: String
+  materno: String
+  paterno: String
+  email: String
+  foto: String
+  imagenFondo: String
+  phoneNumber: String
+    @auth(rules: [{ allow: owner }, { allow: groups, groups: ["Admin"] }])
+  phoneCode: String
+  organizador: Boolean
+
+  admin: Boolean
+    @auth(
+      rules: [
+        # Solo admins pueden cambiar este atributo
+        { allow: groups, groups: ["Admin"] }
+        #
+        # Todos los demas pueden leerlo
+        { allow: public, operations: [read] }
+        { allow: private, operations: [read] }
+      ]
+    )
+  idUploaded: Boolean
+  idData: AWSJSON
+    @auth(rules: [{ allow: owner }, { allow: groups, groups: ["Admin"] }])
+  idKey: String
+  fechaNacimiento: String
+  calificacion: Float
+  numResenas: Int
+  notificationToken: String
+
+  verified: Boolean
+    @auth(
+      rules: [
+        # Solo admins pueden cambiar este atributo
+        { allow: groups, groups: ["Admin"] }
+        #
+        # Todos los demas pueden leerlo
+        { allow: public, operations: [read] }
+        { allow: private, operations: [read] }
+      ]
+    )
+
+  owner: ID
+
+  Eventos: [Evento] @hasMany(indexName: "byUsuario", fields: ["id"])
+  Reservas: [Reserva] @hasMany(indexName: "byUsuario", fields: ["id"])
+}
+
+type Evento
+  @model
+  @auth(
+    rules: [
+      { allow: private, provider: iam }
+      # El dueño es el unico que puede moverle a sus eventos
+      { allow: owner, ownerField: "CreatorID" }
+      {
+        allow: groups
+        groups: ["Admin"]
+        operations: [read, create, update, delete]
+      }
+      #
+      # Todos los demas solo pueden verlos
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: private, operations: [read] }
+    ]
+  ) {
+  id: ID
+  imagenes: [String]
+  imagenPrincipalIDX: Int
+  titulo: String
+  detalles: String
+  ubicacion: AWSJSON
+  fechaInicial: AWSTimestamp
+  fechaFinal: AWSTimestamp
+  tosAceptance: AWSJSON
+  tipoLugar: placeEnum
+  musica: musicEnum
+  comodities: [comoditiesEnum]
+  musOtra: String
+
+  personasReservadas: Int
+  personasMax: Int
+
+  precioMin: Int
+  precioMax: Int
+
+  CreatorID: ID @index(name: "byUsuario")
+
+  Boletos: [Boleto] @hasMany(indexName: "byEvento", fields: ["id"])
+  Reservas: [Reserva] @hasMany(indexName: "byEvento", fields: ["id"])
+}
+
+type Notificacion
+  @model
+  @auth(
+    rules: [
+      # Solo el dueño/private puede leerlas y crear mas
+      { allow: owner, ownerField: "usuarioID" }
+      #
+      # Cualquiera con API key puede crear una notificacion
+      { allow: public, operations: [create] }
+    ]
+  ) {
+  id: ID!
+
+  tipo: TipoNotificacion!
+  titulo: String!
+  descripcion: String
+  usuarioID: ID! @index(name: "byUsuario")
+
+  imagen: String
+
+  leido: Boolean
+  showAt: AWSTimestamp
+
+  reservaID: ID
+  fechaID: ID
+  aventuraID: ID
+  guiaID: ID
+  solicitudGuiaID: ID
+}
+
+type Boleto
+  @model
+  @auth(
+    rules: [
+      # El dueño puede hacer lo que quiera con los boletos
+      { allow: owner }
+      #
+      # Los demas solo pueden leer el boleto
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: private, operations: [read] }
+      { allow: private, provider: iam }
+    ]
+  ) {
+  id: ID
+
+  titulo: String
+  descripcion: String
+
+  cantidad: Int
+  personasReservadas: Int
+  precio: Float
+
+  eventoID: ID @index(name: "byEvento")
+  Reservas: [Reserva] @manyToMany(relationName: "ReservasBoletos")
+}
+
+type Cupon
+  @model
+  @auth(
+    rules: [
+      # Solo admins pueden crear cupones
+      { allow: groups, groups: ["Admin"] }
+      #
+      # Todos los demas pueden query
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: private, operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
+    ]
+  ) {
+  # ID en mayusuculas
+  id: ID!
+
+  restantes: Int!
+  vencimiento: AWSTimestamp!
+
+  # Numero menor a 1
+  porcentajeDescuento: Float
+
+  cantidadDescuento: Float
+
+  Reservas: [Reserva!] @hasMany(indexName: "byCupon", fields: ["id"])
+}
+
+type Reserva
+  @model
+  @auth(
+    rules: [
+      # Solo lambda puede crear reserva
+      { allow: private, provider: iam }
+      #
+      # El dueño puede cancelar la reserva
+      { allow: owner, ownerField: "usuarioID", operations: [update] }
+      #
+      # Todos los demas pueden ver la reserva
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: private, operations: [read] }
+    ]
+  ) {
+  id: ID!
+  total: Float!
+  precioIndividual: Float!
+  comision: Float!
+  pagadoAlOrganizador: Float!
+  cantidad: Int!
+  pagoID: String
+  ingreso: Boolean
+  horaIngreso: AWSDateTime
+
+  cancelado: Boolean
+  canceledAt: AWSDateTime
+  cancelReason: reservaCancelReason
+
+  eventoID: ID! @index(name: "byEvento")
+  usuarioID: ID! @index(name: "byUsuario")
+  cuponID: ID! @index(name: "byCupon")
+
+  Boletos: [Boleto] @manyToMany(relationName: "ReservasBoletos")
+
+  organizadorID: ID
+}
+
+enum reservaCancelReason {
+  EVENTOCERRADO
+  CANCELADOPORCLIENTE
+}
+
+enum placeEnum {
+  EXTERIOR
+  INTERIOR
+  MIXTO
+}
+
+enum musicEnum {
+  REGGETON
+  POP
+  TECNO
+  RAP
+  BANDA
+  ROCK
+  OTRO
+}
+
+enum comoditiesEnum {
+  DJ
+  ALBERCA
+  BARRALIBRE
+  COMIDA
+  SEGURIDAD
+}
+
+enum TipoNotificacion {
+  RESERVACREADA
+  RESERVACANCELADA
+
+  AGREGAREVENTOS
+
+  ADMIN
+  BIENVENIDA
+
+  EVENTOCREADO
+  EVENTOACTUALIZACION
+  EVENTOCANCELADA
+  RECORDATORIOEVENTO
+
+  CALIFICAUSUARIO
+}

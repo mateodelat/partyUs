@@ -31,16 +31,32 @@ const ReservaCancelReason = {
   "CANCELADOPORCLIENTE": "CANCELADOPORCLIENTE"
 };
 
-const { Usuario, Evento, Boleto, Reserva, Cupon } = initSchema(schema);
+const TipoNotificacion = {
+  "RESERVACREADA": "RESERVACREADA",
+  "RESERVACANCELADA": "RESERVACANCELADA",
+  "AGREGAREVENTOS": "AGREGAREVENTOS",
+  "ADMIN": "ADMIN",
+  "BIENVENIDA": "BIENVENIDA",
+  "EVENTOCREADO": "EVENTOCREADO",
+  "EVENTOACTUALIZACION": "EVENTOACTUALIZACION",
+  "EVENTOCANCELADA": "EVENTOCANCELADA",
+  "RECORDATORIOEVENTO": "RECORDATORIOEVENTO",
+  "CALIFICAUSUARIO": "CALIFICAUSUARIO"
+};
+
+const { Usuario, Evento, Boleto, Reserva, Notificacion, Cupon, ReservasBoletos } = initSchema(schema);
 
 export {
   Usuario,
   Evento,
   Boleto,
   Reserva,
+  Notificacion,
   Cupon,
+  ReservasBoletos,
   PlaceEnum,
   MusicEnum,
   ComoditiesEnum,
-  ReservaCancelReason
+  ReservaCancelReason,
+  TipoNotificacion
 };

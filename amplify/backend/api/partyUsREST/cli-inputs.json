@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/createReserva": {
+      "name": "/createReserva",
+      "lambdaFunction": "createReserva",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

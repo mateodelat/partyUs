@@ -33,7 +33,7 @@ export default function ({
   personasReservadas = personasReservadas ? personasReservadas : 0;
 
   // Calcular si hay menos de 15 personas disponibles
-  const availablePlaces = cantidad - personasReservadas;
+  const availablePlaces = cantidad ? cantidad - personasReservadas : 0;
   const infoTxt = (() => {
     if (availablePlaces === 1) {
       return "Ultimo disponible";
@@ -82,10 +82,10 @@ export default function ({
           <Text style={styles.monney}>{formatMoney(precio, true)}</Text>
           <Pressable>
             <SimpleSelector
-              quantity={quantity ? quantity : 0}
+              quantity={!!quantity ? quantity : 0}
               handleChange={handleChange}
               min={0}
-              max={cantidad - personasReservadas}
+              max={cantidad ? cantidad - personasReservadas : 0}
             />
           </Pressable>
         </View>

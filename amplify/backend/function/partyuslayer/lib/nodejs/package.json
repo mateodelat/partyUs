@@ -3,10 +3,10 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "graphql": "^16.6.0",
-    "graphql-request": "^5.0.0",
-    "node-fetch": "^3.2.10"
-
+    "axios": "~0.27.2",
+    "graphql-request": "~5.0.0",
+    "stripe": "~10.10.0",
+    "qs": "~6.11.0"
   },
   "devDependencies": {}
 }

@@ -24,7 +24,6 @@ const Descripcion = ({
   };
 
   const onTextLayout = React.useCallback((e) => {
-    console.log(e.nativeEvent.lines.length);
     setShowMore(e.nativeEvent.lines.length > NUM_OF_LINES);
   }, []);
 

@@ -29,10 +29,7 @@ import SimpleCam from "../../components/SimpleCam";
 import { CameraCapturedPicture } from "expo-camera";
 import useUser from "../../Hooks/useUser";
 import { textoAbajoPasaporte } from "./components/functions";
-import axios from "axios";
 import { idData } from "../../contexts/UserContext";
-import { DataStore, Storage } from "aws-amplify";
-import { Usuario } from "../../models";
 
 interface ruta extends Route {
   params: tipoDocumento;

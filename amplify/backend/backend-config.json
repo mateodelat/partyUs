@@ -1,5 +1,19 @@
 {
   "api": {
+    "partyUsREST": {
+      "service": "API Gateway",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "createReserva",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        }
+      ]
+    },
     "partyUsAPI": {
       "service": "AppSync",
       "providerPlugin": "awscloudformation",
@@ -25,9 +39,12 @@
               "authenticationType": "API_KEY",
               "apiKeyConfig": {
                 "apiKeyExpirationDays": 7,
-                "apiKeyExpirationDate": "2022-09-15T00:51:03.449Z",
+                "apiKeyExpirationDate": "2022-09-21T03:15:53.904Z",
                 "description": ""
               }
+            },
+            {
+              "authenticationType": "AWS_IAM"
             }
           ]
         }
@@ -70,7 +87,7 @@
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "partyuscapaPostSignUp",
+          "resourceName": "partyuslayer",
           "attributes": [
             "Arn"
           ]
@@ -86,7 +103,30 @@
         }
       ]
     },
-    "partyuscapaPostSignUp": {
+    "createReserva": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "partyuslayer",
+          "attributes": [
+            "Arn"
+          ]
+        },
+        {
+          "category": "api",
+          "resourceName": "partyUsAPI",
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput",
+            "GraphQLAPIKeyOutput"
+          ]
+        }
+      ]
+    },
+    "partyuslayer": {
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer",
       "build": true

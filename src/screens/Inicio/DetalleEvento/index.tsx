@@ -38,7 +38,7 @@ import {
   verifyUserLoggedIn,
   getUserSub,
 } from "../../../../constants";
-import { DataStore, Predicates, Storage } from "aws-amplify";
+import { API, DataStore, Predicates, Storage } from "aws-amplify";
 import { OpType } from "@aws-amplify/datastore";
 
 import Line from "../../../components/Line";
@@ -55,6 +55,7 @@ import EmptyProfile from "../../../components/EmptyProfile";
 import Boton from "../../../components/Boton";
 import { Evento } from "../../../models";
 import { Boleto } from "../../../models";
+import { getUsuario } from "../../../graphql/queries";
 
 export default function ({
   route,
@@ -63,100 +64,6 @@ export default function ({
   route: { params: EventoType };
   navigation: NavigationProp;
 }) {
-  // route.params = {
-  //   CreatorID: "04eba9f3-5ef3-4dd5-9f08-9777e7aaaa4f",
-  //   boletos: [
-  //     {
-  //       cantidad: 50,
-  //       createdAt: "2022-08-31T05:28:18.895Z",
-  //       descripcion: "",
-  //       eventoID: "f2dd5548-ab62-4ff0-aa5a-af7485efbed1",
-  //       id: "06a90ee7-7e2d-4201-8371-a097dd30dfea",
-  //       personasReservadas: null,
-  //       precio: 750,
-  //       titulo: "VIP",
-  //       updatedAt: "2022-08-31T05:28:18.895Z",
-  //     },
-  //     {
-  //       cantidad: 80,
-  //       createdAt: "2022-08-31T05:28:17.152Z",
-  //       descripcion: "",
-  //       eventoID: "f2dd5548-ab62-4ff0-aa5a-af7485efbed1",
-  //       id: "7843cd0e-db23-461a-9b4f-ea527a5dce2b",
-  //       personasReservadas: null,
-  //       precio: 100,
-  //       titulo: "Entrada normal",
-  //       updatedAt: "2022-08-31T05:28:17.152Z",
-  //     },
-  //   ],
-  //   comodities: enumToArray(ComoditiesEnum),
-  //   createdAt: "2022-08-31T05:28:16.983Z",
-  //   detalles: null,
-  //   fechaFinal: 1662786000000,
-  //   fechaInicial: 1662753600000,
-  //   id: "f2dd5548-ab62-4ff0-aa5a-af7485efbed1",
-  //   imagenPrincipalIDX: 0,
-  //   imagenes: [
-  //     {
-  //       key: "https://images.unsplash.com/photo-1495837174058-628aafc7d610?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNTkz&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-  //       uri: "https://images.unsplash.com/photo-1495837174058-628aafc7d610?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNTkz&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-  //     },
-  //     {
-  //       key: "https://images.unsplash.com/photo-1627020730793-2ccb5cd55e99?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNjAx&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-  //       uri: "https://images.unsplash.com/photo-1627020730793-2ccb5cd55e99?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNjAx&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-  //     },
-  //     {
-  //       key: "https://images.unsplash.com/photo-1623788452350-4c8596ff40bb?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNjA4&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-  //       uri: "https://images.unsplash.com/photo-1623788452350-4c8596ff40bb?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNjA4&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-  //     },
-  //   ],
-  //   musOtra: null,
-  //   musica: "REGGETON",
-  //   owner: {
-  //     admin: false,
-  //     calificacion: null,
-  //     createdAt: "2022-08-29T01:29:04.989Z",
-  //     email: "mateodelat@gmail.com",
-  //     fechaNacimiento: "Thu Aug 29 2002 17:00:00 GMT-0700 (MST)",
-  //     foto: "https://ui-avatars.com/api/?name=mateodleat&bold=true&background=000000&color=fff&length=1",
-  //     id: "04eba9f3-5ef3-4dd5-9f08-9777e7aaaa4f",
-  //     idKey: "usr-04eba9f3-5ef3-4dd5-9f08-9777e7aaaa4f|id.jpg",
-  //     idUploaded: true,
-  //     imagenFondo:
-  //       "https://images.unsplash.com/photo-1606104255713-cd96d1f41c28?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=500&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxNzM2NTQy&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=900",
-  //     materno: "rahul",
-  //     nickname: "mateodelat",
-  //     nombre: "rahul",
-  //     notificationToken: null,
-  //     numResenas: null,
-  //     organizador: true,
-  //     paterno: "rahul",
-  //     phoneCode: null,
-  //     phoneNumber: null,
-  //     updatedAt: "2022-08-31T19:08:35.056Z",
-  //     verified: true,
-  //   },
-  //   personasMax: 130,
-  //   personasReservadas: null,
-  //   precioMax: 750,
-  //   precioMin: 100,
-  //   tipoLugar: "INTERIOR",
-  //   titulo: "Summer fest 2022",
-  //   tosAceptance: {
-  //     hora: "2022-08-31T05:28:12.402Z",
-  //     ip: "10.0.2.16",
-  //   },
-  //   ubicacion: {
-  //     latitude: 43.67918571887254,
-  //     latitudeDelta: 0.05067978754303226,
-  //     longitude: -80.40836691856384,
-  //     longitudeDelta: 0.04040110856294632,
-  //     ubicacionId: "ChIJAAAAAAAAAAARiJVfJxIYXpE",
-  //     ubicacionNombre: "Grand River Grooming",
-  //   },
-  //   updatedAt: "2022-08-31T05:28:16.983Z",
-  // } as any;
-
   const [evento, setEvento] = useState(route.params);
 
   let {
@@ -212,8 +119,15 @@ export default function ({
   }
 
   async function fetchInfoEvento(e: Evento) {
+    if (!e.imagenes) {
+      throw new Error("Error no hay imagenenes que mapear en el evento");
+    }
+
+    if (!e.CreatorID) {
+      throw new Error("Error no hay id de creador del evento");
+    }
     const imagenes = Promise.all(
-      e.imagenes.map(async (r: string) => {
+      e.imagenes.map(async (r: string | null) => {
         // Ver si es llave de s3
         let key = r;
 
@@ -440,7 +354,9 @@ export default function ({
             {/* Texto */}
             <View style={styles.txtContainer}>
               <Text style={styles.creado}>
-                {getWeekDay(new Date(fechaInicial)) +
+                {getWeekDay(
+                  new Date(fechaInicial ? fechaInicial : new Date())
+                ) +
                   " " +
                   formatDay(fechaInicial)}
               </Text>

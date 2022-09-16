@@ -151,8 +151,6 @@ export default function Agregar2({
       );
       return;
     }
-    console.log(evento);
-    return;
 
     setLoading(true);
 

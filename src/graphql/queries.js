@@ -24,6 +24,7 @@ export const getUsuario = /* GraphQL */ `
       numResenas
       notificationToken
       verified
+      owner
       Eventos {
         items {
           id
@@ -49,7 +50,6 @@ export const getUsuario = /* GraphQL */ `
           _version
           _deleted
           _lastChangedAt
-          owner
         }
         nextToken
         startedAt
@@ -61,8 +61,6 @@ export const getUsuario = /* GraphQL */ `
           precioIndividual
           comision
           pagadoAlOrganizador
-          tituloBoleto
-          descripcionBoleto
           cantidad
           pagoID
           ingreso
@@ -72,7 +70,6 @@ export const getUsuario = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
-          boletoID
           cuponID
           organizadorID
           createdAt
@@ -80,7 +77,6 @@ export const getUsuario = /* GraphQL */ `
           _version
           _deleted
           _lastChangedAt
-          owner
         }
         nextToken
         startedAt
@@ -90,7 +86,6 @@ export const getUsuario = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      owner
     }
   }
 `;
@@ -122,6 +117,7 @@ export const listUsuarios = /* GraphQL */ `
         numResenas
         notificationToken
         verified
+        owner
         Eventos {
           nextToken
           startedAt
@@ -135,7 +131,6 @@ export const listUsuarios = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        owner
       }
       nextToken
       startedAt
@@ -176,6 +171,7 @@ export const syncUsuarios = /* GraphQL */ `
         numResenas
         notificationToken
         verified
+        owner
         Eventos {
           nextToken
           startedAt
@@ -189,7 +185,6 @@ export const syncUsuarios = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        owner
       }
       nextToken
       startedAt
@@ -243,8 +238,6 @@ export const getEvento = /* GraphQL */ `
           precioIndividual
           comision
           pagadoAlOrganizador
-          tituloBoleto
-          descripcionBoleto
           cantidad
           pagoID
           ingreso
@@ -254,7 +247,6 @@ export const getEvento = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
-          boletoID
           cuponID
           organizadorID
           createdAt
@@ -262,7 +254,6 @@ export const getEvento = /* GraphQL */ `
           _version
           _deleted
           _lastChangedAt
-          owner
         }
         nextToken
         startedAt
@@ -272,7 +263,6 @@ export const getEvento = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
-      owner
     }
   }
 `;
@@ -315,7 +305,6 @@ export const listEventos = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        owner
       }
       nextToken
       startedAt
@@ -367,7 +356,100 @@ export const syncEventos = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        owner
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getNotificacion = /* GraphQL */ `
+  query GetNotificacion($id: ID!) {
+    getNotificacion(id: $id) {
+      id
+      tipo
+      titulo
+      descripcion
+      usuarioID
+      imagen
+      leido
+      showAt
+      reservaID
+      fechaID
+      aventuraID
+      guiaID
+      solicitudGuiaID
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const listNotificacions = /* GraphQL */ `
+  query ListNotificacions(
+    $filter: ModelNotificacionFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listNotificacions(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        tipo
+        titulo
+        descripcion
+        usuarioID
+        imagen
+        leido
+        showAt
+        reservaID
+        fechaID
+        aventuraID
+        guiaID
+        solicitudGuiaID
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncNotificacions = /* GraphQL */ `
+  query SyncNotificacions(
+    $filter: ModelNotificacionFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncNotificacions(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        tipo
+        titulo
+        descripcion
+        usuarioID
+        imagen
+        leido
+        showAt
+        reservaID
+        fechaID
+        aventuraID
+        guiaID
+        solicitudGuiaID
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
       }
       nextToken
       startedAt
@@ -387,30 +469,15 @@ export const getBoleto = /* GraphQL */ `
       Reservas {
         items {
           id
-          total
-          precioIndividual
-          comision
-          pagadoAlOrganizador
-          tituloBoleto
-          descripcionBoleto
-          cantidad
-          pagoID
-          ingreso
-          horaIngreso
-          cancelado
-          canceledAt
-          cancelReason
-          eventoID
-          usuarioID
           boletoID
-          cuponID
-          organizadorID
+          reservaID
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
           owner
+          usuarioID
         }
         nextToken
         startedAt
@@ -507,8 +574,6 @@ export const getCupon = /* GraphQL */ `
           precioIndividual
           comision
           pagadoAlOrganizador
-          tituloBoleto
-          descripcionBoleto
           cantidad
           pagoID
           ingreso
@@ -518,7 +583,6 @@ export const getCupon = /* GraphQL */ `
           cancelReason
           eventoID
           usuarioID
-          boletoID
           cuponID
           organizadorID
           createdAt
@@ -526,7 +590,6 @@ export const getCupon = /* GraphQL */ `
           _version
           _deleted
           _lastChangedAt
-          owner
         }
         nextToken
         startedAt
@@ -609,8 +672,6 @@ export const getReserva = /* GraphQL */ `
       precioIndividual
       comision
       pagadoAlOrganizador
-      tituloBoleto
-      descripcionBoleto
       cantidad
       pagoID
       ingreso
@@ -620,15 +681,29 @@ export const getReserva = /* GraphQL */ `
       cancelReason
       eventoID
       usuarioID
-      boletoID
       cuponID
+      Boletos {
+        items {
+          id
+          boletoID
+          reservaID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          owner
+          usuarioID
+        }
+        nextToken
+        startedAt
+      }
       organizadorID
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      owner
     }
   }
 `;
@@ -645,8 +720,6 @@ export const listReservas = /* GraphQL */ `
         precioIndividual
         comision
         pagadoAlOrganizador
-        tituloBoleto
-        descripcionBoleto
         cantidad
         pagoID
         ingreso
@@ -656,15 +729,17 @@ export const listReservas = /* GraphQL */ `
         cancelReason
         eventoID
         usuarioID
-        boletoID
         cuponID
+        Boletos {
+          nextToken
+          startedAt
+        }
         organizadorID
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-        owner
       }
       nextToken
       startedAt
@@ -690,8 +765,6 @@ export const syncReservas = /* GraphQL */ `
         precioIndividual
         comision
         pagadoAlOrganizador
-        tituloBoleto
-        descripcionBoleto
         cantidad
         pagoID
         ingreso
@@ -701,15 +774,209 @@ export const syncReservas = /* GraphQL */ `
         cancelReason
         eventoID
         usuarioID
-        boletoID
         cuponID
+        Boletos {
+          nextToken
+          startedAt
+        }
         organizadorID
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const getReservasBoletos = /* GraphQL */ `
+  query GetReservasBoletos($id: ID!) {
+    getReservasBoletos(id: $id) {
+      id
+      boletoID
+      reservaID
+      boleto {
+        id
+        titulo
+        descripcion
+        cantidad
+        personasReservadas
+        precio
+        eventoID
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
         owner
+      }
+      reserva {
+        id
+        total
+        precioIndividual
+        comision
+        pagadoAlOrganizador
+        cantidad
+        pagoID
+        ingreso
+        horaIngreso
+        cancelado
+        canceledAt
+        cancelReason
+        eventoID
+        usuarioID
+        cuponID
+        Boletos {
+          nextToken
+          startedAt
+        }
+        organizadorID
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      owner
+      usuarioID
+    }
+  }
+`;
+export const listReservasBoletos = /* GraphQL */ `
+  query ListReservasBoletos(
+    $filter: ModelReservasBoletosFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listReservasBoletos(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        boletoID
+        reservaID
+        boleto {
+          id
+          titulo
+          descripcion
+          cantidad
+          personasReservadas
+          precio
+          eventoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          owner
+        }
+        reserva {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          cuponID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        owner
+        usuarioID
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncReservasBoletos = /* GraphQL */ `
+  query SyncReservasBoletos(
+    $filter: ModelReservasBoletosFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncReservasBoletos(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        boletoID
+        reservaID
+        boleto {
+          id
+          titulo
+          descripcion
+          cantidad
+          personasReservadas
+          precio
+          eventoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          owner
+        }
+        reserva {
+          id
+          total
+          precioIndividual
+          comision
+          pagadoAlOrganizador
+          cantidad
+          pagoID
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          eventoID
+          usuarioID
+          cuponID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        owner
+        usuarioID
       }
       nextToken
       startedAt

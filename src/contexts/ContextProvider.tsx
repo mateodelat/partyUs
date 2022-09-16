@@ -2,8 +2,36 @@ import React, { useEffect, useState } from "react";
 import UserContext from "./UserContext";
 import { PropsWithChildren } from "react";
 import { Usuario } from "../models";
-import { DataStore, Hub } from "aws-amplify";
+import { API, DataStore, Hub } from "aws-amplify";
 import { getUserSub, verifyUserLoggedIn } from "../../constants";
+
+// Obtener el usuario recien loggeado
+const getUsuario = /* GraphQL */ `
+  query GetUsuario($id: ID!) {
+    getUsuario(id: $id) {
+      id
+      nickname
+      nombre
+      materno
+      paterno
+      email
+      foto
+      imagenFondo
+      phoneNumber
+      phoneCode
+      organizador
+      admin
+      idUploaded
+      idData
+      idKey
+      fechaNacimiento
+      calificacion
+      numResenas
+      notificationToken
+      verified
+    }
+  }
+`;
 
 export default function ({ children }: PropsWithChildren<any>) {
   const defultUSR = {
@@ -14,20 +42,39 @@ export default function ({ children }: PropsWithChildren<any>) {
 
   const [usuario, setUsuario] = useState<Usuario>(defultUSR);
 
-  function fetchUsuario(sub: string) {
-    DataStore.query(Usuario, sub).then((r) => {
-      if (!r) {
-        throw new Error(
-          "Error, no hay usuario en la base de datos con el id: " +
-            r +
-            " para asignar al use context"
-        );
-      }
+  async function fetchUsuario(sub: string, api?: boolean) {
+    if (api) {
+      setUsuario(
+        await (
+          API.graphql({
+            query: getUsuario,
+            variables: { id: sub },
+          }) as any
+        ).then((r: any) => {
+          r = r.data.getUsuario;
 
-      console.log("Usuario obtenido de database");
-      setUsuario(r);
-    });
+          console.log(r);
+
+          return r;
+        })
+      );
+    } else {
+      DataStore.query(Usuario, sub).then((r) => {
+        if (!r) {
+          throw new Error(
+            "Error, no hay usuario en la base de datos con el id: " +
+              r +
+              " para asignar al use context"
+          );
+        }
+
+        console.log("Usuario obtenido de database");
+        setUsuario(r);
+      });
+    }
   }
+
+  const [registrado, setRegistrado] = useState(false);
 
   // Escuchar actualizaciones a auth para asignar al usuario local
   useEffect(() => {
@@ -50,14 +97,19 @@ export default function ({ children }: PropsWithChildren<any>) {
             );
           }
 
-          fetchUsuario(username);
+          fetchUsuario(username, registrado);
           break;
+
         case "signOut":
           // Borrar usuario default
           setUsuario(defultUSR);
 
           // cancelAllScheduledNotificationsAsync();
           // Bugsnag.setUser("", "", "");
+          break;
+
+        case "signUp":
+          setRegistrado(true);
           break;
 
         default:

@@ -9,7 +9,8 @@
       "UnauthRoleName": "amplify-partyus-staging-204926-unauthRole",
       "StackName": "amplify-partyus-staging-204926",
       "StackId": "arn:aws:cloudformation:us-east-1:832832547198:stack/amplify-partyus-staging-204926/e7d676c0-2712-11ed-afad-0a4675a43ea3",
-      "AmplifyAppId": "d2wgqt4140r1d2"
+      "AmplifyAppId": "d2wgqt4140r1d2",
+      "APIGatewayAuthURL": "https://s3.amazonaws.com/amplify-partyus-staging-204926-deployment/amplify-cfn-templates/api/APIGatewayAuthStack.json"
     },
     "categories": {
       "auth": {
@@ -19,11 +20,15 @@
       "function": {
         "postSignUpPARTYUS": {
           "deploymentBucketName": "amplify-partyus-staging-204926-deployment",
-          "s3Key": "amplify-builds/postSignUpPARTYUS-4d322b2b686b6163434a-build.zip"
+          "s3Key": "amplify-builds/postSignUpPARTYUS-33746556353746423730-build.zip"
         },
-        "partyuscapaPostSignUp": {
+        "createReserva": {
           "deploymentBucketName": "amplify-partyus-staging-204926-deployment",
-          "s3Key": "amplify-builds/partyuscapaPostSignUp-LambdaLayerVersionda1d5a67-build.zip"
+          "s3Key": "amplify-builds/createReserva-7342627852314a6f462f-build.zip"
+        },
+        "partyuslayer": {
+          "deploymentBucketName": "amplify-partyus-staging-204926-deployment",
+          "s3Key": "amplify-builds/partyuslayer-LambdaLayerVersionec0ef47e-build.zip"
         }
       }
     }

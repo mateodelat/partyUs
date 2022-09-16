@@ -154,7 +154,8 @@ export default function ({
           .then(() => {
             Alert.alert("Exito", "Contraseña actualizada correctamente");
             Keyboard.dismiss();
-            navigation.navigate("Login", { username });
+            navigation.popToTop();
+            navigation.replace("Login", { username });
           })
           .catch((err) => {
             switch (err.message) {
@@ -198,7 +199,7 @@ export default function ({
           .then(() => {
             clearErrors();
             navigation.popToTop();
-            navigation.navigate("Login", { username });
+            navigation.replace("Login", { username });
           })
           .catch((error) => {
             switch (error.message) {

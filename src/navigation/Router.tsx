@@ -54,7 +54,7 @@ export default function () {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Boletos"
+        initialRouteName="Pagar"
         screenOptions={{
           header: ({
             route: { name },

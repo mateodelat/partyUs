@@ -142,7 +142,6 @@ export default function ({
   }
 
   function openDatePicker(type: dateType) {
-    Alert.alert("Bruno se la come");
     setFechaInicial(type === dateType.INICIAL);
     setIsDatePickerVisible(true);
   }

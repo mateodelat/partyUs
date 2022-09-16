@@ -1,5 +1,10 @@
 export type AmplifyDependentResourcesAttributes = {
     "api": {
+        "partyUsREST": {
+            "RootUrl": "string",
+            "ApiName": "string",
+            "ApiId": "string"
+        },
         "partyUsAPI": {
             "GraphQLAPIKeyOutput": "string",
             "GraphQLAPIIdOutput": "string",
@@ -24,7 +29,13 @@ export type AmplifyDependentResourcesAttributes = {
             "Region": "string",
             "LambdaExecutionRole": "string"
         },
-        "partyuscapaPostSignUp": {
+        "createReserva": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
+        },
+        "partyuslayer": {
             "Arn": "string"
         }
     },

@@ -2,6 +2,7 @@
   "permissions": {
     "api": {
       "partyUsAPI": [
+        "Query",
         "Mutation"
       ]
     }
@@ -9,7 +10,7 @@
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
-      "resourceName": "partyuscapaPostSignUp",
+      "resourceName": "partyuslayer",
       "env": "staging",
       "version": "Always choose latest version",
       "isLatestVersionSelected": true

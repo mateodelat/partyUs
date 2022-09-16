@@ -51,99 +51,6 @@ export default function ({
   route: { params: EventoType };
   navigation: NavigationProp;
 }) {
-  route.params = {
-    CreatorID: "04eba9f3-5ef3-4dd5-9f08-9777e7aaaa4f",
-    boletos: [
-      {
-        cantidad: 50,
-        createdAt: "2022-08-31T05:28:18.895Z",
-        descripcion: "",
-        eventoID: "f2dd5548-ab62-4ff0-aa5a-af7485efbed1",
-        id: "06a90ee7-7e2d-4201-8371-a097dd30dfea",
-        personasReservadas: null,
-        precio: 750,
-        titulo: "VIP",
-        updatedAt: "2022-08-31T05:28:18.895Z",
-      },
-      {
-        cantidad: 80,
-        createdAt: "2022-08-31T05:28:17.152Z",
-        descripcion: "",
-        eventoID: "f2dd5548-ab62-4ff0-aa5a-af7485efbed1",
-        id: "7843cd0e-db23-461a-9b4f-ea527a5dce2b",
-        personasReservadas: null,
-        precio: 100,
-        titulo: "Entrada normal",
-        updatedAt: "2022-08-31T05:28:17.152Z",
-      },
-    ],
-    createdAt: "2022-08-31T05:28:16.983Z",
-    detalles: null,
-    fechaFinal: 1662786000000,
-    fechaInicial: 1662753600000,
-    id: "f2dd5548-ab62-4ff0-aa5a-af7485efbed1",
-    imagenPrincipalIDX: 0,
-    imagenes: [
-      {
-        key: "https://images.unsplash.com/photo-1495837174058-628aafc7d610?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNTkz&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-        uri: "https://images.unsplash.com/photo-1495837174058-628aafc7d610?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNTkz&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-      },
-      {
-        key: "https://images.unsplash.com/photo-1627020730793-2ccb5cd55e99?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNjAx&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-        uri: "https://images.unsplash.com/photo-1627020730793-2ccb5cd55e99?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNjAx&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-      },
-      {
-        key: "https://images.unsplash.com/photo-1623788452350-4c8596ff40bb?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNjA4&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-        uri: "https://images.unsplash.com/photo-1623788452350-4c8596ff40bb?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxOTIzNjA4&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-      },
-    ],
-    musOtra: null,
-    musica: "REGGETON",
-    owner: {
-      admin: false,
-      calificacion: null,
-      createdAt: "2022-08-29T01:29:04.989Z",
-      email: "mateodelat@gmail.com",
-      fechaNacimiento: "Thu Aug 29 2002 17:00:00 GMT-0700 (MST)",
-      foto: "https://ui-avatars.com/api/?name=mateodleat&bold=true&background=000000&color=fff&length=1",
-      id: "04eba9f3-5ef3-4dd5-9f08-9777e7aaaa4f",
-      idKey: "usr-04eba9f3-5ef3-4dd5-9f08-9777e7aaaa4f|id.jpg",
-      idUploaded: true,
-      imagenFondo:
-        "https://images.unsplash.com/photo-1606104255713-cd96d1f41c28?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=500&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjYxNzM2NTQy&ixlib=rb-1.2.1&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=900",
-      materno: "rahul",
-      nickname: "mateodelat",
-      nombre: "rahul",
-      notificationToken: null,
-      numResenas: null,
-      organizador: true,
-      paterno: "rahul",
-      phoneCode: null,
-      phoneNumber: null,
-      updatedAt: "2022-08-31T19:08:35.056Z",
-      verified: true,
-    },
-    personasMax: 130,
-    personasReservadas: null,
-    precioMax: 750,
-    precioMin: 100,
-    tipoLugar: "INTERIOR",
-    titulo: "Summer fest 2022",
-    tosAceptance: {
-      hora: "2022-08-31T05:28:12.402Z",
-      ip: "10.0.2.16",
-    },
-    ubicacion: {
-      latitude: 43.67918571887254,
-      latitudeDelta: 0.05067978754303226,
-      longitude: -80.40836691856384,
-      longitudeDelta: 0.04040110856294632,
-      ubicacionId: "ChIJAAAAAAAAAAARiJVfJxIYXpE",
-      ubicacionNombre: "Grand River Grooming",
-    },
-    updatedAt: "2022-08-31T05:28:16.983Z",
-  } as any;
-
   const { id: eventID } = route.params;
 
   enum cuponEnum {
@@ -152,7 +59,9 @@ export default function ({
     "Invalido",
   }
 
-  const [boletos, setBoletos] = useState<BoletoType[]>(route.params.boletos);
+  const [boletos, setBoletos] = useState<BoletoType[]>([
+    ...route.params.boletos,
+  ]);
   const [descriptionShownIdx, setDescriptionShownIdx] = useState<number>();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -167,6 +76,8 @@ export default function ({
   boletos.map((e) => {
     let { quantity } = e;
     quantity = quantity ? quantity : 0;
+
+    if (!e.precio) return;
 
     subtotal += e.precio * quantity;
     comision += precioConComision(e.precio) * quantity - e.precio * quantity;
@@ -185,11 +96,6 @@ export default function ({
 
   // Agregar suscripcion para cambio de tipo de boletos
   useEffect(() => {
-    setBoletos((pre) => {
-      pre = pre.sort((a, b) => (a.precio < b.precio) as any);
-      return pre;
-    });
-
     const sub = DataStore.observe(Boleto, (fe) =>
       fe.eventoID("eq", eventID)
     ).subscribe(async (msg) => {
@@ -201,7 +107,7 @@ export default function ({
         Alert.alert("Atencion", "Boleto " + titulo + " agregado");
 
         neBol = [...neBol, msg.element].sort(
-          (a, b) => (a.precio < b.precio) as any
+          (a: any, b: any) => (a.precio < b.precio) as any
         );
       }
       // Boleto actualizado
@@ -219,7 +125,11 @@ export default function ({
         Alert.alert("Atencion", "Boleto " + titulo + " borrado");
       }
 
-      setBoletos(neBol);
+      console.log({
+        neBol,
+      });
+
+      // setBoletos(neBol);
     });
 
     return () => {
@@ -228,10 +138,14 @@ export default function ({
   }, []);
 
   function handleContinuar() {
-    // Verificar que los boletos sigan disponibles
+    // Verificar que haya seleccionado boletos
 
-    // console.log({ ...route.params, boletos, descuento, total });
+    let existenBoletos = !!boletos.find((e) => !!e.quantity);
 
+    if (!existenBoletos) {
+      Alert.alert("Error", "Agrega minimo un boleto");
+      return;
+    }
     navigation.navigate("Pagar", {
       ...route.params,
       boletos,
@@ -242,10 +156,11 @@ export default function ({
 
   function handleBoletoChange(minus: boolean, cambio: number, idx: number) {
     setBoletos((prev) => {
+      const i = new Date();
       let cantidad = !!prev[idx].quantity ? (prev[idx].quantity as number) : 0;
 
-      const max =
-        prev[idx].cantidad -
+      let max =
+        (prev[idx].cantidad as any) -
         (prev[idx].personasReservadas
           ? (prev[idx].personasReservadas as number)
           : 0);
@@ -258,7 +173,10 @@ export default function ({
 
       cantidad = cambio === 0 && minus ? 0 : redondear(cantidad, cambio);
 
-      prev[idx].quantity = cantidad;
+      prev[idx] = {
+        ...prev[idx],
+        quantity: cantidad,
+      };
 
       return [...prev];
     });
