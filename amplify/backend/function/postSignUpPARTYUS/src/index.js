@@ -61,9 +61,7 @@ async function createCustomer({
 
   return await axios(config).then(
     (r) => {
-      console.log("Data de create customer: ", r)
-
-      return r.data;
+      return r.data.id;
     }
   );
 }
@@ -84,10 +82,18 @@ exports.handler = async (event, context, callback) => {
   const attributes = event.request.userAttributes;
 
 
+  // Crear customer de stripe
+  const stripeCustomerID = await createCustomer({
+    email: attributes.email,
+    name: attributes.nickname,
+    id: sub
+  })
+
   const input = {
     id: sub,
     nickname: attributes.nickname,
     email: attributes.email,
+    stripeCustomerID,
 
     // Generar foto de perfil con letra inicial
     foto: generateProfilePicture(attributes.nickname),
@@ -96,12 +102,6 @@ exports.handler = async (event, context, callback) => {
   };
   console.log("Atributos recibidos en crear usuario: ", input);
 
-  // Crear customer de stripe
-  await createCustomer({
-    email: attributes.email,
-    name: attributes.nickname,
-    id: sub
-  })
 
   if (input.id) {
     // Informacion para conectarse a graphql
@@ -109,6 +109,8 @@ exports.handler = async (event, context, callback) => {
     const headers = {
       "x-api-key": process.env.API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT,
     };
+
+
 
     const client = new GraphQLClient(endpoint, { headers });
 

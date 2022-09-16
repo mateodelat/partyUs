@@ -1,5 +1,9 @@
 {
   "version": "1.0.0",
   "description": "",
-  "main": "index.js"
+  "main": "index.js",
+  "dependencies": {
+    "graphql": "^16.6.0",
+    "graphql-request": "^5.0.0"
+  }
 }

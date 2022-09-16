@@ -59,6 +59,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "direccion": {
+                    "name": "direccion",
+                    "isArray": false,
+                    "type": "AWSJSON",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "phoneNumber": {
                     "name": "phoneNumber",
                     "isArray": false,
@@ -131,6 +138,20 @@ export const schema = {
                 },
                 "notificationToken": {
                     "name": "notificationToken",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "stripeCustomerID": {
+                    "name": "stripeCustomerID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "stripeUserID": {
+                    "name": "stripeUserID",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -211,6 +232,20 @@ export const schema = {
                                 "ownerField": "owner",
                                 "allow": "owner",
                                 "identityClaim": "cognito:username",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "groupClaim": "cognito:groups",
+                                "provider": "userPools",
+                                "allow": "groups",
+                                "groups": [
+                                    "Admin"
+                                ],
                                 "operations": [
                                     "create",
                                     "update",
@@ -1271,5 +1306,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "8179e39201117178a4c00c7f91224e6f"
+    "version": "7d0ba99c2569a2e36763a7e28335c29f"
 };

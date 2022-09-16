@@ -15,6 +15,7 @@ export const createUsuario = /* GraphQL */ `
       email
       foto
       imagenFondo
+      direccion
       phoneNumber
       phoneCode
       organizador
@@ -26,6 +27,8 @@ export const createUsuario = /* GraphQL */ `
       calificacion
       numResenas
       notificationToken
+      stripeCustomerID
+      stripeUserID
       verified
       owner
       Eventos {
@@ -106,6 +109,7 @@ export const updateUsuario = /* GraphQL */ `
       email
       foto
       imagenFondo
+      direccion
       phoneNumber
       phoneCode
       organizador
@@ -117,6 +121,8 @@ export const updateUsuario = /* GraphQL */ `
       calificacion
       numResenas
       notificationToken
+      stripeCustomerID
+      stripeUserID
       verified
       owner
       Eventos {
@@ -197,6 +203,7 @@ export const deleteUsuario = /* GraphQL */ `
       email
       foto
       imagenFondo
+      direccion
       phoneNumber
       phoneCode
       organizador
@@ -208,6 +215,8 @@ export const deleteUsuario = /* GraphQL */ `
       calificacion
       numResenas
       notificationToken
+      stripeCustomerID
+      stripeUserID
       verified
       owner
       Eventos {

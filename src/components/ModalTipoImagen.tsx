@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import {
   colorFondo,
+  fetchWithTimeout,
   isUrl,
   openCameraPickerAsync,
   openImagePickerAsync,
@@ -95,7 +96,7 @@ export default function ({
 
   async function handleRandomImage() {
     setRandomLoading(true);
-    await fetch("https://picsum.photos/1100/800")
+    await fetchWithTimeout("https://picsum.photos/1100/800")
       .then((r) => {
         setImage({
           uri: r.url,

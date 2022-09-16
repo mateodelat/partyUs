@@ -12,6 +12,7 @@ export const getUsuario = /* GraphQL */ `
       email
       foto
       imagenFondo
+      direccion
       phoneNumber
       phoneCode
       organizador
@@ -23,6 +24,8 @@ export const getUsuario = /* GraphQL */ `
       calificacion
       numResenas
       notificationToken
+      stripeCustomerID
+      stripeUserID
       verified
       owner
       Eventos {
@@ -105,6 +108,7 @@ export const listUsuarios = /* GraphQL */ `
         email
         foto
         imagenFondo
+        direccion
         phoneNumber
         phoneCode
         organizador
@@ -116,6 +120,8 @@ export const listUsuarios = /* GraphQL */ `
         calificacion
         numResenas
         notificationToken
+        stripeCustomerID
+        stripeUserID
         verified
         owner
         Eventos {
@@ -159,6 +165,7 @@ export const syncUsuarios = /* GraphQL */ `
         email
         foto
         imagenFondo
+        direccion
         phoneNumber
         phoneCode
         organizador
@@ -170,6 +177,8 @@ export const syncUsuarios = /* GraphQL */ `
         calificacion
         numResenas
         notificationToken
+        stripeCustomerID
+        stripeUserID
         verified
         owner
         Eventos {

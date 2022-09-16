@@ -20,15 +20,15 @@
       "function": {
         "postSignUpPARTYUS": {
           "deploymentBucketName": "amplify-partyus-staging-204926-deployment",
-          "s3Key": "amplify-builds/postSignUpPARTYUS-33746556353746423730-build.zip"
+          "s3Key": "amplify-builds/postSignUpPARTYUS-5963356c6a7847615a30-build.zip"
         },
         "createReserva": {
           "deploymentBucketName": "amplify-partyus-staging-204926-deployment",
-          "s3Key": "amplify-builds/createReserva-7342627852314a6f462f-build.zip"
+          "s3Key": "amplify-builds/createReserva-445a4b4b743565686977-build.zip"
         },
         "partyuslayer": {
           "deploymentBucketName": "amplify-partyus-staging-204926-deployment",
-          "s3Key": "amplify-builds/partyuslayer-LambdaLayerVersionec0ef47e-build.zip"
+          "s3Key": "amplify-builds/partyuslayer-LambdaLayerVersion7d57efa3-build.zip"
         }
       }
     }

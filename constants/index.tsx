@@ -51,6 +51,15 @@ export function formatMoney(num?: number | null, hideCents?: boolean) {
 export const minEventPrice = 50;
 export const maxEventPrice = 8000;
 
+export async function fetchWithTimeout(url: string, timeout = 2000) {
+  return Promise.race([
+    fetch(url),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("timeout")), timeout)
+    ),
+  ]) as Promise<Response>;
+}
+
 export const randomImageUri = () =>
   "https://picsum.photos/300/200?random=" + Math.floor(1000 * Math.random());
 

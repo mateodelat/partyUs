@@ -527,11 +527,6 @@
     "@aws-sdk/util-buffer-from" "3.168.0"
     tslib "^2.3.1"
 
-"@types/aws-lambda@^8.10.92":
-  version "8.10.103"
-  resolved "https://registry.yarnpkg.com/@types/aws-lambda/-/aws-lambda-8.10.103.tgz#9f0d748036a206ebe4a3eb19febc53b52ee36352"
-  integrity sha512-mYWsrM5YPmnyJru7kMDX8RYSc486sDqVOP1kUdotthD3YjJ57iTBN3N7MMtL1qdVoPW2YmCnNnWscyidmPe6Gw==
-
 bowser@^2.11.0:
   version "2.11.0"
   resolved "https://registry.yarnpkg.com/bowser/-/bowser-2.11.0.tgz#5ca3c35757a7aa5771500c70a73a9f91ef420a8f"
