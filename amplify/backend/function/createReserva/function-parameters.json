@@ -7,14 +7,6 @@
       ]
     }
   },
-  "lambdaLayers": [
-    {
-      "type": "ProjectLayer",
-      "resourceName": "partyuslayer",
-      "env": "staging",
-      "version": "Always choose latest version",
-      "isLatestVersionSelected": true
-    }
-  ],
+  "lambdaLayers": [],
   "environmentVariableList": []
 }

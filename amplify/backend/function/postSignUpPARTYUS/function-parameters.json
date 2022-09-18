@@ -10,7 +10,7 @@
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
-      "resourceName": "partyuslayer",
+      "resourceName": "partyuslayerff799a71",
       "env": "staging",
       "version": "Always choose latest version",
       "isLatestVersionSelected": true

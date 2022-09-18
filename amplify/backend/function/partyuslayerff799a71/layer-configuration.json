@@ -11,16 +11,5 @@
       "runtimePluginId": "amplify-nodejs-function-runtime-provider",
       "layerExecutablePath": "nodejs"
     }
-  ],
-  "ephemeral": {
-    "layerVersionPermissionsToUpdate": {
-      "staging": {
-        "1": [
-          {
-            "type": "Public"
-          }
-        ]
-      }
-    }
-  }
+  ]
 }

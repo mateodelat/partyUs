@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "~0.27.2",
+    "openpay": "~1.0.5",
+    "aws-serverless-express": "~3.3.5",
+    "body-parser": "~1.17.1",
+    "express": "~4.15.2"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "~8.10.92"
+  }
+}

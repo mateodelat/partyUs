@@ -1,9 +1,9 @@
 {
   "version": 1,
   "paths": {
-    "/createReserva": {
-      "name": "/createReserva",
-      "lambdaFunction": "createReserva",
+    "/payments": {
+      "name": "/payments",
+      "lambdaFunction": "paymentsHandler",
       "permissions": {
         "setting": "open"
       }

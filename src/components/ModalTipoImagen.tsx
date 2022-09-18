@@ -96,7 +96,7 @@ export default function ({
 
   async function handleRandomImage() {
     setRandomLoading(true);
-    await fetchWithTimeout("https://picsum.photos/1100/800")
+    await fetchWithTimeout("https://source.unsplash.com/random/1100x800/?party")
       .then((r) => {
         setImage({
           uri: r.url,
@@ -104,7 +104,10 @@ export default function ({
         });
       })
       .catch((e) => {
-        Alert.alert("Error", "Error obteniendo imagen, intenta otro metodo");
+        Alert.alert(
+          "Error",
+          "Error obteniendo imagen, vuelve a intentarlo mas tarde"
+        );
         console.log(e);
       })
       .finally(() => {

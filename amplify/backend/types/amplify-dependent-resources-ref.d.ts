@@ -35,7 +35,16 @@ export type AmplifyDependentResourcesAttributes = {
             "Region": "string",
             "LambdaExecutionRole": "string"
         },
-        "partyuslayer": {
+        "paymentsHandler": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
+        },
+        "partyusmodule": {
+            "Arn": "string"
+        },
+        "partyuslayerff799a71": {
             "Arn": "string"
         }
     },

@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -22,13 +24,11 @@ import Boton from "../../../components/Boton";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import {
   azulClaro,
-  comisionApp,
-  formatDateShort,
+  fetchFromOpenpay,
   formatMoney,
   getUserSub,
   precioConComision,
   rojoClaro,
-  shadowMedia,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
@@ -38,147 +38,11 @@ import { Boleto, Cupon } from "../../../models";
 import Header from "../../../navigation/components/Header";
 import { SvgUri } from "react-native-svg";
 import { API, Auth, DataStore } from "aws-amplify";
+import CardInput, { saveParams } from "../../../components/CardInput";
 
 enum TipoPagoEnum {
-  "TARJETA" = "TARJETA",
+  "AGREGARTARJETA" = "AGREGARTARJETA",
   "EFECTIVO" = "EFECTIVO",
-}
-
-async function createPaymentIntent(event: {
-  body: {
-    eventoID: string;
-    usuarioID: string;
-    cuponID?: string;
-    reservaID: string;
-
-    total: number;
-    boletos: string[];
-
-    destinationStripeID: string;
-  };
-}) {
-  try {
-    let {
-      total,
-      cuponID,
-      boletos,
-      eventoID,
-      usuarioID,
-      reservaID,
-      destinationStripeID,
-    } = event.body;
-
-    ////////////////////////////////////////////////////////////////////////
-    /////////////////////////Verificaciones previas/////////////////////////
-    ////////////////////////////////////////////////////////////////////////
-    if (!boletos || boletos.length === 0) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio una lista de boletos",
-      };
-    }
-
-    if (!eventoID) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio ID de evento",
-      };
-    }
-
-    if (!usuarioID) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio ID de usuario",
-      };
-    }
-
-    if (!total) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio un precio total",
-      };
-    }
-
-    if (!reservaID) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio id de la reserva",
-      };
-    }
-
-    if (!destinationStripeID) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio la cuenta a transferir fondos",
-      };
-    }
-
-    console.log("Args de input:", event.body);
-
-    total *= 100;
-    const comisionApp = 0.15;
-
-    // Create payment intent con tarjeta y con oxxo
-    // Conviene obtener un id y desde aqui fetchear el precio de la reserva
-    let cardPaymentIntent = stripe.paymentIntents.create({
-      amount: total,
-      currency: "mxn",
-      application_fee_amount: total * comisionApp,
-      metadata: {
-        eventoID: eventoID,
-        usuarioID: usuarioID,
-        reservaID: reservaID,
-        cuponID: cuponID,
-        boletos: JSON.stringify(boletos),
-      },
-
-      // Extracto bancario
-      statement_descriptor: "PARTYUS",
-
-      transfer_data: {
-        destination: destinationStripeID,
-      },
-    });
-    let oxxoPaymentIntent = stripe.paymentIntents.create({
-      amount: total,
-      currency: "mxn",
-      application_fee_amount: total * comisionApp,
-      metadata: {
-        eventoID: eventoID,
-        usuarioID: usuarioID,
-        reservaID: reservaID,
-        cuponID: cuponID,
-        boletos: JSON.stringify(boletos),
-      },
-
-      // Extracto bancario
-      statement_descriptor: "PARTYUS",
-
-      transfer_data: {
-        destination: destinationStripeID,
-      },
-    });
-
-    await Promise.all([cardPaymentIntent, oxxoPaymentIntent]);
-
-    console.log("Payment intents results ", {
-      cardPaymentIntent,
-      oxxoPaymentIntent,
-    });
-
-    return {
-      body: {
-        cardPaymentIntent,
-        oxxoPaymentIntent,
-      },
-      statusCode: 100,
-    };
-  } catch (error: any) {
-    return {
-      statusCode: 500,
-      body: error.message ? error.message : error,
-    };
-  }
 }
 
 async function createReserva(event: {
@@ -624,14 +488,14 @@ export default function ({
       ubicacionNombre: "Shoreline Amphitheatre",
     },
     updatedAt: "2022-09-14T04:50:08.163Z",
-  };
-
-  // Variables de stripe
-  // const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  } as any;
+  const { width, height } = Dimensions.get("screen");
 
   const [clientSecret, setClientSecret] = useState(null);
   const [error, setError] = useState(false);
   const [paymentLoaded, setPaymentLoaded] = useState(false);
+
+  const [modalVisible, setModalVisible] = useState(false);
 
   const [reservaID, setReservaID] = useState(uuid.v4() as string);
 
@@ -640,33 +504,24 @@ export default function ({
 
   // Opciones que se llenan cuando damos agregar tarjeta
   const [paymentOption, setPaymentOption] = useState({});
-  const [tarjetasGuardadas, setTarjetasGuardadas] = useState([
+  const [tarjetasGuardadas, setTarjetasGuardadas] = useState<
     {
-      last4: "0021",
-      type: "MASTERCARD",
-      nombre: "Mateo de la torre",
-      icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/MasterCard_Logo.svg/2560px-MasterCard_Logo.svg.png",
-    },
-    {
-      last4: "3020",
-      nombre: "Sylvia vanesa H",
-      type: "MASTERCARD",
-      icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/MasterCard_Logo.svg/2560px-MasterCard_Logo.svg.png",
-    },
-    {
-      last4: "0021",
-      type: "VISA",
-      nombre: "Jorgito cara de pito",
-      icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/1280px-Visa_Inc._logo.svg.png",
-    },
-  ]);
+      last4: string;
+      type: string;
+      nombre: string;
+      icon?: NodeRequire;
+      localCard?: boolean;
+      tokenID?: string;
+      cardID?: string;
+    }[]
+  >([]);
 
   const [tipoPago, setTipoPago] = useState<TipoPagoEnum | number>();
 
   // UI del boton
   const [buttonLoading, setButtonLoading] = useState(false);
 
-  const [sub, setSub] = useState("");
+  const [sub, setSub] = useState<string>();
 
   const personasTotales = boletos
     .map((e: BoletoType) => {
@@ -675,7 +530,7 @@ export default function ({
 
       return quantity;
     })
-    .reduce((partialSum, a) => partialSum + a, 0);
+    .reduce((partialSum: number, a: number) => partialSum + a, 0);
 
   const precioTotal = total;
 
@@ -690,6 +545,7 @@ export default function ({
   useEffect(() => {
     getUserSub().then(setSub);
     setTarjetasGuardadas([]);
+    setButtonLoading(false);
   }, []);
 
   // useEffect(() => {
@@ -742,26 +598,56 @@ export default function ({
   };
 
   const handleConfirm = async () => {
-    const r = await createPaymentIntent({
-      body: {
-        eventoID,
-        boletos: boletos.map((e: BoletoType) => ({
-          id: e.id,
-          quantity: e.quantity ? e.quantity : 0,
-        })),
-        total,
-        usuarioID: sub,
-        cuponID: "MATEO",
-        reservaID,
-      },
-    });
-
-    console.log(r);
+    console.log("pagar");
+    // console.log(r);
   };
 
   function handleEditPayments() {
     console.log(tarjetasGuardadas);
   }
+
+  async function handleAddCard(r: saveParams) {
+    try {
+      const l = r.number.length;
+      let last4 = r.number.slice(l - 4, l);
+
+      setButtonLoading(true);
+
+      await fetchFromOpenpay("/tokens", "POST", {
+        holder_name: r.name,
+        card_number: r.number,
+        expiration_year: r.expiry.year,
+        expiration_month: r.expiry.month,
+        cvv2: r.cvv,
+      });
+
+      // Si pide que se guarde para compras futuras agregar al usuario
+      if (r.saveCard) {
+        console.log("Guardar tarjeta al usuario");
+      }
+
+      setTipoPago(0);
+
+      setTarjetasGuardadas([
+        ...tarjetasGuardadas,
+        {
+          nombre: r.name,
+          last4,
+          type: r.type,
+          icon: r.icon,
+          localCard: true,
+          tokenID: "ldkskfdsf",
+          cardID: "dsifosdnf",
+        },
+      ]);
+    } catch (error: any) {
+      setButtonLoading(false);
+      console.log(error);
+    }
+
+    setButtonLoading(false);
+  }
+
   return (
     <View style={styles.container}>
       <Header
@@ -899,7 +785,7 @@ export default function ({
                 <Pressable
                   onPress={() => {
                     setTipoPago(undefined);
-                    handleAddPaymentMethod();
+                    setModalVisible(true);
                   }}
                   style={styles.metodoDePago}
                 >
@@ -975,7 +861,11 @@ export default function ({
                               resizeMode: "contain",
                               width: 40,
                             }}
-                            source={{ uri: tarjeta.icon }}
+                            source={
+                              tarjeta.icon
+                                ? tarjeta.icon
+                                : require("../../../components/CardInput/icons/stp_card_undefined.png")
+                            }
                           />
                         </View>
 
@@ -1077,6 +967,16 @@ export default function ({
           color={azulClaro}
         />
       </View>
+      <Modal
+        animationType={"none"}
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <CardInput onAdd={handleAddCard} setModalVisible={setModalVisible} />
+      </Modal>
     </View>
   );
 }
@@ -1097,6 +997,10 @@ const styles = StyleSheet.create({
     minHeight: 100,
 
     alignItems: "center",
+  },
+
+  modalContainer: {
+    backgroundColor: "#fff",
   },
 
   imgAventura: {

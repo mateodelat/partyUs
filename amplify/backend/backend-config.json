@@ -6,7 +6,7 @@
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "createReserva",
+          "resourceName": "paymentsHandler",
           "attributes": [
             "Name",
             "Arn"
@@ -87,7 +87,7 @@
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "partyuslayer",
+          "resourceName": "partyuslayerff799a71",
           "attributes": [
             "Arn"
           ]
@@ -109,13 +109,6 @@
       "service": "Lambda",
       "dependsOn": [
         {
-          "category": "function",
-          "resourceName": "partyuslayer",
-          "attributes": [
-            "Arn"
-          ]
-        },
-        {
           "category": "api",
           "resourceName": "partyUsAPI",
           "attributes": [
@@ -126,7 +119,26 @@
         }
       ]
     },
-    "partyuslayer": {
+    "paymentsHandler": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "partyuslayerff799a71",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
+    },
+    "partyusmodule": {
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer",
+      "build": true
+    },
+    "partyuslayerff799a71": {
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer",
       "build": true

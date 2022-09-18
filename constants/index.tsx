@@ -7,6 +7,8 @@ import { Alert } from "react-native";
 import { Auth, DataStore, Storage } from "aws-amplify";
 import { Usuario } from "../src/models";
 
+import { PUBLIC_KEY } from "@env";
+
 export const rojo = "#f01829";
 export const rojoClaro = "#f34856";
 export const azulClaro = "#577590";
@@ -356,6 +358,45 @@ export function generarCurp(
     dv %= 10;
     return dv == 0 ? 0 : 10 - dv;
   }
+}
+
+export async function fetchFromOpenpay(
+  path: string,
+  type: "POST" | "CREATE" | "DELETE" | "GET",
+  input: Object
+) {
+  console.log(PUBLIC_KEY);
+  return;
+  let myHeaders = new Headers();
+  myHeaders.append("Authorization", "Basic " + PUBLIC_KEY);
+  myHeaders.append("Content-Type", "application/json");
+
+  const raw = JSON.stringify(input);
+
+  const requestOptions = {
+    method: type,
+    headers: myHeaders,
+    body: raw,
+  };
+
+  return fetch(
+    "https://sandbox-api.openpay.mx/v1/mcwffetlymvvcqthcdxu" + path,
+    requestOptions
+  ).then(async (res: any) => {
+    res = await res.json();
+
+    if (res.error_code) {
+      Alert.alert(
+        "Error",
+        res.description ? res.description : JSON.stringify(res)
+      );
+
+      throw {
+        ...res,
+        error: new Error(),
+      };
+    }
+  });
 }
 
 export const redondear = (

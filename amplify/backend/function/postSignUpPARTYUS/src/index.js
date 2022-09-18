@@ -9,7 +9,6 @@ Amplify Params - DO NOT EDIT */
 
 const axios = require('axios');
 const { GraphQLClient } = require('graphql-request');
-const qs = require('qs');
 
 
 
@@ -42,25 +41,26 @@ async function createCustomer({
   id
 }) {
 
-  const data = qs.stringify({
-    'email': email,
-    'name': name,
-    'metadata[id]': id
+  var data = JSON.stringify({
+    "name": name,
+    "email": email,
+    "external_id": id,
+    "requires_account": true
   });
 
-
-  const config = {
+  var config = {
     method: 'post',
-    url: 'https://api.stripe.com//v1/customers',
+    url: 'https://sandbox-api.openpay.mx/v1/mcwffetlymvvcqthcdxu/customers',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': 'Bearer sk_test_51LiSyAEigD6kxjjgNIdnNGVamsKTNPCVLFWBsjFLt2CMm4O82g37XxDIlCrl1KSavtWkZ4zzh7s0NXvcDCfHpJWg00WOrci3xO'
+      'Authorization': 'Basic c2tfZTI2Njg1M2IzNDcwNDQzMmIzZmJhYzg1MDc5MzUwYWM6',
+      'Content-Type': 'application/json'
     },
     data: data
   };
 
   return await axios(config).then(
     (r) => {
+      console.log(r)
       return r.data.id;
     }
   );
@@ -82,8 +82,8 @@ exports.handler = async (event, context, callback) => {
   const attributes = event.request.userAttributes;
 
 
-  // Crear customer de stripe
-  const stripeCustomerID = await createCustomer({
+  // Crear customer de plataforma pago
+  const userPaymentID = await createCustomer({
     email: attributes.email,
     name: attributes.nickname,
     id: sub
@@ -93,7 +93,7 @@ exports.handler = async (event, context, callback) => {
     id: sub,
     nickname: attributes.nickname,
     email: attributes.email,
-    stripeCustomerID,
+    userPaymentID,
 
     // Generar foto de perfil con letra inicial
     foto: generateProfilePicture(attributes.nickname),
@@ -101,7 +101,6 @@ exports.handler = async (event, context, callback) => {
     owner: sub
   };
   console.log("Atributos recibidos en crear usuario: ", input);
-
 
   if (input.id) {
     // Informacion para conectarse a graphql

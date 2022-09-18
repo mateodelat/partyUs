@@ -43,8 +43,7 @@ type Usuario
   numResenas: Int
   notificationToken: String
 
-  stripeCustomerID: String
-  stripeUserID: String
+  userPaymentID: String
 
   verified: Boolean
     @auth(
