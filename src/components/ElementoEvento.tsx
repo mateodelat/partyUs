@@ -23,7 +23,9 @@ export default function ElementoEvento({
   onPress: (an: any) => void;
   handleMore?: (an: any) => void;
 }) {
-  const imagenPrincipal = data.imagenes[data.imagenPrincipalIDX] as any;
+  const imagenPrincipal = data.imagenes[
+    data.imagenPrincipalIDX ? data.imagenPrincipalIDX : 0
+  ] as any;
 
   const fecha = new Date(data.fechaInicial ? data.fechaInicial : "error");
 

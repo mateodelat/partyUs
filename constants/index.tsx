@@ -6,8 +6,11 @@ import * as Haptics from "expo-haptics";
 import { Alert } from "react-native";
 import { Auth, DataStore, Storage } from "aws-amplify";
 import { Usuario } from "../src/models";
+import { MERCHANT_ID, PUBLIC_KEY } from "./keys";
 
-import { PUBLIC_KEY } from "@env";
+import base64 from "react-native-base64";
+import awsmobile from "../src/aws-exports";
+import { errorOpenPay } from "../types/openpay";
 
 export const rojo = "#f01829";
 export const rojoClaro = "#f34856";
@@ -108,7 +111,11 @@ export async function callGoogleVisionAsync(
   return detectedText ? JSON.stringify(detectedText) : "No hay texto";
 }
 
-export const formatDateShort = (msInicial: number, msFinal: number) => {
+export const formatDateShort = (
+  msInicial?: number | null | Date,
+  msFinal?: number
+) => {
+  if (!msInicial) return "dd mm";
   const dateInicial = new Date(msInicial);
 
   var ddInicial = String(dateInicial.getDate());
@@ -363,12 +370,11 @@ export function generarCurp(
 export async function fetchFromOpenpay(
   path: string,
   type: "POST" | "CREATE" | "DELETE" | "GET",
-  input: Object
+  input: Object,
+  production?: boolean
 ) {
-  console.log(PUBLIC_KEY);
-  return;
   let myHeaders = new Headers();
-  myHeaders.append("Authorization", "Basic " + PUBLIC_KEY);
+  myHeaders.append("Authorization", "Basic " + base64.encode(PUBLIC_KEY + ":"));
   myHeaders.append("Content-Type", "application/json");
 
   const raw = JSON.stringify(input);
@@ -379,25 +385,132 @@ export async function fetchFromOpenpay(
     body: raw,
   };
 
-  return fetch(
-    "https://sandbox-api.openpay.mx/v1/mcwffetlymvvcqthcdxu" + path,
-    requestOptions
-  ).then(async (res: any) => {
+  const url = production
+    ? "https://sandbox-api.openpay.mx/v1/"
+    : "https://sandbox-api.openpay.mx/v1/";
+
+  return fetch(url + MERCHANT_ID + path, requestOptions)
+    .catch((e) => {
+      console.log(e);
+      Alert.alert("Error", "Hubo un error");
+    })
+    .then(async (res: any) => {
+      res = await res.json();
+
+      if (res.error_code) {
+        Alert.alert(
+          "Error",
+          res.description ? res.description : JSON.stringify(res)
+        );
+
+        throw {
+          ...res,
+          error: new Error(),
+        };
+      }
+      return res;
+    });
+}
+
+export async function fetchFromAPI<T>(
+  path: string,
+  type: "POST" | "CREATE" | "DELETE" | "GET",
+  input?: Object,
+  query?: { [key: string]: string }
+) {
+  let myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+
+  let requestOptions: any = {
+    method: type,
+    headers: myHeaders,
+  };
+
+  if (input) {
+    const raw = JSON.stringify(input);
+
+    requestOptions = {
+      ...requestOptions,
+      body: raw,
+    };
+  }
+  let url = awsmobile?.aws_cloud_logic_custom[0]?.endpoint + path;
+
+  if (query) {
+    url =
+      url +
+      "?" +
+      Object.keys(query)
+        .map((key) => {
+          return `${key}=${encodeURIComponent(query[key] as string)}`;
+        })
+        .join("&");
+  }
+
+  return fetch(url, requestOptions).then(async (res: any) => {
     res = await res.json();
-
-    if (res.error_code) {
-      Alert.alert(
-        "Error",
-        res.description ? res.description : JSON.stringify(res)
-      );
-
-      throw {
-        ...res,
-        error: new Error(),
+    if (res.error) {
+      throw res as {
+        error: errorOpenPay | null;
+        body: T | null;
       };
     }
-  });
+    return res;
+  }) as Promise<{
+    error: errorOpenPay | null;
+    body: T | null;
+  }>;
 }
+
+export function normalizeCardType(tipo: string) {
+  switch (tipo) {
+    case "master-card":
+      return "mastercard";
+    case "visa":
+      return "visa";
+    case "american-express":
+      return "american_express";
+
+    default:
+      return "visa";
+  }
+}
+
+export const getCardIcon = (
+  type?: "visa" | "mastercard" | "carnet" | "american_express" | string
+) => {
+  if (!type) {
+    return require("../assets/icons/stp_card_undefined.png");
+  }
+
+  if (
+    !(type === "visa" || type === "mastercard" || type === "american_express")
+  ) {
+    type = normalizeCardType(type);
+  }
+
+  switch (type) {
+    case "visa":
+      return require("../assets/icons/stp_card_visa.png");
+
+    case "mastercard":
+      return require("../assets/icons/stp_card_mastercard.png");
+
+    case "american_express":
+      return require("../assets/icons/stp_card_amex.png");
+
+    //     case "discover":
+    //       return require("../assets/icons/stp_card_discover.png");
+    // case "jbc":
+    //   return require("../assets/icons/stp_card_jcb.png");
+
+    // case "diners":
+    //   return require("../assets/icons/stp_card_diners.png");
+
+    default:
+      return require("../assets/icons/stp_card_undefined.png");
+  }
+};
 
 export const redondear = (
   numero: number | null | undefined,
@@ -787,7 +900,7 @@ export function clearDate(date: Date | number) {
  * @param ms milisegundos o fecha
  * @returns fecha en string con el dia y el mes (dd de mmmmmmm)
  */
-export const formatDiaMesCompleto = (ms: Date | undefined) => {
+export const formatDiaMesCompleto = (ms: Date | undefined | number) => {
   if (!ms) return "-";
 
   const fecha = new Date(ms);

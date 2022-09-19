@@ -5,7 +5,6 @@ import {
   DataStore,
   Hub,
 } from "aws-amplify";
-import { StyleSheet } from "react-native";
 
 import awsconfig from "./src/aws-exports";
 
@@ -14,11 +13,14 @@ import LoginStack from "./src/navigation/LoginStack";
 import "react-native-gesture-handler";
 import { SetStateAction, useEffect, useState } from "react";
 
-import Loading from "./src/components/Loading";
 import ContextProvider from "./src/contexts/ContextProvider";
 import Router from "./src/navigation/Router";
-import { Usuario } from "./src/models";
-import { Evento } from "./src/models";
+
+import { LogBox } from "react-native";
+import ErrorWrapper from "./src/components/ErrorWrapper";
+
+LogBox.ignoreLogs([/\[WARN\] .* DataStore/g]);
+// LogBox.ignoreAllLogs();
 
 export default function App() {
   Amplify.configure({
@@ -28,6 +30,7 @@ export default function App() {
     },
   });
   const [loading, setLoading] = useState(true);
+
   // const [cargandoModelos, setCargandoModelos] = useState(false);
 
   // const [currentUser, setCurrentUser]: [
@@ -72,9 +75,11 @@ export default function App() {
   //   return <Loading />;
   // } else {
   return (
-    <ContextProvider>
-      <Router />
-    </ContextProvider>
+    <ErrorWrapper>
+      <ContextProvider>
+        <Router />
+      </ContextProvider>
+    </ErrorWrapper>
   );
   // }
 }

@@ -91,8 +91,7 @@ export declare class Usuario {
   readonly calificacion?: number | null;
   readonly numResenas?: number | null;
   readonly notificationToken?: string | null;
-  readonly stripeCustomerID?: string | null;
-  readonly stripeUserID?: string | null;
+  readonly userPaymentID?: string | null;
   readonly verified?: boolean | null;
   readonly owner?: string | null;
   readonly Eventos?: (Evento | null)[] | null;

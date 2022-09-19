@@ -161,7 +161,7 @@ export default function Agregar2({
   function handleInfoPagos() {
     Alert.alert(
       "Envio de fondos",
-      "Por contrato con la empresa de pagos, el dinero tarda 7 dias en llegar a tu cuenta bancaria"
+      "Dependiendo del tipo de pago del cliente, el dinero puede tomar hasta 7 dias en llegarte"
     );
   }
 
@@ -343,7 +343,7 @@ export default function Agregar2({
             </TouchableOpacity>
           </ScrollView>
           <Text style={styles.infoTxt}>
-            El dinero tarda 7 dias en llegar a tu banco
+            El dinero puede tardar hasta 3 dias en llegar a tu cuenta
             <Text onPress={handleInfoPagos} style={styles.masInfo}>
               {" "}
               mas info

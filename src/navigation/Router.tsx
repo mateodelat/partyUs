@@ -22,6 +22,7 @@ import LoginStack from "./LoginStack";
 
 import Boletos from "../screens/Inicio/Boletos";
 import Pagar from "../screens/Inicio/Pagar";
+import ReferenciaPago from "../screens/ReferenciaPago";
 
 function NombreApellidosOnPress({ navigation }: any) {
   const { setUsuario, usuario } = useUser();
@@ -119,6 +120,7 @@ export default function () {
           name="Pagar"
           component={Pagar}
           options={{
+            animationEnabled: false,
             headerShown: false,
           }}
         />
@@ -148,6 +150,14 @@ export default function () {
           component={NombreApellidosOnPress}
           options={{
             title: "Modifica nombre",
+          }}
+        />
+        <Stack.Screen
+          name="ReferenciaPago"
+          component={ReferenciaPago}
+          options={{
+            animationEnabled: false,
+            headerShown: false,
           }}
         />
         <Stack.Screen

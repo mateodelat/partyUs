@@ -143,15 +143,8 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "stripeCustomerID": {
-                    "name": "stripeCustomerID",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "stripeUserID": {
-                    "name": "stripeUserID",
+                "userPaymentID": {
+                    "name": "userPaymentID",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -1306,5 +1299,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "7d0ba99c2569a2e36763a7e28335c29f"
+    "version": "34b42c7b3d35e86b665cd20a7fb12517"
 };

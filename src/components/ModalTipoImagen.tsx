@@ -155,7 +155,7 @@ export default function ({
                   )}
                 </View>
 
-                <Text style={styles.subTitle}>Imagen aleatoria</Text>
+                <Text style={styles.subTitle}>Imagen aleatoria de fiesta</Text>
               </Pressable>
 
               {/* Imagen desde camara */}

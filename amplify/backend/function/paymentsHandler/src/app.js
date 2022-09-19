@@ -23,7 +23,7 @@ app.use(function (req, res, next) {
 
 
 /**********************
- * Example get method *
+ * GET obtener cuenta cliente *
  **********************/
 
 app.get('/payments', function (req, res) {
@@ -98,48 +98,146 @@ app.get('/payments/clientInfo', async function (req, res) {
 });
 
 
+/**********************
+ * GET listar tarjetas cliente *
+ **********************/
+
+app.get('/payments/card', async function (req, res) {
+  try {
+    const customer_id = req.query.customer_id
+
+    if (!customer_id) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio customer_id",
+        body: req.body
+      })
+    }
+
+    openpay.customers.cards.list(customer_id, function (error, body, response) {
+      if (error?.http_code) {
+        res.status(error?.http_code)
+      }
+
+      res.json({
+        error,
+        body
+      })
+    })
+  }
+  catch (e) {
+
+    console.log(e)
+    res.status(500)
+    res.json({
+      error: "Hubo un error",
+      body: JSON.stringify(e)
+    })
+  }
+
+});
+
+
 
 /****************************
-* Example post method *
+* POST Crear tarjeta con token *
 ****************************/
 
-app.post('/payments', function (req, res) {
+app.post('/payments/card', function (req, res) {
   // Add your code here
-  res.json({ success: 'post call succeed!', url: req.url, body: req.body })
-});
+  try {
+    const token_id = req.body.token_id
+    const device_session_id = req.body.device_session_id
+    const customer_id = req.body.customer_id
 
-app.post('/payments/*', function (req, res) {
-  // Add your code here
-  res.json({ success: 'post call succeed!', url: req.url, body: req.body })
+    if (!customer_id || !token_id || !device_session_id) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio customer_id, token_id o device_session_id",
+        body: req.body
+      })
+    }
+
+    openpay.customers.cards.create(customer_id, {
+      device_session_id,
+      token_id
+    }, function (error, body, response) {
+      if (error?.http_code) {
+        res.status(error?.http_code)
+      }
+
+      res.json({
+        error,
+        body
+      })
+    })
+  }
+  catch (e) {
+    console.log(e)
+    res.status(500)
+    res.json({
+      error: "Hubo un error",
+      body: e.message
+    })
+  }
 });
 
 /****************************
-* Example put method *
+* Borrar tarjetas cliente *
 ****************************/
+app.delete('/payments/card/:card_id', function (req, res) {
+  const { card_id } = req.params
+  const { customer_id } = req.query
 
-app.put('/payments', function (req, res) {
-  // Add your code here
-  res.json({ success: 'put call succeed!', url: req.url, body: req.body })
+  if (!customer_id) {
+    res.status(404)
+    res.json({
+      error: "Error, no se recibio customer_id",
+      body: req.query
+    })
+  }
+
+  if (!card_id) {
+    res.status(404)
+    res.json({
+      error: "Error, no se recibio card_id",
+      body: req.params
+    })
+  }
+
+
+
+  openpay.customers.cards.delete(customer_id, card_id, function (error, body, response) {
+    if (error?.http_code) {
+      res.status(error?.http_code)
+    }
+
+    res.json({
+      error,
+      body
+    })
+  })
+
 });
 
-app.put('/payments/*', function (req, res) {
-  // Add your code here
-  res.json({ success: 'put call succeed!', url: req.url, body: req.body })
-});
+// app.put('/payments/*', function (req, res) {
+//   // Add your code here
+//   res.json({ success: 'put call succeed!', url: req.url, body: req.body })
+// });
 
 /****************************
 * Example delete method *
 ****************************/
 
-app.delete('/payments', function (req, res) {
+app.delete('/card', function (req, res) {
   // Add your code here
   res.json({ success: 'delete call succeed!', url: req.url });
 });
 
-app.delete('/payments/*', function (req, res) {
-  // Add your code here
-  res.json({ success: 'delete call succeed!', url: req.url });
-});
+// app.delete('/payments/*', function (req, res) {
+//   // Add your code here
+//   res.json({ success: 'delete call succeed!', url: req.url });
+// });
 
 app.listen(3000);
 

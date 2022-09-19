@@ -12,7 +12,13 @@ import {
 import React, { useState, useEffect, useRef } from "react";
 
 import Boton from "../Boton";
-import { azulClaro, azulFondo } from "../../../constants";
+import {
+  AsyncAlert,
+  azulClaro,
+  azulFondo,
+  getCardIcon,
+  normalizeCardType,
+} from "../../../constants";
 import InputOnFocusV2 from "../InputOnFocusV2";
 import valid from "card-validator";
 import { CardNumberVerification } from "./card-number";
@@ -20,6 +26,7 @@ import { TextInputMask } from "react-native-masked-text";
 
 import { Feather } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 
 enum cardType {
   "visa" = "visa",
@@ -43,7 +50,7 @@ export type saveParams = {
   cvv: string; //"300",
   icon: NodeRequire; // Icono de la tarjeta
   name: string; //"Sam",
-  type: cardType;
+  type: "visa" | "mastercard" | "carnet" | "american_express";
   saveCard: boolean;
 };
 
@@ -52,37 +59,14 @@ export default function ({
   setModalVisible,
 }: {
   onAdd: (params: saveParams) => void;
-
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [innerModal, setInnerModal] = useState(false);
 
-  const [cvv, setCvv] = useState<input>({
-    validation: {
-      isPotentiallyValid: true,
-      isValid: true,
-    },
-    value: "242",
-  });
-  const [expiry, setExpiry] = useState<input>({
-    validation: {
-      isPotentiallyValid: true,
-      isValid: true,
-    },
-    value: "0424",
-  });
-  const [number, setNumber] = useState<input>({
-    validation: {
-      card: {
-        cvv: 3,
-        type: "visa",
-      },
-      isPotentiallyValid: true,
-      isValid: true,
-    },
-    value: "4242424242424242",
-  });
-  const [name, setName] = useState("MATEO DE LA TORRE");
+  const [cvv, setCvv] = useState<input>();
+  const [expiry, setExpiry] = useState<input>();
+  const [number, setNumber] = useState<input>();
+  const [name, setName] = useState("");
   const [saveCard, setSaveCard] = useState(true);
 
   const numberRef = useRef<{ _inputElement: TextInputMask & TextInput }>(null);
@@ -92,9 +76,20 @@ export default function ({
     { _inputElement: TextInputMask & TextInput } & TextInput
   >(null);
 
-  const handleCloseModal = () => {
-    setModalVisible(false);
-    setInnerModal(false);
+  const handleCloseModal = async () => {
+    if (name || number || expiry || cvv) {
+      await AsyncAlert("Atencion", "Se perderan los datos de la tarjeta").then(
+        (r) => {
+          if (r) {
+            setInnerModal(false);
+            setModalVisible(false);
+          }
+        }
+      );
+    } else {
+      setInnerModal(false);
+      setModalVisible(false);
+    }
   };
 
   useEffect(() => {
@@ -120,6 +115,10 @@ export default function ({
       return;
     }
 
+    const tipoTarjeta = normalizeCardType(
+      number.validation.card?.type as cardType
+    );
+
     onAdd({
       cvv: cvv?.value,
       expiry: {
@@ -128,8 +127,8 @@ export default function ({
       },
       number: number?.value,
       name,
-      icon: icon(number.validation.card?.type),
-      type: number.validation.card?.type as cardType,
+      icon: getCardIcon(tipoTarjeta),
+      type: normalizeCardType(number.validation.card?.type as cardType),
       saveCard,
     });
     setModalVisible(false);
@@ -143,31 +142,6 @@ export default function ({
       : issuer === "american-express"
       ? "amex"
       : undefined;
-
-  const icon = (type?: string) => {
-    switch (type) {
-      case "visa":
-        return require("./icons/stp_card_visa.png");
-
-      case "mastercard":
-        return require("./icons/stp_card_mastercard.png");
-
-      case "discover":
-        return require("./icons/stp_card_discover.png");
-
-      case "american-express":
-        return require("./icons/stp_card_amex.png");
-
-      case "jbc":
-        return require("./icons/stp_card_jcb.png");
-
-      case "diners":
-        return require("./icons/stp_card_diners.png");
-
-      default:
-        return require("./icons/stp_card_undefined.png");
-    }
-  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#00000099" }}>
@@ -183,8 +157,12 @@ export default function ({
           onPress={() => Keyboard.dismiss()}
           style={styles.modalContainer}
         >
-          <Text style={styles.title}>Agregar nueva tarjeta</Text>
-
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          >
+            <Text style={styles.title}>Agregar nueva tarjeta</Text>
+            <AntDesign name="Safety" size={24} color={azulClaro} />
+          </View>
           <View style={styles.line} />
 
           {/* Numero de tarjeta */}
@@ -244,7 +222,7 @@ export default function ({
             RightIcon={() => (
               <Image
                 style={styles.icon}
-                source={icon(number?.validation?.card?.type)}
+                source={getCardIcon(number?.validation?.card?.type)}
               />
             )}
           />
@@ -347,7 +325,7 @@ export default function ({
               RightIcon={() => {
                 return (
                   <Image
-                    source={require("./icons/stp_card_cvc_amex.png")}
+                    source={require("../../../assets/icons/stp_card_cvc_amex.png")}
                     style={{
                       width: 30,
                       height: 20,
@@ -368,6 +346,11 @@ export default function ({
             style={{ marginTop: 30 }}
             ref={nameRef}
           />
+
+          <Text style={styles.infoTxt}>
+            Al momento de crear la tarjeta se hara un cargo de 10$ para
+            verificar que es valida y se devolvera al instante
+          </Text>
 
           {/* Guardar tarjeta para compras futuras */}
           <Pressable
@@ -404,9 +387,8 @@ export default function ({
           <Boton
             style={{
               borderRadius: 10,
-              marginTop: 20,
             }}
-            titulo="Agregar tarjeta"
+            titulo="Continuar"
             onPress={handleSave}
             color={azulClaro}
           />
@@ -452,5 +434,10 @@ const styles = StyleSheet.create({
     width: 40,
     height: 25,
     marginRight: 5,
+  },
+  infoTxt: {
+    color: "#888",
+    fontSize: 12,
+    paddingTop: 10,
   },
 });

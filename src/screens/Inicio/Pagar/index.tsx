@@ -15,20 +15,25 @@ import {
 import { Entypo } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 import ElementoPersonas from "./ElementoPersonas";
-
-import uuid from "react-native-uuid";
 
 import Boton from "../../../components/Boton";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import {
   azulClaro,
+  fetchFromAPI,
   fetchFromOpenpay,
+  formatAMPM,
+  formatDateShort,
   formatMoney,
+  getCardIcon,
   getUserSub,
+  msInDay,
   precioConComision,
-  rojoClaro,
+  rojo,
+  shadowMedia,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
@@ -37,316 +42,11 @@ import { Boleto, Cupon } from "../../../models";
 
 import Header from "../../../navigation/components/Header";
 import { SvgUri } from "react-native-svg";
-import { API, Auth, DataStore } from "aws-amplify";
 import CardInput, { saveParams } from "../../../components/CardInput";
 
-enum TipoPagoEnum {
-  "AGREGARTARJETA" = "AGREGARTARJETA",
-  "EFECTIVO" = "EFECTIVO",
-}
-
-async function createReserva(event: {
-  body: {
-    eventoID: string;
-    usuarioID: string;
-    cuponID?: string;
-    reservaID: string;
-
-    total: number;
-    boletos: { quantity: number; id: string }[];
-  };
-}) {
-  try {
-    const { total, cuponID, boletos, eventoID, usuarioID, reservaID } =
-      event.body;
-
-    ////////////////////////////////////////////////////////////////////////
-    /////////////////////////Verificaciones previas/////////////////////////
-    ////////////////////////////////////////////////////////////////////////
-    if (!boletos || boletos.length === 0) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio una lista de boletos",
-      };
-    }
-
-    if (!eventoID) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio ID de evento",
-      };
-    }
-
-    if (!usuarioID) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio ID de usuario",
-      };
-    }
-
-    if (!total) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio un precio total",
-      };
-    }
-
-    if (!reservaID) {
-      return {
-        statusCode: 400,
-        body: "Error no se recibio id de reserva",
-      };
-    }
-
-    /*
-    Pedir el payment intent y verificar que:
-    El transfer data sea el id del creador del evento,
-    el precio total sea correcto,
-    */
-
-    // Funcion para sacar el query a mandar con filtro de boletosID
-    const query = (boletosID: string[]) => {
-      let string = "";
-      boletosID.map((id, idx) => {
-        string += `{id:{eq:"${id}"}},`;
-      });
-
-      if (cuponID)
-        return /* GraphQL */ `
-          query fetchData($eventoID: ID!, $cuponID: ID!) {
-            getEvento(id: $eventoID) {
-              _version
-              id
-              personasMax
-              personasReservadas
-            }
-            listBoletos(filter:{or:[${string}]}) {
-              items{
-                id
-                cantidad
-                personasReservadas
-                precio
-                eventoID
-                titulo
-                _version
-              }
-            }
-            getCupon(id: $cuponID) {
-              _version
-              id
-              cantidadDescuento
-              porcentajeDescuento
-              restantes
-            }
-          }
-        `;
-      else
-        return /* GraphQL */ `
-        query fetchData($eventoID: ID!) {
-          getEvento(id: $eventoID) {
-            _version
-            id
-            personasMax
-            personasReservadas
-          }
-          listBoletos(filter:{or:[${string}]}) {
-            items{
-              id
-              cantidad
-              personasReservadas
-              precio
-              eventoID
-              titulo
-              _version
-            }
-          }
-        }
-      `;
-    };
-
-    /* Primero hay que verificar que haya lugares disponibles en los boletos
-       y ver que el precio corresponda al dado por el cliente
-       */
-    const response = await (
-      API.graphql({
-        query: query(boletos.map((e) => e.id)),
-        variables: cuponID
-          ? {
-              eventoID,
-              cuponID,
-            }
-          : {
-              eventoID,
-            },
-      }) as any
-    ).then((r: any) => {
-      if (r.errors) {
-        throw new Error("Error obteniendo datos: " + r.errors);
-      }
-      r = r.data;
-
-      return {
-        cupon: r.getCupon,
-        evento: r.getEvento,
-        boletos: r.listBoletos.items,
-      };
-    });
-
-    const { boletos: boletosFetched, evento, cupon } = response;
-    const porcentajeDescuento = cupon?.porcentajeDescuento;
-    const cantidadDescuento = cupon?.cantidadDescuento;
-
-    let reservadosEvento = evento.personasReservadas
-      ? evento.personasReservadas
-      : 0;
-
-    //////////////////////////////////////////////////////////
-    // Verificar que el precio total coincida con el pasado //
-    //////////////////////////////////////////////////////////
-    let totalFetched = boletosFetched
-      .map((e: Boleto) => {
-        let {
-          precio,
-          id,
-          personasReservadas,
-          cantidad,
-          titulo: tituloBoleto,
-        } = e;
-        precio = precio ? precio : 0;
-        personasReservadas = personasReservadas ? personasReservadas : 0;
-        cantidad = cantidad ? cantidad : 0;
-
-        let quantity = boletos.find((e) => e.id === id)?.quantity;
-        if (!quantity) {
-          console.log(
-            "Error, no se encontro un boleto con el id obtenido de los fetched: " +
-              id
-          );
-          throw new Error(
-            "Ocurrio un error con los boletos pasados, no se encontro la cantidad"
-          );
-        }
-
-        reservadosEvento += quantity;
-
-        // Verificar que las personas reservadas mas los nuevos no exceda el maximo por boleto
-        if (personasReservadas + quantity > cantidad) {
-          throw new Error(
-            "Error el boleto tipo " +
-              tituloBoleto +
-              " tiene " +
-              personasReservadas +
-              " personas reservadas de " +
-              cantidad +
-              ". No se pudieron registrar tus " +
-              quantity +
-              " entradas"
-          );
-        }
-
-        return precioConComision(precio) * quantity;
-      })
-      .reduce((partialSum, a) => partialSum + a, 0);
-
-    totalFetched -= porcentajeDescuento
-      ? totalFetched * porcentajeDescuento
-      : cantidadDescuento
-      ? totalFetched - cantidadDescuento
-      : 0;
-    //
-    // Verificar que el precio recibido coincida con los boletos fetcheados
-    if (total !== totalFetched) {
-      return {
-        statusCode: 400,
-        body:
-          "El precio total: " +
-          total +
-          " recibido no coincide con el calculado de la base de datos: " +
-          totalFetched,
-      };
-    }
-    //
-    // Verificar que el total de personas en el evento sea menor al sumado hasta ahorita
-    if (reservadosEvento > evento.personasMax) {
-      return {
-        statusCode: 400,
-        body:
-          "El evento esta lleno con " +
-          evento.personasReservadas +
-          " de un total de " +
-          evento.personasMax,
-      };
-    }
-
-    // Mutacion para actualizar los boletos, el evento y restar el personas disponibles de cupon
-    await API.graphql({
-      query: `
-          mutation myMutation {
-            ${boletosFetched.map((e, idx) => {
-              // Actualizar personas reservadas por boleto
-
-              const boletoCliente = boletos.find((cli) => cli.id === e.id);
-              if (!boletoCliente) {
-                throw new Error(
-                  "Ocurrio un error con los boletos obtenidos de la base de datos no se encotro el que coincida con " +
-                    e.id
-                );
-              }
-
-              const personasReservadas =
-                (e.personasReservadas ? e.personasReservadas : 0) +
-                boletoCliente.quantity;
-
-              return `bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
-              id
-              personasReservadas
-            }`;
-            })}
-
-
-            ${
-              // Quitar cupon si existe ID
-              cuponID
-                ? `updateCupon(input: {id: "${cuponID}", restantes: ${
-                    cupon.restantes ? cupon.restantes - 1 : 0
-                  },_version:${cupon._version}}) {
-              id
-              restantes
-            }`
-                : ``
-            }
-
-            updateEvento(input: {id: "${
-              evento.id
-            }", personasReservadas: ${reservadosEvento}, _version:${
-        evento._version
-      }}) {
-        id
-        personasReservadas
-      }
-
-          }
-        `,
-      authMode: "AWS_IAM",
-    }).then((r) => {
-      if (r.errors)
-        throw new Error("Hubo un error actualizando el boleto " + r);
-
-      return r;
-    });
-
-    return {
-      statusCode: 100,
-      body: "La reserva fue creada con exito",
-    };
-  } catch (error: any) {
-    // console.log(error);
-    return {
-      statusCode: 500,
-      body: error.message ? error.message : error,
-    };
-  }
-}
+import OpenPay from "../../../components/OpenPay";
+import useUser from "../../../Hooks/useUser";
+import { cardType } from "../../../../types/openpay";
 
 export default function ({
   route,
@@ -489,155 +189,172 @@ export default function ({
     },
     updatedAt: "2022-09-14T04:50:08.163Z",
   } as any;
-  const { width, height } = Dimensions.get("screen");
-
-  const [clientSecret, setClientSecret] = useState(null);
-  const [error, setError] = useState(false);
-  const [paymentLoaded, setPaymentLoaded] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [reservaID, setReservaID] = useState(uuid.v4() as string);
+  const [sesionId, setSesionId] = useState<string>();
 
-  // Id de transaccion
-  const [idPago, setIdPago] = useState("");
+  const { usuario } = useUser();
 
   // Opciones que se llenan cuando damos agregar tarjeta
-  const [paymentOption, setPaymentOption] = useState({});
-  const [tarjetasGuardadas, setTarjetasGuardadas] = useState<
-    {
-      last4: string;
-      type: string;
-      nombre: string;
-      icon?: NodeRequire;
-      localCard?: boolean;
-      tokenID?: string;
-      cardID?: string;
-    }[]
-  >([]);
+  const [tarjetasGuardadas, setTarjetasGuardadas] = useState<cardType[]>([]);
 
-  const [tipoPago, setTipoPago] = useState<TipoPagoEnum | number>();
+  // Borrar metodos de pago
+  const [editing, setEditing] = useState(false);
+
+  const [tipoPago, setTipoPago] = useState<"EFECTIVO" | number>();
 
   // UI del boton
   const [buttonLoading, setButtonLoading] = useState(false);
 
   const [sub, setSub] = useState<string>();
 
-  const personasTotales = boletos
-    .map((e: BoletoType) => {
-      let { quantity } = e;
-      quantity = quantity ? quantity : 0;
-
-      return quantity;
-    })
-    .reduce((partialSum: number, a: number) => partialSum + a, 0);
-
   const precioTotal = total;
-
-  // useEffect(() => {
-  //   // Empezar a cargar el client secret primero
-  //   fetchPaymentIntent().catch((e) => {
-  //     setError(true);
-  //     console.log(e);
-  //   });
-  // }, []);
 
   useEffect(() => {
     getUserSub().then(setSub);
-    setTarjetasGuardadas([]);
+    // getUserCards();
     setButtonLoading(false);
   }, []);
-
-  // useEffect(() => {
-  //   // Una vez se obtiene preparar el modal de pago
-  //   if (clientSecret) {
-  //     initializePaymentSheet()
-  //       .then((r) => {
-  //         setPaymentLoaded(true);
-  //       })
-  //       .catch((e) => {
-  //         console.log(e);
-  //         setError(true);
-  //       });
-  //   }
-  // }, [clientSecret]);
 
   ///////////////////////////////////////////////////////////////////
   /////////////////////////////FUNCIONES/////////////////////////////
   ///////////////////////////////////////////////////////////////////
-  function verOpciones() {
-    navigation.pop();
-    navigation.pop();
-    navigation.pop();
+  function getUserCards() {
+    if (usuario.userPaymentID) {
+      fetchFromAPI<cardType[]>("/payments/card", "GET", undefined, {
+        customer_id: usuario.userPaymentID,
+      }).then(({ body }) => {
+        if (body) {
+          body = body.map((card) => {
+            return {
+              ...card,
+              icon: getCardIcon(card.brand),
+            };
+          });
+
+          setTarjetasGuardadas(body);
+          return body;
+        } else return [];
+      });
+    }
   }
 
   // Action tras darle click a agregar metodo de pago
   const handleAddPaymentMethod = async () => {
-    if (!paymentLoaded) {
-      Alert.alert(
-        "Espera",
-        "Espera unos segundos, todavia no carga la ventana de pago"
-      );
-      return;
-    }
-
-    if (error) {
-      Alert.alert(
-        "Error",
-        "Error haciendo el pago, vuelve a intentarlo mas tarde"
-      );
-      return;
-    }
-    if (clientSecret !== null) {
-      Alert.alert("Presentar modal de agregar tarjeta");
-      return;
-    } else {
-      Alert.alert("Error", "Ocurrio un error, client secret missing");
-      setError(true);
-    }
+    setEditing(false);
+    setModalVisible(true);
   };
 
   const handleConfirm = async () => {
-    console.log("pagar");
-    // console.log(r);
+    if (typeof tipoPago === "number") {
+      const selected = (
+        await Promise.all(
+          tarjetasGuardadas.map(async (e) => ({ ...e, id: await e.id }))
+        )
+      )[tipoPago];
+      console.log(selected);
+    } else if (tipoPago === "EFECTIVO") {
+      if (fechaInicial && fechaFinal) {
+        let limitDate = new Date(fechaFinal);
+        // Si la fecha final es menor a un dia se pone la fecha final como limite de pago
+        limitDate =
+          limitDate.getTime() - new Date().getTime() < msInDay
+            ? limitDate
+            : new Date(new Date().getTime() + msInDay);
+        const createdAt = new Date().getTime();
+
+        navigation.navigate("ReferenciaPago", {
+          amount: total,
+          codebar: {
+            uri: "https://sandbox-api.openpay.mx/barcode/0101990000001065?width=6&height=60&text=false",
+            number: "000020TRNIRKIYOBO5QFEX55EF0100009",
+          },
+          limitDate: limitDate.getTime(),
+          createdAt,
+        });
+      }
+    } else {
+      Alert.alert("Error", "Selecciona un metodo de pago");
+    }
   };
 
-  function handleEditPayments() {
-    console.log(tarjetasGuardadas);
+  async function handleEditPayments() {
+    setEditing(!editing);
+    setTipoPago(undefined);
   }
 
   async function handleAddCard(r: saveParams) {
+    setEditing(false);
     try {
-      const l = r.number.length;
-      let last4 = r.number.slice(l - 4, l);
-
       setButtonLoading(true);
-
-      await fetchFromOpenpay("/tokens", "POST", {
+      const tokenID = await fetchFromOpenpay("/tokens", "POST", {
         holder_name: r.name,
         card_number: r.number,
         expiration_year: r.expiry.year,
         expiration_month: r.expiry.month,
         cvv2: r.cvv,
-      });
+      }).then((r) => r.id);
+      let cardID: Promise<string | undefined> | undefined;
 
       // Si pide que se guarde para compras futuras agregar al usuario
       if (r.saveCard) {
-        console.log("Guardar tarjeta al usuario");
+        if (!tokenID) {
+          throw new Error("Falta el token ID");
+        }
+        if (!sesionId) {
+          Alert.alert(
+            "Error",
+            "Hubo un error obteninendo el identificador de tu dispositivo"
+          );
+          throw new Error("Falta el id de sesion");
+        }
+        if (!usuario.userPaymentID) {
+          Alert.alert("Error", "No se pudo guardar la tarjeta");
+          throw new Error("Usuario no tiene un id de cliente");
+        }
+
+        const input = {
+          token_id: tokenID,
+          device_session_id: sesionId,
+          customer_id: usuario.userPaymentID,
+        };
+        cardID = fetchFromAPI<cardType>("/payments/card", "POST", input)
+          .then((e) => e.body?.id)
+          .catch((e) => {
+            Alert.alert(
+              "Error",
+              "Hubo un error guardando la tarjeta: " + e.error.description
+            );
+
+            setTipoPago(undefined);
+
+            setTarjetasGuardadas((ol) => {
+              const idx = ol.findIndex((e) => e.tokenID === tokenID);
+              console.log(idx);
+              if (idx >= 0) {
+                ol.splice(idx, 1);
+              }
+              return [...ol];
+            });
+            return undefined;
+          });
       }
 
-      setTipoPago(0);
+      setTipoPago(
+        tarjetasGuardadas.length !== 0 ? tarjetasGuardadas.length : 0
+      );
 
       setTarjetasGuardadas([
         ...tarjetasGuardadas,
         {
-          nombre: r.name,
-          last4,
-          type: r.type,
+          holder_name: r.name,
+          card_number: r.number,
+          brand: r.type,
           icon: r.icon,
-          localCard: true,
-          tokenID: "ldkskfdsf",
-          cardID: "dsifosdnf",
+          saveCard: !!r.saveCard,
+          tokenID: tokenID as any,
+          id: cardID,
         },
       ]);
     } catch (error: any) {
@@ -646,6 +363,33 @@ export default function ({
     }
 
     setButtonLoading(false);
+  }
+
+  async function handleRemovePayment(idx: number) {
+    const tarjetaID = await tarjetasGuardadas[idx].id;
+    setTarjetasGuardadas(() => {
+      if (tarjetaID) {
+        if (!usuario.userPaymentID) {
+          console.log("No hay payment ID para ese usuario");
+        } else {
+          fetchFromAPI("/payments/card/" + tarjetaID, "DELETE", undefined, {
+            customer_id: usuario.userPaymentID,
+          }).catch((e) => {
+            console.log(e);
+            Alert.alert(
+              "Error",
+              "Error borrando tarjeta: " + e?.error?.description
+            );
+          });
+        }
+      } else {
+        console.log("No hay tarjeta ID");
+      }
+
+      let neCards = [...tarjetasGuardadas];
+      neCards.splice(idx, 1);
+      return [...neCards];
+    });
   }
 
   return (
@@ -708,11 +452,9 @@ export default function ({
             </View>
 
             {/* Descripcion fecha */}
-            {detalles && (
-              <Text style={{ fontSize: 12, marginTop: 10 }} numberOfLines={2}>
-                {detalles}
-              </Text>
-            )}
+            <Text style={{ fontSize: 12, marginTop: 10 }} numberOfLines={2}>
+              {formatDateShort(fechaInicial) + " " + formatAMPM(fechaInicial)}
+            </Text>
 
             <View style={styles.row}>
               {/* Guia */}
@@ -828,45 +570,77 @@ export default function ({
                       color: azulClaro,
                       padding: 20,
                       paddingVertical: 10,
+                      fontWeight: "bold",
                     }}
-                    onPress={handleEditPayments}
+                    onPress={!editing ? (handleEditPayments as any) : undefined}
                   >
-                    EDITAR
+                    {editing ? "TARJETAS" : "EDITAR"}
                   </Text>
-                  <Entypo
-                    style={{
-                      marginRight: 15,
-                    }}
-                    name="plus"
-                    size={30}
-                    color={azulClaro}
-                    onPress={handleAddPaymentMethod}
-                  />
+
+                  {editing ? (
+                    <Entypo
+                      style={{
+                        padding: 10,
+                        paddingBottom: 6,
+                        paddingRight: 18,
+                      }}
+                      name="check"
+                      size={25}
+                      color={azulClaro}
+                      onPress={() => setEditing(false)}
+                    />
+                  ) : (
+                    <Entypo
+                      style={{
+                        marginRight: 15,
+                      }}
+                      name="plus"
+                      size={30}
+                      color={azulClaro}
+                      onPress={handleAddPaymentMethod}
+                    />
+                  )}
                 </View>
 
                 {/* Mapeo de tarjetas guardadas */}
                 {tarjetasGuardadas.map((tarjeta, idx: number) => {
+                  if (!tarjeta.card_number) {
+                    return <View />;
+                  }
+                  const l = tarjeta.card_number.length;
+                  let last4 = tarjeta.card_number.slice(l - 4, l);
+
                   return (
                     <View key={idx}>
                       <Pressable
                         onPress={() => {
-                          setTipoPago(idx);
+                          !editing && setTipoPago(idx);
                         }}
                         style={styles.metodoDePago}
                       >
                         <View style={styles.iconoIzquierda}>
-                          <Image
-                            style={{
-                              height: 30,
-                              resizeMode: "contain",
-                              width: 40,
-                            }}
-                            source={
-                              tarjeta.icon
-                                ? tarjeta.icon
-                                : require("../../../components/CardInput/icons/stp_card_undefined.png")
-                            }
-                          />
+                          {editing ? (
+                            <Entypo
+                              style={{}}
+                              name="minus"
+                              size={30}
+                              color={rojo}
+                              onPress={() => handleRemovePayment(idx)}
+                            />
+                          ) : (
+                            <Image
+                              style={{
+                                height: 30,
+                                resizeMode: "contain",
+                                width: 40,
+                              }}
+                              source={
+                                tarjeta.icon
+                                  ? tarjeta.icon
+                                  : require("../../../../assets/icons/stp_card_undefined.png")
+                              }
+                            />
+                          )}
                         </View>
 
                         {/* Numero de la tarjeta y tarjetahabiente */}
@@ -877,16 +651,18 @@ export default function ({
                               color: tipoPago === idx ? "#222" : "#aaa",
                             }}
                           >
-                            **** **** **** {tarjeta.last4.toUpperCase()}
+                            **** **** **** {last4.toUpperCase()}
                           </Text>
-                          <Text
-                            style={{
-                              ...styles.tarjetahabiente,
-                              color: tipoPago === idx ? "#777" : "#ddd",
-                            }}
-                          >
-                            {tarjeta.nombre.toUpperCase()}
-                          </Text>
+                          {tarjeta.holder_name && (
+                            <Text
+                              style={{
+                                ...styles.tarjetahabiente,
+                                color: tipoPago === idx ? "#777" : "#ddd",
+                              }}
+                            >
+                              {tarjeta.holder_name?.toUpperCase()}
+                            </Text>
+                          )}
                         </View>
                         <View
                           style={{
@@ -918,15 +694,15 @@ export default function ({
 
           <Pressable
             onPress={() => {
-              setTipoPago(TipoPagoEnum.EFECTIVO);
+              setTipoPago("EFECTIVO");
             }}
             style={styles.metodoDePago}
           >
             <View style={{ ...styles.iconoIzquierda }}>
-              <SvgUri
-                width={40}
-                height={30}
-                uri={"https://cdn.worldvectorlogo.com/logos/oxxo-logo.svg"}
+              <FontAwesome5
+                name="money-bill-wave-alt"
+                size={24}
+                color={azulClaro}
               />
             </View>
 
@@ -977,6 +753,7 @@ export default function ({
       >
         <CardInput onAdd={handleAddCard} setModalVisible={setModalVisible} />
       </Modal>
+      <OpenPay onCreateSesionID={setSesionId} isProductionMode={false} />
     </View>
   );
 }

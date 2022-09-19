@@ -419,7 +419,7 @@ export default ({
           style={{ margin: handleSelectPlace ? 20 : 10, flex: 1, marginTop: 0 }}
         >
           <View style={styles.mapContainer}>
-            {locationPermision !== undefined ? (
+            {locationPermision !== undefined && region ? (
               <MapView
                 ref={map}
                 provider={"google"}
@@ -443,7 +443,7 @@ export default ({
                       }
                     : () => null
                 }
-                region={region}
+                initialRegion={region}
                 onPoiClick={
                   handleSelectPlace
                     ? ({ nativeEvent }) => {
@@ -456,7 +456,9 @@ export default ({
                 style={{
                   ...StyleSheet.absoluteFillObject,
                 }}
-                onRegionChangeComplete={setActualRegion}
+                onRegionChangeComplete={(r) => {
+                  setActualRegion(r);
+                }}
               >
                 {/* Marcador */}
                 {place && <Marker coordinate={place} />}
