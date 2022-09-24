@@ -10,25 +10,24 @@ import {
 import React from "react";
 import { AntDesign } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { ParamListBase } from "@react-navigation/native";
+import { ParamListBase, useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ({
   title,
   handleBack,
-  navigation,
   color,
   textStyle,
   style,
 }: {
   title?: string | null;
-  navigation?: StackNavigationProp<ParamListBase, string, undefined>;
   handleBack?: undefined | (() => any);
   color?: ColorValue;
   textStyle?: TextStyle;
   style?: ViewStyle;
 }) {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation() as any;
 
   return (
     <View

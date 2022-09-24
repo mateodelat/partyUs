@@ -47,12 +47,13 @@ async function createCustomer({
     "external_id": id,
     "requires_account": true
   });
+  let authKey = Buffer.from(process.env.SECRET_KEY, 'base64')
 
   var config = {
     method: 'post',
     url: 'https://sandbox-api.openpay.mx/v1/mcwffetlymvvcqthcdxu/customers',
     headers: {
-      'Authorization': 'Basic c2tfZTI2Njg1M2IzNDcwNDQzMmIzZmJhYzg1MDc5MzUwYWM6',
+      'Authorization': 'Basic ' + authKey + ":",
       'Content-Type': 'application/json'
     },
     data: data

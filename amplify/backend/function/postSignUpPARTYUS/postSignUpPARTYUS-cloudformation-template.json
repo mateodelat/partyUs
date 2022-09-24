@@ -43,6 +43,9 @@
     "functionpartyuslayerff799a71Arn": {
       "Type": "String",
       "Default": "functionpartyuslayerff799a71Arn"
+    },
+    "secretKey": {
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -106,6 +109,9 @@
             },
             "API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT": {
               "Ref": "apipartyUsAPIGraphQLAPIKeyOutput"
+            },
+            "SECRET_KEY": {
+              "Ref": "secretKey"
             }
           }
         },

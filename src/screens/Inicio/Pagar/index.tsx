@@ -22,7 +22,6 @@ import ElementoPersonas from "./ElementoPersonas";
 import Boton from "../../../components/Boton";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import {
-  azulClaro,
   fetchFromAPI,
   fetchFromOpenpay,
   formatAMPM,
@@ -34,6 +33,12 @@ import {
   precioConComision,
   rojo,
   shadowMedia,
+  rojoClaro,
+  azulClaro,
+  comisionApp,
+  AsyncAlert,
+  vibrar,
+  VibrationType,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
@@ -41,12 +46,21 @@ import { EventoType } from "../Home";
 import { Boleto, Cupon } from "../../../models";
 
 import Header from "../../../navigation/components/Header";
-import { SvgUri } from "react-native-svg";
+import uuid from "react-native-uuid";
 import CardInput, { saveParams } from "../../../components/CardInput";
 
 import OpenPay from "../../../components/OpenPay";
 import useUser from "../../../Hooks/useUser";
-import { cardType } from "../../../../types/openpay";
+import {
+  address_type,
+  cardType,
+  chargeType,
+  errorOpenPay,
+  fee_type,
+  transaction_type,
+} from "../../../../types/openpay";
+import handleCrearReserva from "./handleCrearReserva";
+import base64 from "react-native-base64";
 
 export default function ({
   route,
@@ -73,10 +87,10 @@ export default function ({
     titulo,
     fechaInicial,
     fechaFinal,
-    detalles,
     owner,
     descuento,
     id: eventoID,
+    CreatorID,
   } = {
     CreatorID: "75f153ae-e945-42fa-9e4d-d724a76d7ff7",
     _deleted: null,
@@ -209,11 +223,17 @@ export default function ({
 
   const [sub, setSub] = useState<string>();
 
+  const res = uuid.v4() as string;
+  // La pongo en estado para evitar que se cambie al actualizar
+  const [reservaID, setReservaID] = useState(res);
+
   const precioTotal = total;
 
   useEffect(() => {
     getUserSub().then(setSub);
-    // getUserCards();
+    getUserCards();
+    setReservaID(res);
+    console.log("Nuevo codigo de reserva: " + res);
     setButtonLoading(false);
   }, []);
 
@@ -247,35 +267,91 @@ export default function ({
   };
 
   const handleConfirm = async () => {
-    if (typeof tipoPago === "number") {
-      const selected = (
-        await Promise.all(
-          tarjetasGuardadas.map(async (e) => ({ ...e, id: await e.id }))
-        )
-      )[tipoPago];
-      console.log(selected);
-    } else if (tipoPago === "EFECTIVO") {
-      if (fechaInicial && fechaFinal) {
-        let limitDate = new Date(fechaFinal);
-        // Si la fecha final es menor a un dia se pone la fecha final como limite de pago
-        limitDate =
-          limitDate.getTime() - new Date().getTime() < msInDay
-            ? limitDate
-            : new Date(new Date().getTime() + msInDay);
-        const createdAt = new Date().getTime();
+    if (tipoPago === undefined) {
+      Alert.alert("Error", "Agrega un metodo de pago para continuar");
+      return;
+    }
+    let tarjetaID: undefined | string;
+    if (tipoPago !== "EFECTIVO") {
+      // Si el tipo de pago es un numero seleccionar la tarjeta de la lista
+      const tarjeta = tarjetasGuardadas[tipoPago];
+      tarjetaID = await tarjeta.id;
 
+      if (tarjeta.tokenID) {
+        tarjetaID = tarjeta.tokenID;
+      }
+
+      if (!tarjeta.tokenID && !tarjeta.allows_charges) {
+        Alert.alert(
+          "Error",
+          "No se permiten cargos en esa tarjeta, agrega otra"
+        );
+        return;
+      }
+    }
+
+    if (
+      tipoPago === "EFECTIVO" &&
+      !(await AsyncAlert(
+        "Pago en efectivo",
+        "Esto generara un voucher para pagar el boleto en cualquiera de nuestras tiendas autorizadas. ¿Quieres continuar?"
+      ))
+    )
+      return;
+
+    try {
+      setButtonLoading(true);
+
+      const result = await handleCrearReserva({
+        body: {
+          tipoPago: tipoPago === "EFECTIVO" ? "EFECTIVO" : "TARJETA",
+          boletos: boletos.map((e) => ({
+            quantity: e.quantity,
+            id: e.id,
+          })),
+          cuponID: descuento?.id ? descuento.id : undefined,
+          eventoID,
+          organizadorID: CreatorID,
+          usuarioID: sub,
+          reservaID: reservaID,
+          sourceID: tarjetaID,
+          total,
+          device_session_id: sesionId,
+        },
+      });
+
+      if (result.error) {
+        throw new Error(result.error.description);
+      }
+
+      if (result.body.tipoPago === "EFECTIVO") {
+        const { barcode_url, reference, limit } = result.body.voucher;
+        const limitDate = new Date(limit);
+
+        // Si el tipo de pago fue en efectivo, obtener la referencia y navegar a la pestaña pago
         navigation.navigate("ReferenciaPago", {
           amount: total,
+          titulo,
           codebar: {
-            uri: "https://sandbox-api.openpay.mx/barcode/0101990000001065?width=6&height=60&text=false",
-            number: "000020TRNIRKIYOBO5QFEX55EF0100009",
+            uri: barcode_url,
+            number: reference,
           },
           limitDate: limitDate.getTime(),
-          createdAt,
         });
       }
-    } else {
-      Alert.alert("Error", "Selecciona un metodo de pago");
+
+      console.log(result);
+      setButtonLoading(false);
+    } catch (error: any) {
+      setButtonLoading(false);
+      const msg = error.message
+        ? error.message
+        : error.description
+        ? error.description
+        : JSON.stringify(error);
+
+      console.log(error);
+      Alert.alert("Error", "Hubo un error guardando la reserva: " + msg);
     }
   };
 
@@ -288,12 +364,16 @@ export default function ({
     setEditing(false);
     try {
       setButtonLoading(true);
-      const tokenID = await fetchFromOpenpay("/tokens", "POST", {
-        holder_name: r.name,
-        card_number: r.number,
-        expiration_year: r.expiry.year,
-        expiration_month: r.expiry.month,
-        cvv2: r.cvv,
+      const tokenID = await fetchFromOpenpay({
+        path: "/tokens",
+        type: "POST",
+        input: {
+          holder_name: r.name,
+          card_number: r.number,
+          expiration_year: r.expiry.year,
+          expiration_month: r.expiry.month,
+          cvv2: r.cvv,
+        },
       }).then((r) => r.id);
       let cardID: Promise<string | undefined> | undefined;
 
@@ -320,7 +400,10 @@ export default function ({
           customer_id: usuario.userPaymentID,
         };
         cardID = fetchFromAPI<cardType>("/payments/card", "POST", input)
-          .then((e) => e.body?.id)
+          .then((e) => {
+            const r = e.body?.id;
+            return r;
+          })
           .catch((e) => {
             Alert.alert(
               "Error",
@@ -394,11 +477,7 @@ export default function ({
 
   return (
     <View style={styles.container}>
-      <Header
-        title={"Pagar"}
-        navigation={navigation}
-        style={{ paddingHorizontal: 5 }}
-      />
+      <Header title={"Pagar"} style={{ paddingHorizontal: 5 }} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Mostrar la aventura a pagar */}
@@ -431,7 +510,7 @@ export default function ({
                 <Octicons
                   name="verified"
                   size={20}
-                  color={azulClaro}
+                  color={rojoClaro}
                   onPress={() =>
                     Alert.alert(
                       "Verificado",
@@ -673,7 +752,7 @@ export default function ({
                           }}
                         >
                           {tipoPago === idx && (
-                            <Entypo name="check" size={30} color={azulClaro} />
+                            <Entypo name="check" size={30} color={rojoClaro} />
                           )}
                         </View>
                       </Pressable>
@@ -723,12 +802,27 @@ export default function ({
               }}
             >
               {tipoPago === "EFECTIVO" && (
-                <Entypo name="check" size={30} color={azulClaro} />
+                <Entypo name="check" size={30} color={rojoClaro} />
               )}
             </View>
           </Pressable>
         </View>
-        <View style={{ height: 40 }} />
+
+        {/* Pago seguro */}
+        <View
+          style={{
+            ...styles.row,
+            marginTop: 0,
+            padding: 20,
+            marginRight: 20,
+          }}
+        >
+          <Text style={styles.secureTxt}>
+            Tus datos se envian de forma segura con encriptación punto a punto
+            de 256 bits
+          </Text>
+          <AntDesign name="Safety" size={24} color={azulClaro} />
+        </View>
       </ScrollView>
       <View style={{ flex: 1 }} />
       <View
@@ -740,7 +834,7 @@ export default function ({
           loading={buttonLoading}
           titulo={"Confirmar"}
           onPress={handleConfirm}
-          color={azulClaro}
+          color={rojoClaro}
         />
       </View>
       <Modal
@@ -762,6 +856,12 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
     flex: 1,
+  },
+
+  secureTxt: {
+    marginLeft: 20,
+    color: "#777",
+    textAlign: "center",
   },
 
   innerContainer: {

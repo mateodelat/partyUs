@@ -50,7 +50,7 @@ export type saveParams = {
   cvv: string; //"300",
   icon: NodeRequire; // Icono de la tarjeta
   name: string; //"Sam",
-  type: "visa" | "mastercard" | "carnet" | "american_express";
+  type: "visa" | "mastercard" | "" | "american_express";
   saveCard: boolean;
 };
 
@@ -63,10 +63,36 @@ export default function ({
 }) {
   const [innerModal, setInnerModal] = useState(false);
 
-  const [cvv, setCvv] = useState<input>();
-  const [expiry, setExpiry] = useState<input>();
-  const [number, setNumber] = useState<input>();
-  const [name, setName] = useState("");
+  const [cvv, setCvv] = useState<input>({
+    value: "022",
+    validation: {
+      isPotentiallyValid: true,
+      isValid: true,
+    },
+  });
+
+  const [expiry, setExpiry] = useState<input>({
+    value: "02/24",
+    validation: {
+      isPotentiallyValid: true,
+      isValid: true,
+    },
+  });
+
+  const [number, setNumber] = useState<input>({
+    value: "4222222222222220",
+    validation: {
+      card: {
+        cvv: 3,
+        type: "visa",
+      },
+      isPotentiallyValid: true,
+      isValid: true,
+    },
+  });
+
+  const [name, setName] = useState("Test name");
+
   const [saveCard, setSaveCard] = useState(true);
 
   const numberRef = useRef<{ _inputElement: TextInputMask & TextInput }>(null);
@@ -118,7 +144,6 @@ export default function ({
     const tipoTarjeta = normalizeCardType(
       number.validation.card?.type as cardType
     );
-
     onAdd({
       cvv: cvv?.value,
       expiry: {
@@ -344,6 +369,7 @@ export default function ({
             onChangeText={setName}
             value={name}
             style={{ marginTop: 30 }}
+            onSubmitEditing={handleSave}
             ref={nameRef}
           />
 

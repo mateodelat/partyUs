@@ -42,16 +42,14 @@ export default function ({
         number: number;
       };
       limitDate: number | Date;
-      createdAt: number | Date;
-      details: string;
+      titulo: string;
     };
   };
 }) {
-  const { amount, codebar } = route.params;
-  let { limitDate, createdAt } = route.params;
-  if (limitDate && createdAt) {
+  const { amount, codebar, titulo } = route.params;
+  let { limitDate } = route.params;
+  if (limitDate) {
     limitDate = new Date(limitDate);
-    createdAt = new Date(createdAt);
   }
 
   const [showAll, setShowAll] = useState(false);
@@ -68,7 +66,6 @@ export default function ({
         const localUri = viewShowRef.current?.capture
           ? await viewShowRef.current.capture()
           : null;
-        console.log(localUri);
         !!localUri &&
           saveToLibraryAsync(localUri).then(() => setImageStatus("GUARDADA"));
       }, 10);
@@ -95,10 +92,10 @@ export default function ({
   const { top } = useSafeAreaInsets();
   return (
     <>
-      <Header title={"Nombre del evento"} style={{ paddingBottom: 0 }} />
+      <Header title={titulo} style={{ paddingBottom: 0 }} />
       <MessageBox
         message={imageStatus === "GUARDADA" ? "IMAGEN GUARDADA" : imageStatus}
-        time={imageStatus === "GUARDADA" ? 3000 : 0}
+        time={imageStatus === "GUARDADA" ? 1500 : 0}
         style={{
           top,
           paddingVertical: 10,

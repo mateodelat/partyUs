@@ -5,6 +5,7 @@ type Usuario
       { allow: owner, ownerField: "owner" }
       { allow: groups, groups: ["Admin"] }
       { allow: public, provider: apiKey, operations: [create, read] }
+      { allow: private, provider: iam, operations: [read] }
       { allow: private, operations: [read] }
     ]
   ) {
@@ -160,7 +161,7 @@ type Boleto
   precio: Float
 
   eventoID: ID @index(name: "byEvento")
-  Reservas: [Reserva] @manyToMany(relationName: "ReservasBoletos")
+  Reservas: [ReservasBoletos] @hasMany(indexName: "byBoletos", fields: ["id"])
 }
 
 type Cupon
@@ -221,11 +222,36 @@ type Reserva
 
   eventoID: ID! @index(name: "byEvento")
   usuarioID: ID! @index(name: "byUsuario")
-  cuponID: ID! @index(name: "byCupon")
+  cuponID: ID @index(name: "byCupon")
 
-  Boletos: [Boleto] @manyToMany(relationName: "ReservasBoletos")
+  Boletos: [ReservasBoletos] @hasMany(indexName: "byReserva", fields: ["id"])
 
   organizadorID: ID
+}
+
+########################################################
+###################TABLAS MANY TO MANY##################
+########################################################
+type ReservasBoletos
+  @model
+  @auth(
+    rules: [
+      # Solo lambda puede crear reserva
+      { allow: private, provider: iam }
+      #
+      # Todos los demas pueden ver la reserva
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: private, operations: [read] }
+    ]
+  ) {
+  id: ID!
+
+  boletoID: ID! @index(name: "byBoletos")
+  reservaID: ID! @index(name: "byReserva")
+  quantity: Int!
+
+  reserva: Reserva @belongsTo
+  boleto: Boleto @belongsTo
 }
 
 enum reservaCancelReason {

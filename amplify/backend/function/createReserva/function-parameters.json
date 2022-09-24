@@ -8,5 +8,14 @@
     }
   },
   "lambdaLayers": [],
-  "environmentVariableList": []
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "merchantId",
+      "environmentVariableName": "MERCHANT_ID"
+    },
+    {
+      "cloudFormationParameterName": "secretKey",
+      "environmentVariableName": "SECRET_KEY"
+    }
+  ]
 }

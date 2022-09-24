@@ -15,5 +15,11 @@
       "version": "Always choose latest version",
       "isLatestVersionSelected": true
     }
+  ],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "secretKey",
+      "environmentVariableName": "SECRET_KEY"
+    }
   ]
 }

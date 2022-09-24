@@ -22,6 +22,7 @@ import LoginStack from "./LoginStack";
 
 import Boletos from "../screens/Inicio/Boletos";
 import Pagar from "../screens/Inicio/Pagar";
+import ExitoScreen from "../screens/Inicio//Pagar/ExitoScreen";
 import ReferenciaPago from "../screens/ReferenciaPago";
 
 function NombreApellidosOnPress({ navigation }: any) {
@@ -63,7 +64,7 @@ export default function () {
             options: { title: tit },
           }) => {
             const title = tit ? tit : name;
-            return <Header title={title} navigation={navigation} />;
+            return <Header title={title} />;
           },
         }}
       >
@@ -155,6 +156,14 @@ export default function () {
         <Stack.Screen
           name="ReferenciaPago"
           component={ReferenciaPago}
+          options={{
+            animationEnabled: false,
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="ExitoScreen"
+          component={ExitoScreen}
           options={{
             animationEnabled: false,
             headerShown: false,

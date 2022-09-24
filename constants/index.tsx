@@ -367,14 +367,24 @@ export function generarCurp(
   }
 }
 
-export async function fetchFromOpenpay(
-  path: string,
-  type: "POST" | "CREATE" | "DELETE" | "GET",
-  input: Object,
-  production?: boolean
-) {
+export async function fetchFromOpenpay<T>({
+  path,
+  type,
+  input,
+  production,
+  secretKey,
+}: {
+  path: string;
+  type: "POST" | "CREATE" | "DELETE" | "GET";
+  input: Object;
+  production?: boolean;
+  secretKey?: string;
+}) {
   let myHeaders = new Headers();
-  myHeaders.append("Authorization", "Basic " + base64.encode(PUBLIC_KEY + ":"));
+  myHeaders.append(
+    "Authorization",
+    "Basic " + base64.encode((secretKey ? secretKey : PUBLIC_KEY) + ":")
+  );
   myHeaders.append("Content-Type", "application/json");
 
   const raw = JSON.stringify(input);
@@ -389,27 +399,26 @@ export async function fetchFromOpenpay(
     ? "https://sandbox-api.openpay.mx/v1/"
     : "https://sandbox-api.openpay.mx/v1/";
 
-  return fetch(url + MERCHANT_ID + path, requestOptions)
-    .catch((e) => {
-      console.log(e);
-      Alert.alert("Error", "Hubo un error");
-    })
-    .then(async (res: any) => {
+  return fetch(url + MERCHANT_ID + path, requestOptions).then(
+    async (res: any) => {
       res = await res.json();
 
       if (res.error_code) {
-        Alert.alert(
-          "Error",
-          res.description ? res.description : JSON.stringify(res)
-        );
+        // Alert.alert(
+        //   "Error",
+        //   res.description ? res.description : JSON.stringify(res)
+        // );
 
         throw {
           ...res,
-          error: new Error(),
+          error: new Error(
+            res.description ? res.description : JSON.stringify(res)
+          ),
         };
       }
-      return res;
-    });
+      return res as T;
+    }
+  );
 }
 
 export async function fetchFromAPI<T>(
@@ -466,13 +475,15 @@ export function normalizeCardType(tipo: string) {
   switch (tipo) {
     case "master-card":
       return "mastercard";
+    case "mastercard":
+      return "mastercard";
     case "visa":
       return "visa";
     case "american-express":
       return "american_express";
 
     default:
-      return "visa";
+      return "";
   }
 }
 

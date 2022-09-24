@@ -11,6 +11,14 @@
             "Name",
             "Arn"
           ]
+        },
+        {
+          "category": "function",
+          "resourceName": "createReserva",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
         }
       ]
     },
