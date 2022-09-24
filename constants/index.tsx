@@ -483,7 +483,7 @@ export function normalizeCardType(tipo: string) {
       return "american_express";
 
     default:
-      return "";
+      return;
   }
 }
 

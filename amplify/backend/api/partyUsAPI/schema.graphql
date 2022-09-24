@@ -208,10 +208,12 @@ type Reserva
   ) {
   id: ID!
   total: Float!
-  precioIndividual: Float!
   comision: Float!
   pagadoAlOrganizador: Float!
   cantidad: Int!
+
+  pagado: Boolean!
+
   pagoID: String
   ingreso: Boolean
   horaIngreso: AWSDateTime

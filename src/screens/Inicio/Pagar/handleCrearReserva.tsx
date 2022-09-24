@@ -219,9 +219,9 @@ export default async (event: {
 
       // Obtener id de pago de OPENPAY
       client: { userPaymentID: clientPaymentID, nickname: nicknameCliente },
-      // owner: { userPaymentID: ownerPaymentID },
+      owner: { userPaymentID: ownerPaymentID },
     } = response;
-    const ownerPaymentID = "ammifkd5zensfos9ypjw";
+    // const ownerPaymentID = "ammifkd5zensfos9ypjw";
 
     const porcentajeDescuento = cupon?.porcentajeDescuento;
     const cantidadDescuento = cupon?.cantidadDescuento;
@@ -263,7 +263,7 @@ export default async (event: {
       return {
         statusCode: 400,
         error: {
-          description: "no se encontro id de pago para el cliente " + usuarioID,
+          description: "no se encontro id de pago para el cliente ",
         },
       };
     }
@@ -272,9 +272,7 @@ export default async (event: {
       return {
         statusCode: 400,
         error: {
-          description:
-            "no se encontro id de pago para el creador del evento " +
-            organizadorID,
+          description: "no se encontro id de pago para el creador del evento ",
         },
       };
     }
@@ -285,8 +283,7 @@ export default async (event: {
         statusCode: 409,
         error: {
           description:
-            "el creador del evento tiene el mismo id de pago que el cliente: " +
-            ownerPaymentID,
+            "el creador del evento tiene el mismo id de pago que el cliente",
         },
       };
     }
@@ -486,6 +483,7 @@ export default async (event: {
       pagoID: body.paymentID,
       precioIndividual: total / totalPersonasReservadas,
       total,
+      pagado: tipoPago === "EFECTIVO" ? false : true,
       usuarioID,
     };
 
@@ -517,7 +515,7 @@ export default async (event: {
             bol${idx}rel: createReservasBoletos(input:{
               boletoID:"${e.id}",
               reservaID:"${reservaID}",
-              quantity:${personasReservadas}
+              quantity:${boletoCliente.quantity}
             }){
               id
             }
@@ -550,7 +548,7 @@ export default async (event: {
       console.log(r);
       body = {
         ...body,
-        reservaID: r.data?.myMutation?.createReserva?.id,
+        reservaID: r.data?.createReserva?.id,
       };
       if (r.errors)
         throw new Error("Hubo un error actualizando el boleto " + r);

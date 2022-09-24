@@ -27,6 +27,7 @@ import { TextInputMask } from "react-native-masked-text";
 import { Feather } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+import { cardBrand_type } from "../../../types/openpay";
 
 enum cardType {
   "visa" = "visa",
@@ -50,7 +51,7 @@ export type saveParams = {
   cvv: string; //"300",
   icon: NodeRequire; // Icono de la tarjeta
   name: string; //"Sam",
-  type: "visa" | "mastercard" | "" | "american_express";
+  type?: cardBrand_type;
   saveCard: boolean;
 };
 

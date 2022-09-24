@@ -117,6 +117,13 @@
       "service": "Lambda",
       "dependsOn": [
         {
+          "category": "function",
+          "resourceName": "partyuslayerff799a71",
+          "attributes": [
+            "Arn"
+          ]
+        },
+        {
           "category": "api",
           "resourceName": "partyUsAPI",
           "attributes": [
@@ -140,11 +147,6 @@
           ]
         }
       ]
-    },
-    "partyusmodule": {
-      "providerPlugin": "awscloudformation",
-      "service": "LambdaLayer",
-      "build": true
     },
     "partyuslayerff799a71": {
       "providerPlugin": "awscloudformation",

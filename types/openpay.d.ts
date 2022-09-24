@@ -1,6 +1,6 @@
 export interface cardType {
     "id"?: string | Promise<string | undefined>,
-    "type"?: string,
+    "type"?: cardBrand_type,
     "brand"?: cardBrand_type,
     "address"?: Object,
     "card_number": string,

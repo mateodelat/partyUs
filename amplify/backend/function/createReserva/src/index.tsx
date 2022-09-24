@@ -20,6 +20,7 @@ const { Sha256 } = crypto;
 const AWS_REGION = process.env.AWS_REGION || "us-east-1";
 
 const comisionApp = 0.15;
+const msInDay = 86400000;
 
 function precioConComision(inicial: number | undefined | null) {
   if (!inicial) return 0;
@@ -37,7 +38,7 @@ const redondear = (numero: number | null | undefined, entero?: number) => {
   return numero;
 };
 
-async function graphqlRequest(query: any, variables?: any) {
+async function graphqlRequest({ query, variables }) {
   const endpoint = new URL(
     process.env.API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT as any
   );
@@ -119,6 +120,8 @@ export const handler = async (event: {
     boletos?: { quantity: number; id: string }[];
 
     sourceID?: string;
+    usuarioID?: string;
+    device_session_id?: string;
   };
 }) => {
   try {
@@ -131,6 +134,8 @@ export const handler = async (event: {
       reservaID,
       tipoPago,
       sourceID,
+      usuarioID,
+      device_session_id,
     } = event.body;
 
     ////////////////////////////////////////////////////////////////////////
@@ -150,6 +155,15 @@ export const handler = async (event: {
         statusCode: 400,
         error: {
           description: "Error no se recibio ID de evento",
+        },
+      };
+    }
+
+    if (!usuarioID) {
+      return {
+        statusCode: 400,
+        error: {
+          description: "Error no se recibio ID de usuario",
         },
       };
     }
@@ -181,11 +195,20 @@ export const handler = async (event: {
       };
     }
 
-    if (tipoPago !== "TARJETA" && tipoPago !== "TIENDA") {
+    if (!device_session_id) {
       return {
         statusCode: 400,
         error: {
-          description: "Error el tipo de pago debe ser TARJETA O TIENDA",
+          description: "Error no se recibio id de sesion para pagar",
+        },
+      };
+    }
+
+    if (tipoPago !== "TARJETA" && tipoPago !== "EFECTIVO") {
+      return {
+        statusCode: 400,
+        error: {
+          description: "Error el tipo de pago debe ser TARJETA O EFECTIVO",
         },
       };
     }
@@ -206,85 +229,74 @@ export const handler = async (event: {
         string += `{id:{eq:"${id}"}},`;
       });
 
-      if (cuponID)
-        return /* GraphQL */ `
-          query fetchData($eventoID: ID!,$usuarioID:ID!, $cuponID: ID!) {
-            getEvento(id: $eventoID) {
-              CreatorID
-              _version
-              id
-              personasMax
-              personasReservadas
-            }
-            getUsuario(id:$usuarioID){
-              userPaymentID
-            }
-            listBoletos(filter:{or:[${string}]}) {
-              items{
-                id
-                cantidad
-                personasReservadas
-                precio
-                eventoID
-                titulo
+      return /* GraphQL */ `
+            query fetchData($eventoID: ID!, $usuarioID:ID!, $organizadorID:ID! ${
+              cuponID ? `,$cuponID:ID!` : ""
+            }) {
+              getEvento(id: $eventoID) {
+                CreatorID
                 _version
+                id
+                personasMax
+                personasReservadas
+                titulo
+                fechaFinal
+              }
+              cliente:getUsuario(id:$usuarioID){
+                userPaymentID,
+                nickname
+              }
+              owner:getUsuario(id:$organizadorID){
+                userPaymentID
+              }
+              listBoletos(filter:{or:[${string}]}) {
+                items{
+                  id
+                  cantidad
+                  personasReservadas
+                  precio
+                  eventoID
+                  titulo
+                  _version
+                }
+              }
+              ${
+                cuponID
+                  ? /* GraphQL */ `getCupon(id: $cuponID) {
+                _version
+                id
+                cantidadDescuento
+                porcentajeDescuento
+                restantes
+              }`
+                  : ""
               }
             }
-            getCupon(id: $cuponID) {
-              _version
-              id
-              cantidadDescuento
-              porcentajeDescuento
-              restantes
-            }
-          }
-        `;
-      else
-        return /* GraphQL */ `
-        query fetchData($eventoID: ID!,$usuarioID:ID!) {
-          getEvento(id: $eventoID) {
-            CreatorID
-            _version
-            id
-            personasMax
-            personasReservadas
-          }
-          getUsuario(id:$usuarioID){
-            userPaymentID 
-          }
-          listBoletos(filter:{or:[${string}]}) {
-            items{
-              id
-              cantidad
-              personasReservadas
-              precio
-              eventoID
-              titulo
-              _version
-            }
-          }
-        }
-      `;
+          `;
     };
 
     /*////////////////////////////////////////
-    Pedir todos los datos con id recibidos
-    ////////////////////////////////////////*/
+      Pedir todos los datos con id recibidos
+      ////////////////////////////////////////*/
     /* Primero hay que verificar que haya lugares disponibles en los boletos
-       y ver que el precio corresponda al dado por el cliente
-       */
+         y ver que el precio corresponda al dado por el cliente
+         */
     const response = await (
-      graphqlRequest(
-        query(boletos.map((e) => e.id)),
-        cuponID
+      graphqlRequest({
+        query: query(boletos.map((e) => e.id)),
+        variables: cuponID
           ? {
               eventoID,
+              usuarioID,
+              organizadorID,
               cuponID,
             }
           : {
               eventoID,
-            }
-      ) as any
+              usuarioID,
+              organizadorID,
+            },
+      }) as any
     ).then((r: any) => {
       if (r.errors) {
         throw new Error("Error obteniendo datos: " + r.errors);
@@ -295,7 +307,8 @@ export const handler = async (event: {
         cupon: r.getCupon,
         evento: r.getEvento,
         boletos: r.listBoletos.items,
-        usuario: r.getUsuario,
+        client: r.cliente,
+        owner: r.owner,
       };
     });
 
@@ -303,16 +316,30 @@ export const handler = async (event: {
       boletos: boletosFetched,
       evento,
       cupon,
-      usuario: { userPaymentID },
+
+      // Obtener id de pago de OPENPAY
+      client: { userPaymentID: clientPaymentID, nickname: nicknameCliente },
+      owner: { userPaymentID: ownerPaymentID },
     } = response;
+    // const ownerPaymentID = "ammifkd5zensfos9ypjw";
+
     const porcentajeDescuento = cupon?.porcentajeDescuento;
     const cantidadDescuento = cupon?.cantidadDescuento;
+    const totalPersonasReservadas = boletos
+      .map((e) => e.quantity)
+      .reduce((prev, a) => prev + a);
+
+    const description =
+      "Pago " +
+      totalPersonasReservadas +
+      " personas " +
+      nicknameCliente +
+      " en " +
+      evento.titulo;
 
     console.log({
-      boletosFetched,
-      evento,
-      cupon,
-      userPaymentID,
+      clientPaymentID,
+      ownerPaymentID,
     });
 
     //////////////////////////////////////////////////////////////////
@@ -332,12 +359,31 @@ export const handler = async (event: {
       };
     }
 
-    if (!userPaymentID) {
+    if (!clientPaymentID) {
       return {
         statusCode: 400,
         error: {
+          description: "no se encontro id de pago para el cliente ",
+        },
+      };
+    }
+
+    if (!ownerPaymentID) {
+      return {
+        statusCode: 400,
+        error: {
+          description: "no se encontro id de pago para el creador del evento ",
+        },
+      };
+    }
+
+    // Verificar que el owner id no sea igual a client id para evitar problemas de transferencias
+    if (ownerPaymentID === clientPaymentID) {
+      return {
+        statusCode: 409,
+        error: {
           description:
-            "Error, no se encontro id de pago para el usuario " + organizadorID,
+            "el creador del evento tiene el mismo id de pago que el cliente",
         },
       };
     }
@@ -365,8 +411,7 @@ export const handler = async (event: {
         let quantity = boletos.find((e) => e.id === id)?.quantity;
         if (!quantity) {
           console.log(
-            "Error, no se encontro un boleto con el id obtenido de los fetched: " +
-              id
+            "No se encontro un boleto con el id obtenido de los fetched: " + id
           );
           throw new Error(
             "Ocurrio un error con los boletos pasados, no se encontro la cantidad"
@@ -378,9 +423,9 @@ export const handler = async (event: {
         // Verificar que las personas reservadas mas los nuevos no exceda el maximo por boleto
         if (personasReservadas + quantity > cantidad) {
           throw new Error(
-            "Error el boleto tipo " +
+            'El boleto tipo "' +
               tituloBoleto +
-              " tiene " +
+              '" tiene ' +
               personasReservadas +
               " personas reservadas de " +
               cantidad +
@@ -400,6 +445,7 @@ export const handler = async (event: {
       ? totalFetched - cantidadDescuento
       : 0;
     //
+
     // Verificar que el precio recibido coincida con los boletos fetcheados
     if (total !== totalFetched) {
       return {
@@ -428,91 +474,219 @@ export const handler = async (event: {
       };
     }
 
-    //////////////////////////////////////////
-    // Confirmar pago con tarjeta o tokenID //
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    // Confirmar cargo, crear transaccion hacia el guia y comision de partyus //
+    ////////////////////////////////////////////////////////////////////////////
+    let limitDate = new Date(evento.fechaFinal);
+    // Si la fecha final es menor a un dia se pone la fecha final como limite de pago
+    limitDate =
+      limitDate.getTime() - new Date().getTime() < msInDay
+        ? limitDate
+        : new Date(new Date().getTime() + msInDay);
 
-    new Promise((res,rej)=>{
-    openpay.charges.create(,function (error, body, response) {
-      if (error?.http_code) {
-        rej(error)
-      }
-      if (body) {
-        res(body)
-      }
-    })
-  })
-    
-    // if (tipoPago === "TIENDA") {
-    // } else if (tipoPago === "TARJETA") {
-    // } else
-    //   return {
-    //     errorCode: 500,
-    //     error: {
-    //       description: "No se recibio tipo pago TARJETA O TIENDA",
-    //     },
-    //   };
+    let body: {
+      paymentID?: string;
+      reservaID?: string;
+      tipoPago: "EFECTIVO" | "TARJETA";
+      voucher?: {
+        barcode_url: string;
+        reference: string;
+        limitDate: number;
+      };
+    } = {
+      tipoPago,
+    };
 
+    await new Promise<void>((res, rej) => {
+      // Pago hacia la cuenta del cliente comprador del producto
+      openpay.customers.charges.create(
+        clientPaymentID,
+        {
+          device_session_id: device_session_id,
+          method: tipoPago === "EFECTIVO" ? "store" : "card",
+          source_id: sourceID,
+          amount: total,
+          description,
+          order_id: "charge>>>" + reservaID,
+          due_date: tipoPago === "EFECTIVO" ? limitDate : undefined,
+        },
+        async function (error, e) {
+          if (error) {
+            rej(error);
+          }
+          const comision = comisionApp * e.amount;
+          const enviarACreador = e.amount - comision;
+
+          body.paymentID = e.id;
+
+          if (tipoPago === "EFECTIVO") {
+            if (!e.payment_method) {
+              throw new Error(
+                "No se recibio url del voucher de la api de pagos"
+              );
+            }
+            const { barcode_url, reference } = e.payment_method;
+
+            body.voucher = {
+              barcode_url,
+              reference,
+              limitDate: limitDate.getTime(),
+            };
+            res();
+          }
+
+          await Promise.all([
+            new Promise<void>((res, rej) => {
+              // Cargo comision al comprador
+              openpay.fees.create(
+                {
+                  amount: comision,
+                  description: "Reserva: " + reservaID + " comision partyus.",
+                  order_id: "fee>>>" + reservaID,
+                  customer_id: clientPaymentID,
+                },
+                function (error, fee) {
+                  if (error) {
+                    rej("Error creando el fee sobre el cargo");
+                    throw new Error(
+                      "Error enviando fondos. Contactanos para cancelar el cargo"
+                    );
+                  }
+
+                  console.log("\nFEE RESULT:\n");
+                  console.log(fee);
+                  res();
+                }
+              );
+            }),
+            new Promise<void>((res, rej) => {
+              // Transferencia del comprador al organizador
+              openpay.customers.transfers.create(
+                clientPaymentID,
+                {
+                  customer_id: ownerPaymentID,
+                  amount: enviarACreador,
+                  description,
+                  order_id: "transfer>>>" + reservaID,
+                },
+                (error, r) => {
+                  if (error) {
+                    rej("Error creando la transferencia sobre el cargo");
+                  }
+
+                  console.log("\nTRANSFER RESULT:\n");
+                  console.log(r);
+                  res();
+                }
+              );
+            }),
+          ])
+            .then(() => {
+              res();
+            })
+            .catch((e) => {
+              console.log(e);
+              rej(e);
+            });
+        }
+      );
+    });
+
+    const reservaInput = {
+      cantidad: totalPersonasReservadas,
+      comision: total * comisionApp,
+      cuponID,
+      eventoID,
+      id: reservaID,
+      organizadorID,
+      pagadoAlOrganizador: total - total * comisionApp,
+      pagoID: body.paymentID,
+      precioIndividual: total / totalPersonasReservadas,
+      total,
+      pagado: tipoPago === "EFECTIVO" ? false : true,
+      usuarioID,
+    };
 
     // Mutacion para actualizar los boletos, el evento, crear reservacion y restar el personas disponibles de cupon
-    await graphqlRequest(`
-          mutation myMutation {
-            ${boletosFetched.map((e, idx) => {
-              // Actualizar personas reservadas por boleto
+    await (
+      graphqlRequest({
+        query: `
+        mutation myMutation($reservaInput:CreateReservaInput!) {
+          ${boletosFetched.map((e, idx) => {
+            // Actualizar personas reservadas por boleto
 
-              const boletoCliente = boletos.find((cli) => cli.id === e.id);
-              if (!boletoCliente) {
-                throw new Error(
-                  "Ocurrio un error con los boletos obtenidos de la base de datos no se encotro el que coincida con " +
-                    e.id
-                );
-              }
-
-              const personasReservadas =
-                (e.personasReservadas ? e.personasReservadas : 0) +
-                boletoCliente.quantity;
-
-              return `bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
-              id
-              personasReservadas
-            }`;
-            })}
-
-            ${
-              // Restar de cupon si existe ID
-              cuponID
-                ? `updateCupon(input: {id: "${cuponID}", restantes: ${
-                    cupon.restantes ? cupon.restantes - 1 : 0
-                  },_version:${cupon._version}}) {
-              id
-              restantes
-            }`
-                : ``
+            const boletoCliente = boletos.find((cli) => cli.id === e.id);
+            if (!boletoCliente) {
+              throw new Error(
+                "Ocurrio un error con los boletos obtenidos de la base de datos no se encotro el que coincida con " +
+                  e.id
+              );
             }
 
-            updateEvento(input: {id: "${
-              evento.id
-            }", personasReservadas: ${reservadosEvento}, _version:${
-      evento._version
-    }}) {
-        id
-        personasReservadas
-      }
+            const personasReservadas =
+              (e.personasReservadas ? e.personasReservadas : 0) +
+              boletoCliente.quantity;
 
+            return `
+            bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
+              id
+              personasReservadas
+            }
+            bol${idx}rel: createReservasBoletos(input:{
+              boletoID:"${e.id}",
+              reservaID:"${reservaID}",
+              quantity:${boletoCliente.quantity}
+            }){
+              id
+            }
+            `;
+          })}
+  
+          ${
+            // Restar de cupon si existe ID
+            cuponID
+              ? `updateCupon(input: {id: "${cuponID}", restantes: ${
+                  cupon.restantes ? cupon.restantes - 1 : 0
+                },_version:${cupon._version}}) {
+            id
+            restantes
+          }`
+              : ``
           }
-        `).then((r) => {
+  
+          createReserva(input: $reservaInput) {
+            id
+          }
+        }
+      `,
+        variables: {
+          reservaInput,
+        },
+      }) as any
+    ).then((r: any) => {
+      console.log(r);
+      body = {
+        ...body,
+        reservaID: r.data?.createReserva?.id,
+      };
       if (r.errors)
         throw new Error("Hubo un error actualizando el boleto " + r);
-
-      return r;
     });
+
+    return {
+      body,
+    };
   } catch (error: any) {
-    const msg = error.message?error.message:error.description?error.description:""
+    console.log(error);
+    const msg = error.message
+      ? error.message
+      : error.description
+      ? error.description
+      : JSON.stringify(error);
     return {
       statusCode: 500,
       error: {
-        ...error,
-        description:msg
+        description: msg,
       },
     };
   }

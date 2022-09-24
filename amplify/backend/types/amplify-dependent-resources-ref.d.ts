@@ -41,9 +41,6 @@ export type AmplifyDependentResourcesAttributes = {
             "Region": "string",
             "LambdaExecutionRole": "string"
         },
-        "partyusmodule": {
-            "Arn": "string"
-        },
         "partyuslayerff799a71": {
             "Arn": "string"
         }

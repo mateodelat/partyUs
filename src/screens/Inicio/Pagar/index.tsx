@@ -319,13 +319,28 @@ export default function ({
           device_session_id: sesionId,
         },
       });
+      if (!result) {
+        throw new Error("No se recibio ningun resultado");
+      }
 
-      if (result.error) {
-        throw new Error(result.error.description);
+      if (result?.error) {
+        throw new Error(result?.error?.description);
+      }
+      if (!result.body) {
+        throw new Error(
+          "No se recibio body pero puede ser que la reserva se realizo correctamente"
+        );
       }
 
       if (result.body.tipoPago === "EFECTIVO") {
-        const { barcode_url, reference, limit } = result.body.voucher;
+        if (!result.body.voucher) {
+          throw new Error("No se devolvio voucher de pago en efectivo");
+        }
+        const {
+          barcode_url,
+          reference,
+          limitDate: limit,
+        } = result.body.voucher;
         const limitDate = new Date(limit);
 
         // Si el tipo de pago fue en efectivo, obtener la referencia y navegar a la pestaña pago
@@ -351,7 +366,7 @@ export default function ({
         : JSON.stringify(error);
 
       console.log(error);
-      Alert.alert("Error", "Hubo un error guardando la reserva: " + msg);
+      Alert.alert("Error", "Hubo un error guardando la reserva: \n" + msg);
     }
   };
 
@@ -364,7 +379,7 @@ export default function ({
     setEditing(false);
     try {
       setButtonLoading(true);
-      const tokenID = await fetchFromOpenpay({
+      const tokenID = await fetchFromOpenpay<cardType>({
         path: "/tokens",
         type: "POST",
         input: {
