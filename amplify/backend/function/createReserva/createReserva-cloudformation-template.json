@@ -16,10 +16,6 @@
     "s3Key": {
       "Type": "String"
     },
-    "functionpartyuscapaPostSignUpArn": {
-      "Type": "String",
-      "Default": "functionpartyuscapaPostSignUpArn"
-    },
     "apipartyUsAPIGraphQLAPIIdOutput": {
       "Type": "String",
       "Default": "apipartyUsAPIGraphQLAPIIdOutput"
@@ -36,9 +32,9 @@
       "Type": "String",
       "Default": "functionpartyuslayerArn"
     },
-    "functionpartyuslayerff799a71Arn": {
+    "functionpartyusmodulelayerArn": {
       "Type": "String",
-      "Default": "functionpartyuslayerff799a71Arn"
+      "Default": "functionpartyusmodulelayerArn"
     },
     "merchantId": {
       "Type": "String"
@@ -126,7 +122,10 @@
         "Runtime": "nodejs14.x",
         "Layers": [
           {
-            "Ref": "functionpartyuslayerff799a71Arn"
+            "Ref": "functionpartyusmodulelayerArn"
+          },
+          {
+            "Ref": "functionpartyuslayerArn"
           }
         ],
         "Timeout": 25
@@ -138,12 +137,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "partyusLambdaRole25dd5335",
+            "partyusLambdaRole55f66023",
             {
               "Fn::Join": [
                 "",
                 [
-                  "partyusLambdaRole25dd5335",
+                  "partyusLambdaRole55f66023",
                   "-",
                   {
                     "Ref": "env"

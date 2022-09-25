@@ -1,7 +1,7 @@
 {
   "permissions": [
     {
-      "type": "Public"
+      "type": "Private"
     }
   ],
   "runtimes": [

@@ -20,10 +20,6 @@
       "Type": "String",
       "Default": "functionpartyuslayerArn"
     },
-    "functionpartyuslayerff799a71Arn": {
-      "Type": "String",
-      "Default": "functionpartyuslayerff799a71Arn"
-    },
     "merchantId": {
       "Type": "String"
     },
@@ -101,7 +97,7 @@
         "Runtime": "nodejs14.x",
         "Layers": [
           {
-            "Ref": "functionpartyuslayerff799a71Arn"
+            "Ref": "functionpartyuslayerArn"
           }
         ],
         "Timeout": 25
@@ -113,12 +109,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "partyusLambdaRole866fb160",
+            "partyusLambdaRole94b2b566",
             {
               "Fn::Join": [
                 "",
                 [
-                  "partyusLambdaRole866fb160",
+                  "partyusLambdaRole94b2b566",
                   "-",
                   {
                     "Ref": "env"

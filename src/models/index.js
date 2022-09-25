@@ -44,16 +44,16 @@ const TipoNotificacion = {
   "CALIFICAUSUARIO": "CALIFICAUSUARIO"
 };
 
-const { Usuario, Evento, Boleto, Reserva, Notificacion, Cupon, ReservasBoletos } = initSchema(schema);
+const { Usuario, Evento, Boleto, ReservasBoletos, Reserva, Notificacion, Cupon } = initSchema(schema);
 
 export {
   Usuario,
   Evento,
   Boleto,
+  ReservasBoletos,
   Reserva,
   Notificacion,
   Cupon,
-  ReservasBoletos,
   PlaceEnum,
   MusicEnum,
   ComoditiesEnum,

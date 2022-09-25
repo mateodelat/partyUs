@@ -1,16 +1,16 @@
 {
   "version": 1,
   "paths": {
-    "/payments": {
-      "name": "/payments",
-      "lambdaFunction": "paymentsHandler",
+    "/createReserva": {
+      "name": "/createReserva",
+      "lambdaFunction": "createReserva",
       "permissions": {
         "setting": "open"
       }
     },
-    "/createReserva": {
-      "name": "/createReserva",
-      "lambdaFunction": "createReserva",
+    "/payments": {
+      "name": "/payments",
+      "lambdaFunction": "paymentsHandler",
       "permissions": {
         "setting": "open"
       }

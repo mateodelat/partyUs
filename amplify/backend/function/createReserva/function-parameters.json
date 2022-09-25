@@ -10,8 +10,15 @@
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
-      "resourceName": "partyuslayerff799a71",
-      "env": "staging",
+      "resourceName": "partyusmodulelayer",
+      "env": "dev",
+      "version": "Always choose latest version",
+      "isLatestVersionSelected": true
+    },
+    {
+      "type": "ProjectLayer",
+      "resourceName": "partyuslayer",
+      "env": "dev",
       "version": "Always choose latest version",
       "isLatestVersionSelected": true
     }

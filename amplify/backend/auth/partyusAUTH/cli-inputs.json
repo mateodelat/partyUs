@@ -1,10 +1,10 @@
 {
   "version": "1",
   "cognitoConfig": {
-    "identityPoolName": "partyus82cb367f_identitypool_82cb367f",
-    "allowUnauthenticatedIdentities": true,
-    "resourceNameTruncated": "partyu82cb367f",
-    "userPoolName": "partyus82cb367f_userpool_82cb367f",
+    "identityPoolName": "partyusauth_identitypool",
+    "allowUnauthenticatedIdentities": false,
+    "resourceNameTruncated": "partyu27304814",
+    "userPoolName": "partyus_userpool",
     "autoVerifiedAttributes": [
       "email"
     ],
@@ -16,7 +16,7 @@
     "smsVerificationMessage": "Your verification code is {####}",
     "emailVerificationSubject": "Your verification code",
     "emailVerificationMessage": "Your verification code is {####}",
-    "defaultPasswordPolicy": false,
+    "defaultPasswordPolicy": true,
     "passwordPolicyMinLength": 8,
     "passwordPolicyCharacters": [],
     "requiredAttributes": [
@@ -31,16 +31,19 @@
     "userpoolClientReadAttributes": [
       "email"
     ],
-    "userpoolClientLambdaRole": "partyu82cb367f_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "partyu27304814_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "sharedId": "82cb367f",
-    "resourceName": "partyus82cb367f",
+    "sharedId": "27304814",
+    "resourceName": "partyusAUTH",
     "authSelections": "identityPoolAndUserPool",
     "useDefault": "default",
     "usernameAttributes": [
-      "email"
+      "email, phone_number"
     ],
+    "userPoolGroups": false,
+    "adminQueries": false,
     "triggers": {},
+    "hostedUI": false,
     "userPoolGroupList": [],
     "serviceName": "Cognito",
     "usernameCaseSensitive": false,
@@ -58,6 +61,11 @@
       ]
     },
     "breakCircularDependency": true,
-    "dependsOn": []
+    "dependsOn": [],
+    "authProviders": [],
+    "parentStack": {
+      "Ref": "AWS::StackId"
+    },
+    "permissions": []
   }
 }

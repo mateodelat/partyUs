@@ -24,8 +24,7 @@ export const getUsuario = /* GraphQL */ `
       calificacion
       numResenas
       notificationToken
-      stripeCustomerID
-      stripeUserID
+      userPaymentID
       verified
       owner
       Eventos {
@@ -61,10 +60,10 @@ export const getUsuario = /* GraphQL */ `
         items {
           id
           total
-          precioIndividual
           comision
           pagadoAlOrganizador
           cantidad
+          pagado
           pagoID
           ingreso
           horaIngreso
@@ -120,8 +119,7 @@ export const listUsuarios = /* GraphQL */ `
         calificacion
         numResenas
         notificationToken
-        stripeCustomerID
-        stripeUserID
+        userPaymentID
         verified
         owner
         Eventos {
@@ -177,8 +175,7 @@ export const syncUsuarios = /* GraphQL */ `
         calificacion
         numResenas
         notificationToken
-        stripeCustomerID
-        stripeUserID
+        userPaymentID
         verified
         owner
         Eventos {
@@ -244,10 +241,10 @@ export const getEvento = /* GraphQL */ `
         items {
           id
           total
-          precioIndividual
           comision
           pagadoAlOrganizador
           cantidad
+          pagado
           pagoID
           ingreso
           horaIngreso
@@ -480,13 +477,12 @@ export const getBoleto = /* GraphQL */ `
           id
           boletoID
           reservaID
+          quantity
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
-          owner
-          usuarioID
         }
         nextToken
         startedAt
@@ -580,10 +576,10 @@ export const getCupon = /* GraphQL */ `
         items {
           id
           total
-          precioIndividual
           comision
           pagadoAlOrganizador
           cantidad
+          pagado
           pagoID
           ingreso
           horaIngreso
@@ -678,10 +674,10 @@ export const getReserva = /* GraphQL */ `
     getReserva(id: $id) {
       id
       total
-      precioIndividual
       comision
       pagadoAlOrganizador
       cantidad
+      pagado
       pagoID
       ingreso
       horaIngreso
@@ -696,13 +692,12 @@ export const getReserva = /* GraphQL */ `
           id
           boletoID
           reservaID
+          quantity
           createdAt
           updatedAt
           _version
           _deleted
           _lastChangedAt
-          owner
-          usuarioID
         }
         nextToken
         startedAt
@@ -726,10 +721,10 @@ export const listReservas = /* GraphQL */ `
       items {
         id
         total
-        precioIndividual
         comision
         pagadoAlOrganizador
         cantidad
+        pagado
         pagoID
         ingreso
         horaIngreso
@@ -771,10 +766,10 @@ export const syncReservas = /* GraphQL */ `
       items {
         id
         total
-        precioIndividual
         comision
         pagadoAlOrganizador
         cantidad
+        pagado
         pagoID
         ingreso
         horaIngreso
@@ -806,32 +801,14 @@ export const getReservasBoletos = /* GraphQL */ `
       id
       boletoID
       reservaID
-      boleto {
-        id
-        titulo
-        descripcion
-        cantidad
-        personasReservadas
-        precio
-        eventoID
-        Reservas {
-          nextToken
-          startedAt
-        }
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        owner
-      }
+      quantity
       reserva {
         id
         total
-        precioIndividual
         comision
         pagadoAlOrganizador
         cantidad
+        pagado
         pagoID
         ingreso
         horaIngreso
@@ -852,13 +829,30 @@ export const getReservasBoletos = /* GraphQL */ `
         _deleted
         _lastChangedAt
       }
+      boleto {
+        id
+        titulo
+        descripcion
+        cantidad
+        personasReservadas
+        precio
+        eventoID
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        owner
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      owner
-      usuarioID
     }
   }
 `;
@@ -873,28 +867,14 @@ export const listReservasBoletos = /* GraphQL */ `
         id
         boletoID
         reservaID
-        boleto {
-          id
-          titulo
-          descripcion
-          cantidad
-          personasReservadas
-          precio
-          eventoID
-          createdAt
-          updatedAt
-          _version
-          _deleted
-          _lastChangedAt
-          owner
-        }
+        quantity
         reserva {
           id
           total
-          precioIndividual
           comision
           pagadoAlOrganizador
           cantidad
+          pagado
           pagoID
           ingreso
           horaIngreso
@@ -911,13 +891,26 @@ export const listReservasBoletos = /* GraphQL */ `
           _deleted
           _lastChangedAt
         }
+        boleto {
+          id
+          titulo
+          descripcion
+          cantidad
+          personasReservadas
+          precio
+          eventoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          owner
+        }
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-        owner
-        usuarioID
       }
       nextToken
       startedAt
@@ -941,28 +934,14 @@ export const syncReservasBoletos = /* GraphQL */ `
         id
         boletoID
         reservaID
-        boleto {
-          id
-          titulo
-          descripcion
-          cantidad
-          personasReservadas
-          precio
-          eventoID
-          createdAt
-          updatedAt
-          _version
-          _deleted
-          _lastChangedAt
-          owner
-        }
+        quantity
         reserva {
           id
           total
-          precioIndividual
           comision
           pagadoAlOrganizador
           cantidad
+          pagado
           pagoID
           ingreso
           horaIngreso
@@ -979,13 +958,26 @@ export const syncReservasBoletos = /* GraphQL */ `
           _deleted
           _lastChangedAt
         }
+        boleto {
+          id
+          titulo
+          descripcion
+          cantidad
+          personasReservadas
+          precio
+          eventoID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          owner
+        }
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-        owner
-        usuarioID
       }
       nextToken
       startedAt

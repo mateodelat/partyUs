@@ -54,6 +54,10 @@ type BoletoMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type ReservasBoletosMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 type ReservaMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
@@ -63,10 +67,6 @@ type NotificacionMetaData = {
 }
 
 type CuponMetaData = {
-  readOnlyFields: 'createdAt' | 'updatedAt';
-}
-
-type ReservasBoletosMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
@@ -144,13 +144,26 @@ export declare class Boleto {
   static copyOf(source: Boleto, mutator: (draft: MutableModel<Boleto, BoletoMetaData>) => MutableModel<Boleto, BoletoMetaData> | void): Boleto;
 }
 
+export declare class ReservasBoletos {
+  readonly id: string;
+  readonly boletoID: string;
+  readonly reservaID: string;
+  readonly quantity: number;
+  readonly reserva?: Reserva | null;
+  readonly boleto?: Boleto | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  constructor(init: ModelInit<ReservasBoletos, ReservasBoletosMetaData>);
+  static copyOf(source: ReservasBoletos, mutator: (draft: MutableModel<ReservasBoletos, ReservasBoletosMetaData>) => MutableModel<ReservasBoletos, ReservasBoletosMetaData> | void): ReservasBoletos;
+}
+
 export declare class Reserva {
   readonly id: string;
   readonly total: number;
-  readonly precioIndividual: number;
   readonly comision: number;
   readonly pagadoAlOrganizador: number;
   readonly cantidad: number;
+  readonly pagado: boolean;
   readonly pagoID?: string | null;
   readonly ingreso?: boolean | null;
   readonly horaIngreso?: string | null;
@@ -159,7 +172,7 @@ export declare class Reserva {
   readonly cancelReason?: ReservaCancelReason | keyof typeof ReservaCancelReason | null;
   readonly eventoID: string;
   readonly usuarioID: string;
-  readonly cuponID: string;
+  readonly cuponID?: string | null;
   readonly Boletos?: (ReservasBoletos | null)[] | null;
   readonly organizadorID?: string | null;
   readonly createdAt?: string | null;
@@ -199,14 +212,4 @@ export declare class Cupon {
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Cupon, CuponMetaData>);
   static copyOf(source: Cupon, mutator: (draft: MutableModel<Cupon, CuponMetaData>) => MutableModel<Cupon, CuponMetaData> | void): Cupon;
-}
-
-export declare class ReservasBoletos {
-  readonly id: string;
-  readonly boleto: Boleto;
-  readonly reserva: Reserva;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-  constructor(init: ModelInit<ReservasBoletos, ReservasBoletosMetaData>);
-  static copyOf(source: ReservasBoletos, mutator: (draft: MutableModel<ReservasBoletos, ReservasBoletosMetaData>) => MutableModel<ReservasBoletos, ReservasBoletosMetaData> | void): ReservasBoletos;
 }

@@ -256,6 +256,13 @@ export const schema = {
                             },
                             {
                                 "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
                                 "operations": [
                                     "read"
                                 ]
@@ -584,7 +591,7 @@ export const schema = {
                     "isArrayNullable": true,
                     "association": {
                         "connectionType": "HAS_MANY",
-                        "associatedWith": "boleto"
+                        "associatedWith": "boletoID"
                     }
                 },
                 "createdAt": {
@@ -664,6 +671,137 @@ export const schema = {
                 }
             ]
         },
+        "ReservasBoletos": {
+            "name": "ReservasBoletos",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "boletoID": {
+                    "name": "boletoID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "reservaID": {
+                    "name": "reservaID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "quantity": {
+                    "name": "quantity",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "reserva": {
+                    "name": "reserva",
+                    "isArray": false,
+                    "type": {
+                        "model": "Reserva"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "reservaBoletosId"
+                    }
+                },
+                "boleto": {
+                    "name": "boleto",
+                    "isArray": false,
+                    "type": {
+                        "model": "Boleto"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "boletoReservasId"
+                    }
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "ReservasBoletos",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byBoletos",
+                        "fields": [
+                            "boletoID"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byReserva",
+                        "fields": [
+                            "reservaID"
+                        ]
+                    }
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "provider": "apiKey",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "operations": [
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
         "Reserva": {
             "name": "Reserva",
             "fields": {
@@ -676,13 +814,6 @@ export const schema = {
                 },
                 "total": {
                     "name": "total",
-                    "isArray": false,
-                    "type": "Float",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "precioIndividual": {
-                    "name": "precioIndividual",
                     "isArray": false,
                     "type": "Float",
                     "isRequired": true,
@@ -706,6 +837,13 @@ export const schema = {
                     "name": "cantidad",
                     "isArray": false,
                     "type": "Int",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "pagado": {
+                    "name": "pagado",
+                    "isArray": false,
+                    "type": "Boolean",
                     "isRequired": true,
                     "attributes": []
                 },
@@ -771,7 +909,7 @@ export const schema = {
                     "name": "cuponID",
                     "isArray": false,
                     "type": "ID",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "Boletos": {
@@ -785,7 +923,7 @@ export const schema = {
                     "isArrayNullable": true,
                     "association": {
                         "connectionType": "HAS_MANY",
-                        "associatedWith": "reserva"
+                        "associatedWith": "reservaID"
                     }
                 },
                 "organizadorID": {
@@ -1162,86 +1300,6 @@ export const schema = {
                     }
                 }
             ]
-        },
-        "ReservasBoletos": {
-            "name": "ReservasBoletos",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "boleto": {
-                    "name": "boleto",
-                    "isArray": false,
-                    "type": {
-                        "model": "Boleto"
-                    },
-                    "isRequired": true,
-                    "attributes": [],
-                    "association": {
-                        "connectionType": "BELONGS_TO",
-                        "targetName": "boletoID"
-                    }
-                },
-                "reserva": {
-                    "name": "reserva",
-                    "isArray": false,
-                    "type": {
-                        "model": "Reserva"
-                    },
-                    "isRequired": true,
-                    "attributes": [],
-                    "association": {
-                        "connectionType": "BELONGS_TO",
-                        "targetName": "reservaID"
-                    }
-                },
-                "createdAt": {
-                    "name": "createdAt",
-                    "isArray": false,
-                    "type": "AWSDateTime",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isReadOnly": true
-                },
-                "updatedAt": {
-                    "name": "updatedAt",
-                    "isArray": false,
-                    "type": "AWSDateTime",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isReadOnly": true
-                }
-            },
-            "syncable": true,
-            "pluralName": "ReservasBoletos",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                },
-                {
-                    "type": "key",
-                    "properties": {
-                        "name": "byBoleto",
-                        "fields": [
-                            "boletoID"
-                        ]
-                    }
-                },
-                {
-                    "type": "key",
-                    "properties": {
-                        "name": "byReserva",
-                        "fields": [
-                            "reservaID"
-                        ]
-                    }
-                }
-            ]
         }
     },
     "enums": {
@@ -1299,5 +1357,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "34b42c7b3d35e86b665cd20a7fb12517"
+    "version": "dad8e9f6bedbe2c2a60740508e5d0342"
 };
