@@ -1,4 +1,30 @@
 export type AmplifyDependentResourcesAttributes = {
+    "function": {
+        "partyuslayer": {
+            "Arn": "string"
+        },
+        "paymentsHandler": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
+        },
+        "postSignUpPARTYUS": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
+        },
+        "partyusmodulelayer": {
+            "Arn": "string"
+        },
+        "createReserva": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
+        }
+    },
     "auth": {
         "partyusAUTH": {
             "IdentityPoolId": "string",
@@ -16,36 +42,10 @@ export type AmplifyDependentResourcesAttributes = {
             "GraphQLAPIIdOutput": "string",
             "GraphQLAPIEndpointOutput": "string"
         },
-        "partyUsREST": {
+        "partyusREST": {
             "RootUrl": "string",
             "ApiName": "string",
             "ApiId": "string"
-        }
-    },
-    "function": {
-        "createReserva": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
-        },
-        "paymentsHandler": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
-        },
-        "postSignUpPARTYUS": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
-        },
-        "partyuslayer": {
-            "Arn": "string"
-        },
-        "partyusmodulelayer": {
-            "Arn": "string"
         }
     }
 }

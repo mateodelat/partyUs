@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"Amplify\",\"createdWith\":\"10.0.0\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+  "Description": "Lambda Function resource stack creation using Amplify CLI",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
@@ -14,6 +14,12 @@
       "Type": "String"
     },
     "s3Key": {
+      "Type": "String"
+    },
+    "secretKey": {
+      "Type": "String"
+    },
+    "merchantId": {
       "Type": "String"
     },
     "apipartyUsAPIGraphQLAPIIdOutput": {
@@ -35,12 +41,6 @@
     "functionpartyusmodulelayerArn": {
       "Type": "String",
       "Default": "functionpartyusmodulelayerArn"
-    },
-    "merchantId": {
-      "Type": "String"
-    },
-    "secretKey": {
-      "Type": "String"
     }
   },
   "Conditions": {
@@ -105,11 +105,11 @@
             "API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT": {
               "Ref": "apipartyUsAPIGraphQLAPIKeyOutput"
             },
-            "MERCHANT_ID": {
-              "Ref": "merchantId"
-            },
             "SECRET_KEY": {
               "Ref": "secretKey"
+            },
+            "MERCHANT_ID": {
+              "Ref": "merchantId"
             }
           }
         },
@@ -137,12 +137,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "partyusLambdaRole55f66023",
+            "partyusLambdaRole91699b44",
             {
               "Fn::Join": [
                 "",
                 [
-                  "partyusLambdaRole55f66023",
+                  "partyusLambdaRole91699b44",
                   "-",
                   {
                     "Ref": "env"

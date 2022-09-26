@@ -11,26 +11,26 @@
     {
       "type": "ProjectLayer",
       "resourceName": "partyusmodulelayer",
-      "env": "dev",
+      "env": "staging",
       "version": "Always choose latest version",
       "isLatestVersionSelected": true
     },
     {
       "type": "ProjectLayer",
       "resourceName": "partyuslayer",
-      "env": "dev",
+      "env": "staging",
       "version": "Always choose latest version",
       "isLatestVersionSelected": true
     }
   ],
   "environmentVariableList": [
     {
-      "cloudFormationParameterName": "merchantId",
-      "environmentVariableName": "MERCHANT_ID"
-    },
-    {
       "cloudFormationParameterName": "secretKey",
       "environmentVariableName": "SECRET_KEY"
+    },
+    {
+      "cloudFormationParameterName": "merchantId",
+      "environmentVariableName": "MERCHANT_ID"
     }
   ]
 }

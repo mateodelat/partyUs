@@ -1,46 +1,45 @@
 {
-  "dev": {
+  "staging": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-partyus-dev-135837-authRole",
-      "UnauthRoleArn": "arn:aws:iam::832832547198:role/amplify-partyus-dev-135837-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::832832547198:role/amplify-partyus-dev-135837-authRole",
+      "AuthRoleName": "amplify-partyus-staging-225309-authRole",
+      "UnauthRoleArn": "arn:aws:iam::832832547198:role/amplify-partyus-staging-225309-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::832832547198:role/amplify-partyus-staging-225309-authRole",
       "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-partyus-dev-135837-deployment",
-      "UnauthRoleName": "amplify-partyus-dev-135837-unauthRole",
-      "StackName": "amplify-partyus-dev-135837",
-      "StackId": "arn:aws:cloudformation:us-east-1:832832547198:stack/amplify-partyus-dev-135837/848ae580-3c32-11ed-a449-1277a47e4127",
-      "AmplifyAppId": "d3agqb1bzjudnl"
+      "DeploymentBucketName": "amplify-partyus-staging-225309-deployment",
+      "UnauthRoleName": "amplify-partyus-staging-225309-unauthRole",
+      "StackName": "amplify-partyus-staging-225309",
+      "StackId": "arn:aws:cloudformation:us-east-1:832832547198:stack/amplify-partyus-staging-225309/d3a953c0-3d24-11ed-aa76-124443ab0e99",
+      "AmplifyAppId": "d6ofsd2zgb7i5"
     },
     "categories": {
       "auth": {
         "partyusAUTH": {}
       },
       "function": {
-        "createReserva": {
-          "deploymentBucketName": "amplify-partyus-dev-135837-deployment",
-          "s3Key": "amplify-builds/createReserva-5a48614c503265515453-build.zip",
-          "merchantId": "mcwffetlymvvcqthcdxu",
-          "secretKey": "sk_e266853b34704432b3fbac85079350ac"
-        },
         "paymentsHandler": {
           "merchantId": "mcwffetlymvvcqthcdxu",
           "secretKey": "sk_e266853b34704432b3fbac85079350ac",
-          "deploymentBucketName": "amplify-partyus-dev-135837-deployment",
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
           "s3Key": "amplify-builds/paymentsHandler-4c6a776d6441746b2f67-build.zip"
         },
         "postSignUpPARTYUS": {
           "secretKey": "sk_e266853b34704432b3fbac85079350ac",
-          "deploymentBucketName": "amplify-partyus-dev-135837-deployment",
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
           "s3Key": "amplify-builds/postSignUpPARTYUS-47467a66514657354b53-build.zip"
         },
         "partyuslayer": {
-          "deploymentBucketName": "amplify-partyus-dev-135837-deployment",
-          "s3Key": "amplify-builds/partyuslayer-LambdaLayerVersion4c8f4647-build.zip"
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/partyuslayer-LambdaLayerVersiondb0ea50a-build.zip"
         },
-        "partyusAUTHPostConfirmation": {},
         "partyusmodulelayer": {
-          "deploymentBucketName": "amplify-partyus-dev-135837-deployment",
-          "s3Key": "amplify-builds/partyusmodulelayer-LambdaLayerVersion7e845e79-build.zip"
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/partyusmodulelayer-LambdaLayerVersion54cd658d-build.zip"
+        },
+        "createReserva": {
+          "secretKey": "sk_e266853b34704432b3fbac85079350ac",
+          "merchantId": "mcwffetlymvvcqthcdxu",
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/createReserva-6b2b614b437065433230-build.zip"
         }
       }
     }

@@ -16,15 +16,15 @@
     "s3Key": {
       "Type": "String"
     },
-    "functionpartyuslayerArn": {
-      "Type": "String",
-      "Default": "functionpartyuslayerArn"
-    },
     "merchantId": {
       "Type": "String"
     },
     "secretKey": {
       "Type": "String"
+    },
+    "functionpartyuslayerArn": {
+      "Type": "String",
+      "Default": "functionpartyuslayerArn"
     }
   },
   "Conditions": {
@@ -109,12 +109,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "partyusLambdaRole94b2b566",
+            "partyusLambdaRole4cc1e074",
             {
               "Fn::Join": [
                 "",
                 [
-                  "partyusLambdaRole94b2b566",
+                  "partyusLambdaRole4cc1e074",
                   "-",
                   {
                     "Ref": "env"

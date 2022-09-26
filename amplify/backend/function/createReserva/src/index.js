@@ -1,3 +1,10 @@
+// This is sample code. Please update this to suite your schema
+
+/**
+ * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
+ */
+
+
 /* Amplify Params - DO NOT EDIT
   API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
   API_PARTYUSAPI_GRAPHQLAPIIDOUTPUT
@@ -10,7 +17,9 @@ import crypto from "@aws-crypto/sha256-js";
 import { defaultProvider } from "@aws-sdk/credential-provider-node";
 import { SignatureV4 } from "@aws-sdk/signature-v4";
 import { HttpRequest } from "@aws-sdk/protocol-http";
-import { default as fetch, Request } from "node-fetch";
+
+import { createRequire } from "module"
+const require = createRequire(import.meta.url)
 
 const Openpay = require("openpay")
 var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
@@ -26,6 +35,7 @@ function precioConComision(inicial) {
     if (!inicial) return 0;
     return redondear(inicial * (1 + comisionApp), 10);
 }
+
 
 const redondear = (numero, entero) => {
     if (!entero) {
@@ -68,17 +78,30 @@ async function graphqlRequest({ query, variables }) {
     });
 
     const signed = await signer.sign(requestToBeSigned);
-    const request = new Request(endpoint, signed);
-
     console.log("Solicitud firmada:" + JSON.stringify(signed));
+
+    var config = {
+        url: endpoint,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        ...signed
+    };
+
+    console.log({ config })
+
 
     let statusCode = 200;
     let body;
     let response;
 
     try {
-        response = await fetch(request);
-        body = await response.json();
+        response = await axios(config).then(
+            (r) => {
+                console.log(r)
+                return r;
+            }
+        );
         if (body.errors) statusCode = 400;
     } catch (error) {
         statusCode = 500;
@@ -107,25 +130,26 @@ const crearReserva = /* GraphQL */ `
   }
 `;
 
-export const handler = async (event
-    //     : {
-    //     body: {
-    //         eventoID?: string;
-    //         organizadorID?: string;
-    //         cuponID?: string;
-    //         reservaID?: string;
-
-    //         tipoPago: string;
-
-    //         total?: number;
-    //         boletos?: { quantity: number; id: string }[];
-
-    //         sourceID?: string;
-    //         usuarioID?: string;
-    //         device_session_id?: string;
-    //     };
-    // }
+exports.handler = async (event
 ) => {
+    console.log("Se recibe: " + JSON.stringify(event) + " en la funcion.")
+    if (!event?.body) {
+        return {
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+
+            statusCode: 400,
+            body: JSON.stringify({
+                errores: {
+                    description: "Hubo un error enviandolo"
+                }
+            }, null, 2)
+        };
+
+    }
     try {
         const {
             total,
@@ -139,6 +163,8 @@ export const handler = async (event
             usuarioID,
             device_session_id,
         } = event.body;
+
+        console.log("Cuerpo: " + JSON.stringify(event.body))
 
         ////////////////////////////////////////////////////////////////////////
         /////////////////////////Verificaciones previas/////////////////////////
@@ -693,4 +719,4 @@ export const handler = async (event
             },
         };
     }
-};
+}

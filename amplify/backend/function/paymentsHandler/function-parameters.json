@@ -3,7 +3,7 @@
     {
       "type": "ProjectLayer",
       "resourceName": "partyuslayer",
-      "env": "dev",
+      "env": "staging",
       "version": "Always choose latest version",
       "isLatestVersionSelected": true
     }
