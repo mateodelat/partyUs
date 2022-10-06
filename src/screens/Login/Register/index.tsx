@@ -9,6 +9,8 @@ import {
   View,
 } from "react-native";
 
+import React from "react";
+
 import AnimatedInput from "../../../components/AnimatedInput";
 
 import Boton from "../../../components/Boton";
@@ -63,11 +65,11 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     })
       .then((user) => {
         //Una vez le damos a registrar, se crea el nuevo perfil con la api key
-        navigation.navigate("Confirm", { username: email });
         clearError();
         setNombre("");
         setEmail("");
         setPassword("");
+        navigation.navigate("Confirm", { username: email });
       })
       .catch((error) => {
         switch (error.message) {

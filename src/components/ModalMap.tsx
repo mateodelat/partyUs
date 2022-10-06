@@ -35,6 +35,7 @@ import { Marker } from "react-native-maps";
 import Loading from "./Loading";
 import { Dispatch } from "react";
 import Header from "../navigation/components/Header";
+import HeaderModal from "./HeaderModal";
 
 const { height } = Dimensions.get("window");
 export type locationType = Region & {
@@ -285,26 +286,10 @@ export default ({
         style={[styles.container, style]}
       >
         {/* Header */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 20,
-            paddingTop: 5,
-          }}
-        >
-          <Text style={styles.titleModal}>
-            {handleSelectPlace ? "Selecciona la ubicacion" : titulo}
-          </Text>
-          <Feather
-            style={styles.backIcon}
-            name="x"
-            size={30}
-            color={azulClaro}
-            onPress={handleCancel}
-          />
-        </View>
+        <HeaderModal
+          onPress={handleCancel}
+          titulo={handleSelectPlace ? "Selecciona la ubicacion" : titulo}
+        />
 
         {/* Buscador */}
         {handleSelectPlace && (
@@ -486,20 +471,6 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height,
-  },
-
-  titleModal: {
-    fontSize: 18,
-    color: azulClaro,
-
-    top: 5,
-  },
-
-  backIcon: {
-    padding: 5,
-    top: 5,
-    left: 2,
-    position: "absolute",
   },
 
   textInput: {

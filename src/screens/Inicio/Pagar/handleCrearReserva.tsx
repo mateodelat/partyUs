@@ -198,6 +198,7 @@ export default async (event: {
             },
       }) as any
     ).then((r: any) => {
+      console.log(r);
       if (r.errors) {
         throw new Error("Error obteniendo datos: " + r.errors);
       }

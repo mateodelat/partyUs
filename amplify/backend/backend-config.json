@@ -42,25 +42,11 @@
         }
       ]
     },
-    "partyusmodulelayer": {
-      "providerPlugin": "awscloudformation",
-      "service": "LambdaLayer",
-      "build": true
-    },
     "createReserva": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
-        {
-          "category": "api",
-          "resourceName": "partyUsAPI",
-          "attributes": [
-            "GraphQLAPIIdOutput",
-            "GraphQLAPIEndpointOutput",
-            "GraphQLAPIKeyOutput"
-          ]
-        },
         {
           "category": "function",
           "resourceName": "partyuslayer",
@@ -70,12 +56,26 @@
         },
         {
           "category": "function",
-          "resourceName": "partyusmodulelayer",
+          "resourceName": "partyusmoduleCreateReserva",
           "attributes": [
             "Arn"
           ]
+        },
+        {
+          "category": "api",
+          "resourceName": "partyUsAPI",
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput",
+            "GraphQLAPIKeyOutput"
+          ]
         }
       ]
+    },
+    "partyusmoduleCreateReserva": {
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer",
+      "build": true
     }
   },
   "auth": {

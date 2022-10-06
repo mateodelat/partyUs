@@ -206,13 +206,13 @@ type Reserva
       { allow: private, operations: [read] }
     ]
   ) {
-  id: ID!
-  total: Float!
-  comision: Float!
-  pagadoAlOrganizador: Float!
-  cantidad: Int!
+  id: ID
+  total: Float
+  comision: Float
+  pagadoAlOrganizador: Float
+  cantidad: Int
 
-  pagado: Boolean!
+  pagado: Boolean
 
   pagoID: String
   ingreso: Boolean
@@ -222,8 +222,8 @@ type Reserva
   canceledAt: AWSDateTime
   cancelReason: reservaCancelReason
 
-  eventoID: ID! @index(name: "byEvento")
-  usuarioID: ID! @index(name: "byUsuario")
+  eventoID: ID @index(name: "byEvento")
+  usuarioID: ID @index(name: "byUsuario")
   cuponID: ID @index(name: "byCupon")
 
   Boletos: [ReservasBoletos] @hasMany(indexName: "byReserva", fields: ["id"])
@@ -246,11 +246,11 @@ type ReservasBoletos
       { allow: private, operations: [read] }
     ]
   ) {
-  id: ID!
+  id: ID
 
-  boletoID: ID! @index(name: "byBoletos")
-  reservaID: ID! @index(name: "byReserva")
-  quantity: Int!
+  boletoID: ID @index(name: "byBoletos")
+  reservaID: ID @index(name: "byReserva")
+  quantity: Int
 
   reserva: Reserva @belongsTo
   boleto: Boleto @belongsTo

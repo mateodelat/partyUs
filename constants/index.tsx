@@ -65,6 +65,14 @@ export async function fetchWithTimeout(url: string, timeout = 2000) {
   ]) as Promise<Response>;
 }
 
+export async function timer(time: number) {
+  return new Promise<void>((res) => {
+    setTimeout(() => {
+      res();
+    }, time);
+  });
+}
+
 export const randomImageUri = () =>
   "https://picsum.photos/300/200?random=" + Math.floor(1000 * Math.random());
 
@@ -639,7 +647,24 @@ export async function getImageUrl(data?: string | null) {
     // })
   }
 
-  return data ? (isUrl(data) ? data : await Storage.get(data)) : null;
+  return data
+    ? isUrl(data)
+      ? data
+      : await Storage.get(data).catch((e) => {
+          console.log(e);
+          Alert.alert("Error", "Hubo un problema subiendo la imagen");
+          return "";
+        })
+    : null;
+}
+
+export async function subirImagen(key: string, uri: string) {
+  if (isUrl(uri)) {
+    throw new Error("La imagen es una url no una ruta local");
+  }
+  await getBlob(uri).then((image) => {
+    Storage.put(key, image);
+  });
 }
 
 export const getBlob = async (uri: string | undefined) => {

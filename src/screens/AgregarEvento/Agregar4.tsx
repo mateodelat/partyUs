@@ -255,16 +255,21 @@ export default function Agregar2({
         query: createEvento,
         variables: { input: eventoAEnviar },
       });
+      setLoading(false);
 
-      navigation.navigate("Home");
       navigation.popToTop();
+      navigation.navigate("ExitoScreen", {
+        txtExito: "Evento creado",
+        descripcion:
+          "Se ha creado tu evento con exito. En breve aparecera en los servidores de partyus",
+      });
     } catch (error) {
+      setLoading(false);
+
       if (error) {
         console.log(error);
         Alert.alert("Error", "Sucedio un error creando el evento");
       }
-    } finally {
-      setLoading(false);
     }
   }
 

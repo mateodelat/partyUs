@@ -5,6 +5,7 @@ import {
   Text,
   ActivityIndicator,
   ViewStyle,
+  TextStyle,
 } from "react-native";
 import { Entypo } from "@expo/vector-icons";
 import { rojo } from "../../constants";
@@ -15,6 +16,7 @@ export default ({
   loading,
   done,
   style,
+  textStyle,
   disabled,
   color,
 }: {
@@ -23,6 +25,7 @@ export default ({
   loading?: boolean;
   done?: boolean;
   style?: ViewStyle;
+  textStyle?: TextStyle;
   disabled?: boolean;
   color?: string;
 }) => {
@@ -42,6 +45,8 @@ export default ({
             style={{
               fontSize: 16,
               color: "white",
+              fontWeight: "bold",
+              ...textStyle,
             }}
           >
             {titulo}
@@ -61,6 +66,7 @@ export default ({
           fontSize: 16,
           color: "white",
           fontWeight: "bold",
+          ...textStyle,
         }}
       >
         {titulo}

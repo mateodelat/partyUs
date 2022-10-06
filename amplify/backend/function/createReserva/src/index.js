@@ -18,10 +18,12 @@ import { defaultProvider } from "@aws-sdk/credential-provider-node";
 import { SignatureV4 } from "@aws-sdk/signature-v4";
 import { HttpRequest } from "@aws-sdk/protocol-http";
 
+import { default as fetch, Request } from 'node-fetch';
+
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)
-
 const Openpay = require("openpay")
+
 var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
 
 const { Sha256 } = crypto;
@@ -78,17 +80,8 @@ async function graphqlRequest({ query, variables }) {
     });
 
     const signed = await signer.sign(requestToBeSigned);
-    console.log("Solicitud firmada:" + JSON.stringify(signed));
+    const request = new Request(endpoint, signed);
 
-    var config = {
-        url: endpoint,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        ...signed
-    };
-
-    console.log({ config })
 
 
     let statusCode = 200;
@@ -96,17 +89,14 @@ async function graphqlRequest({ query, variables }) {
     let response;
 
     try {
-        response = await axios(config).then(
-            (r) => {
-                console.log(r)
-                return r;
-            }
-        );
+        response = await fetch(request)
+        body = await response.json()
         if (body.errors) statusCode = 400;
     } catch (error) {
+        console.log("Error fetcheando objeto")
         statusCode = 500;
         body = {
-            errors: [
+            error: [
                 {
                     status: response.status,
                     message: error.message,
@@ -116,45 +106,47 @@ async function graphqlRequest({ query, variables }) {
         };
     }
 
-    return {
-        statusCode,
-        body: JSON.stringify(body),
-    };
+    return body
 }
 
-const crearReserva = /* GraphQL */ `
-  mutation CreateReserva($input: CreateReservaInput!) {
-    createReseva(input: $input) {
-      id
+function formatResponse({ error, body, statusCode }) {
+    let r = {
+        statusCode,
     }
-  }
-`;
+    if (error) {
+        body = {
+            ...body,
+            error
+        }
+    }
 
-exports.handler = async (event
+    if (body) {
+        r = {
+            ...r,
+            body: JSON.stringify(body, null, 2)
+        }
+    }
+    console.log(r)
+    return r
+
+}
+
+export const handler = async (event
 ) => {
-    console.log("Se recibe: " + JSON.stringify(event) + " en la funcion.")
+    event.body = JSON.parse(event.body)
     if (!event?.body) {
-        return {
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-
+        return formatResponse({
             statusCode: 400,
-            body: JSON.stringify({
-                errores: {
-                    description: "Hubo un error enviandolo"
-                }
-            }, null, 2)
-        };
 
+            error: {
+                description: "No se recibio cuerpo de la respuesta"
+            }
+        })
     }
     try {
         const {
             total,
             cuponID,
-            boletos,
             eventoID,
             organizadorID,
             reservaID,
@@ -162,93 +154,109 @@ exports.handler = async (event
             sourceID,
             usuarioID,
             device_session_id,
+            boletos
         } = event.body;
+        console.log({
+            input: event.body
+        })
 
-        console.log("Cuerpo: " + JSON.stringify(event.body))
 
         ////////////////////////////////////////////////////////////////////////
         /////////////////////////Verificaciones previas/////////////////////////
         ////////////////////////////////////////////////////////////////////////
         if (!boletos || boletos.length === 0) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "Error no se recibio una lista de boletos",
-                },
-            };
+                }
+            })
         }
 
         if (!eventoID) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "Error no se recibio ID de evento",
                 },
-            };
+            })
         }
 
         if (!usuarioID) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "Error no se recibio ID de usuario",
                 },
-            };
+            })
         }
 
         if (!organizadorID) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "Error no se recibio ID de organizador",
                 },
-            };
+            })
         }
 
-        if (!total) {
-            return {
+        if (total !== 0 && !total) {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "Error no se recibio un precio total",
                 },
-            };
+            })
         }
 
         if (!reservaID) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "Error no se recibio id de reserva",
                 },
-            };
+            })
         }
 
         if (!device_session_id) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "Error no se recibio id de sesion para pagar",
                 },
-            };
+            })
         }
 
         if (tipoPago !== "TARJETA" && tipoPago !== "EFECTIVO") {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "Error el tipo de pago debe ser TARJETA O EFECTIVO",
                 },
-            };
+            })
         }
 
         if (!sourceID && tipoPago === "TARJETA") {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "Error no se recibio source id",
                 },
-            };
+            })
         }
+
+
+        // No permitir operaciones de mas de 2000 pesos en efectivo
+        if (tipoPago === "EFECTIVO" && total > 2000) {
+            return formatResponse({
+                statusCode: 400,
+                error: {
+                    description: "No se permiten pagos mayores a 2000 pesos en efectivo",
+                },
+            })
+        }
+
+
 
         // Funcion para sacar el query a mandar con filtro de boletosID
         const query = (boletosID
@@ -289,6 +297,13 @@ exports.handler = async (event
                   _version
                 }
               }
+              listReservas(filter: {usuarioID: {eq: "${usuarioID}"}, eventoID:{eq:"${eventoID}"}}) {
+                    items {
+                        pagado
+                        id
+                    }
+                }
+
               ${cuponID
                     ? /* GraphQL */ `getCupon(id: $cuponID) {
                 _version
@@ -309,6 +324,8 @@ exports.handler = async (event
         /* Primero hay que verificar que haya lugares disponibles en los boletos
              y ver que el precio corresponda al dado por el cliente
              */
+
+
         const response = await (
             graphqlRequest({
                 query: query(boletos.map((e) => e.id)),
@@ -330,6 +347,26 @@ exports.handler = async (event
                 throw new Error("Error obteniendo datos: " + r.errors);
             }
             r = r.data;
+
+            console.log({
+                datosFetcheados: r
+            })
+            // Si hay mas reservas en efectivo por el mismo usuario dar error para evitar fraudes
+
+            if (tipoPago === "EFECTIVO" && total !== 0) {
+                const efectivoDeny = !!r.listReservas.items.find(e => {
+                    return !e.pagado
+                })
+
+                if (efectivoDeny) {
+                    console.log({
+                        Reservas: r.listReservas.items
+                    })
+                    // throw new Error("Solo se permite tener una reserva en efectivo por evento.");
+                }
+
+            }
+
 
             return {
                 cupon: r.getCupon,
@@ -365,17 +402,12 @@ exports.handler = async (event
             " en " +
             evento.titulo;
 
-        console.log({
-            clientPaymentID,
-            ownerPaymentID,
-        });
-
         //////////////////////////////////////////////////////////////////
         // Verificar que el usuario a pagarle sea el creador del evento //
         //////////////////////////////////////////////////////////////////
 
         if (evento.CreatorID !== organizadorID) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description:
@@ -384,36 +416,36 @@ exports.handler = async (event
                         " recibido no coincide con el usuario a pagar recibido: " +
                         organizadorID,
                 },
-            };
+            })
         }
 
         if (!clientPaymentID) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "no se encontro id de pago para el cliente ",
                 },
-            };
+            })
         }
 
         if (!ownerPaymentID) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description: "no se encontro id de pago para el creador del evento ",
                 },
-            };
+            })
         }
 
         // Verificar que el owner id no sea igual a client id para evitar problemas de transferencias
-        if (ownerPaymentID === clientPaymentID) {
-            return {
+        if (ownerPaymentID === clientPaymentID && total !== 0) {
+            return formatResponse({
                 statusCode: 409,
                 error: {
                     description:
                         "el creador del evento tiene el mismo id de pago que el cliente",
                 },
-            };
+            })
         }
 
         let reservadosEvento = evento.personasReservadas
@@ -436,7 +468,7 @@ exports.handler = async (event
                 personasReservadas = personasReservadas ? personasReservadas : 0;
                 cantidad = cantidad ? cantidad : 0;
 
-                let quantity = boletos.find((e) => e.id === id)?.quantity;
+                let quantity = boletos.find((r) => r.id === id)?.quantity;
                 if (!quantity) {
                     console.log(
                         "No se encontro un boleto con el id obtenido de los fetched: " + id
@@ -476,7 +508,7 @@ exports.handler = async (event
 
         // Verificar que el precio recibido coincida con los boletos fetcheados
         if (total !== totalFetched) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description:
@@ -485,12 +517,12 @@ exports.handler = async (event
                         " recibido no coincide con el calculado de la base de datos: " +
                         totalFetched,
                 },
-            };
+            })
         }
         //
         // Verificar que el total de personas en el evento sea menor al sumado hasta ahorita
         if (reservadosEvento > evento.personasMax) {
-            return {
+            return formatResponse({
                 statusCode: 400,
                 error: {
                     description:
@@ -499,7 +531,7 @@ exports.handler = async (event
                         " de un total de " +
                         evento.personasMax,
                 },
-            };
+            })
         }
 
         ////////////////////////////////////////////////////////////////////////////
@@ -513,114 +545,116 @@ exports.handler = async (event
                 : new Date(new Date().getTime() + msInDay);
 
         let body
-            // : {
-            //     paymentID?: string;
-            //     reservaID?: string;
-            //     tipoPago: "EFECTIVO" | "TARJETA";
-            //     voucher?: {
-            //         barcode_url: string;
-            //         reference: string;
-            //         limitDate: number;
-            //     };
-            // }
             = {
             tipoPago,
         };
 
-        await new Promise((res, rej) => {
-            // Pago hacia la cuenta del cliente comprador del producto
-            openpay.customers.charges.create(
-                clientPaymentID,
-                {
-                    device_session_id: device_session_id,
-                    method: tipoPago === "EFECTIVO" ? "store" : "card",
-                    source_id: sourceID,
-                    amount: total,
-                    description,
-                    order_id: "charge>>>" + reservaID,
-                    due_date: tipoPago === "EFECTIVO" ? limitDate : undefined,
-                },
-                async function (error, e) {
-                    if (error) {
-                        rej(error);
-                    }
-                    const comision = comisionApp * e.amount;
-                    const enviarACreador = e.amount - comision;
+        // Si hay un total cobrarlo de lo contrario solo actualizar la reservacion nueva
 
-                    body.paymentID = e.id;
 
-                    if (tipoPago === "EFECTIVO") {
-                        if (!e.payment_method) {
-                            throw new Error(
-                                "No se recibio url del voucher de la api de pagos"
-                            );
-                        }
-                        const { barcode_url, reference } = e.payment_method;
-
-                        body.voucher = {
-                            barcode_url,
-                            reference,
-                            limitDate: limitDate.getTime(),
-                        };
-                        res();
-                    }
-
-                    await Promise.all([
-                        new Promise((res, rej) => {
-                            // Cargo comision al comprador
-                            openpay.fees.create(
-                                {
-                                    amount: comision,
-                                    description: "Reserva: " + reservaID + " comision partyus.",
-                                    order_id: "fee>>>" + reservaID,
-                                    customer_id: clientPaymentID,
-                                },
-                                function (error, fee) {
-                                    if (error) {
-                                        rej("Error creando el fee sobre el cargo");
-                                        throw new Error(
-                                            "Error enviando fondos. Contactanos para cancelar el cargo"
-                                        );
-                                    }
-
-                                    console.log("\nFEE RESULT:\n");
-                                    console.log(fee);
-                                    res();
-                                }
-                            );
-                        }),
-                        new Promise((res, rej) => {
-                            // Transferencia del comprador al organizador
-                            openpay.customers.transfers.create(
-                                clientPaymentID,
-                                {
-                                    customer_id: ownerPaymentID,
-                                    amount: enviarACreador,
-                                    description,
-                                    order_id: "transfer>>>" + reservaID,
-                                },
-                                (error, r) => {
-                                    if (error) {
-                                        rej("Error creando la transferencia sobre el cargo");
-                                    }
-
-                                    console.log("\nTRANSFER RESULT:\n");
-                                    console.log(r);
-                                    res();
-                                }
-                            );
-                        }),
-                    ])
-                        .then(() => {
-                            res();
+        if (total !== 0) {
+            await new Promise((res, rej) => {
+                // Pago hacia la cuenta del cliente comprador del producto
+                openpay.customers.charges.create(
+                    clientPaymentID,
+                    {
+                        device_session_id: device_session_id,
+                        method: tipoPago === "EFECTIVO" ? "store" : "card",
+                        source_id: sourceID,
+                        amount: total,
+                        description,
+                        order_id: "charge>>>" + reservaID,
+                        due_date: tipoPago === "EFECTIVO" ? limitDate : undefined,
+                    },
+                    async function (error, e) {
+                        console.log({
+                            resultadoCrearCargo: e
                         })
-                        .catch((e) => {
-                            console.log(e);
-                            rej(e);
-                        });
-                }
-            );
-        });
+                        if (error) {
+                            rej(error);
+                            throw new Error(error.description)
+                        }
+                        const comision = comisionApp * e.amount;
+                        const enviarACreador = e.amount - comision;
+
+                        body.paymentID = e.id;
+
+                        if (tipoPago === "EFECTIVO") {
+                            if (!e.payment_method) {
+                                throw new Error(
+                                    "No se recibio url del voucher de la api de pagos"
+                                );
+                            }
+                            const { barcode_url, reference } = e.payment_method;
+
+                            body.voucher = {
+                                barcode_url,
+                                reference,
+                                limitDate: limitDate.getTime(),
+                            };
+                            res();
+                        }
+                        else {
+                            await Promise.all([
+                                new Promise((res, rej) => {
+                                    // Cargo comision al comprador
+                                    openpay.fees.create(
+                                        {
+                                            amount: comision,
+                                            description: "Reserva: " + reservaID + " comision partyus.",
+                                            order_id: "fee>>>" + reservaID,
+                                            customer_id: clientPaymentID,
+                                        },
+                                        function (error, fee) {
+                                            if (error) {
+                                                rej("Error creando el fee sobre el cargo");
+                                                throw new Error(
+                                                    "Error enviando fondos. Contactanos para cancelar el cargo"
+                                                );
+                                            }
+
+                                            console.log("\nFEE RESULT:\n");
+                                            console.log(fee);
+                                            res();
+                                        }
+                                    );
+                                }),
+                                new Promise((res, rej) => {
+                                    // Transferencia del comprador al organizador
+                                    openpay.customers.transfers.create(
+                                        clientPaymentID,
+                                        {
+                                            customer_id: ownerPaymentID,
+                                            amount: enviarACreador,
+                                            description,
+                                            order_id: "transfer>>>" + reservaID,
+                                        },
+                                        (error, r) => {
+                                            if (error) {
+                                                rej("Error creando la transferencia sobre el cargo");
+                                            }
+
+                                            console.log("\nTRANSFER RESULT:\n");
+                                            console.log(r);
+                                            res();
+                                        }
+                                    );
+                                }),
+                            ])
+
+                                .then(() => {
+                                    res();
+                                })
+                                .catch((e) => {
+                                    console.log(e);
+                                    rej(e);
+                                });
+                        }
+                    }
+                );
+            });
+        }
+
 
         const reservaInput = {
             cantidad: totalPersonasReservadas,
@@ -631,9 +665,8 @@ exports.handler = async (event
             organizadorID,
             pagadoAlOrganizador: total - total * comisionApp,
             pagoID: body.paymentID,
-            precioIndividual: total / totalPersonasReservadas,
             total,
-            pagado: tipoPago === "EFECTIVO" ? false : true,
+            pagado: tipoPago === "EFECTIVO" && total !== 0 ? false : true,
             usuarioID,
         };
 
@@ -672,7 +705,13 @@ exports.handler = async (event
             `;
                 })}
   
+                updateEvento(input:{id:"${evento.id}", personasReservadas:${reservadosEvento}, _version:${evento._version}}){
+                    id
+                }
+
           ${
+
+
                     // Restar de cupon si existe ID
                     cuponID
                         ? `updateCupon(input: {id: "${cuponID}", restantes: ${cupon.restantes ? cupon.restantes - 1 : 0
@@ -702,21 +741,24 @@ exports.handler = async (event
                 throw new Error("Hubo un error actualizando el boleto " + r);
         });
 
-        return {
+
+        return formatResponse({
+            statusCode: 200,
             body,
-        };
+        })
     } catch (error) {
         console.log(error);
         const msg = error.message
             ? error.message
             : error.description
                 ? error.description
-                : JSON.stringify(error);
-        return {
+                : error;
+
+        return formatResponse({
             statusCode: 500,
             error: {
                 description: msg,
             },
-        };
+        })
     }
 }

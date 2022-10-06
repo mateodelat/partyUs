@@ -30,9 +30,9 @@ const ImageFullScreen = ({
   }));
 
   initialImageIdx !== undefined ? initialImageIdx : 0;
-  const { height } = Dimensions.get("screen");
-
-  const insets = useSafeAreaInsets();
+  let { height, width } = Dimensions.get("screen");
+  console.log(height);
+  height = height > width ? height : width;
 
   return (
     <View

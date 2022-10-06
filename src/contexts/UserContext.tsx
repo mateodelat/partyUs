@@ -6,6 +6,9 @@ import { TextoAbajoPasaporteType } from "../screens/SolicitudOrganizador/compone
 const UserContext: Context<{
   usuario: Usuario;
   setUsuario: Dispatch<SetStateAction<Usuario>>;
+
+  loading: boolean;
+  setLoading: Dispatch<SetStateAction<boolean>>;
 }> = createContext({
   usuario: {
     id: "guest",
@@ -15,6 +18,8 @@ const UserContext: Context<{
   setUsuario: (v: SetStateAction<Usuario>) => {
     return;
   },
+  loading: false,
+  setLoading: (e: any) => null,
 });
 
 export default UserContext;

@@ -161,7 +161,7 @@ export default function Agregar2({
   function handleInfoPagos() {
     Alert.alert(
       "Envio de fondos",
-      "Dependiendo del tipo de pago del cliente, el dinero puede tomar hasta 7 dias en llegarte"
+      "Dependiendo del tipo de pago del cliente, el dinero puede tomar hasta 3 dias en llegarte a tu cuenta bancaria"
     );
   }
 

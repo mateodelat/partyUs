@@ -5,6 +5,7 @@ import {
   Image,
   Modal,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -35,8 +36,8 @@ import {
   rojo,
   rojoClaro,
   shadowMedia,
-  verifyUserLoggedIn,
   getUserSub,
+  precioConComision,
 } from "../../../../constants";
 import { API, DataStore, Predicates, Storage } from "aws-amplify";
 import { OpType } from "@aws-amplify/datastore";
@@ -55,7 +56,7 @@ import EmptyProfile from "../../../components/EmptyProfile";
 import Boton from "../../../components/Boton";
 import { Evento } from "../../../models";
 import { Boleto } from "../../../models";
-import { getUsuario } from "../../../graphql/queries";
+import { getEvento, getUsuario } from "../../../graphql/queries";
 
 export default function ({
   route,
@@ -161,8 +162,67 @@ export default function ({
     } as EventoType;
   }
 
+  const [refreshing, setRefreshing] = useState(false);
+  function onRefresh() {
+    (
+      API.graphql({
+        query: getEvento,
+        variables: { id: evento.id },
+      }) as any
+    )
+      .then(async (e) => {
+        e = e.data.getEvento;
+
+        const imagenes = Promise.all(
+          e.imagenes.map(async (r: any) => {
+            // Ver si es llave de s3
+            let key = r;
+
+            return {
+              key,
+              uri: await getImageUrl(r),
+            };
+          })
+        );
+
+        const boletos = DataStore.query(
+          Boleto,
+          (bo) => bo.eventoID("eq", e.id),
+          {
+            sort: (e) => e.precio("DESCENDING"),
+          }
+        );
+
+        const owner = DataStore.query(Usuario, e.CreatorID ? e.CreatorID : "");
+
+        await Promise.all([owner, imagenes, boletos]);
+
+        if (!owner) {
+          throw new Error(
+            "Error obteniendo el usuario creador en el inicio del evento " +
+              e.id +
+              " con id de creador " +
+              e.CreatorID
+          );
+        }
+
+        return {
+          ...e,
+          imagenes: (await imagenes) as any,
+          boletos: await boletos,
+          owner: await owner,
+        };
+      })
+      .then((r) => {
+        setEvento({
+          ...r,
+        });
+      });
+  }
+
   useEffect(() => {
     setTop(insets.top);
+    onRefresh();
 
     // Asignar una vigilancia a updates del evento para caso de lleno
     const sub = DataStore.observe(Evento, (fe) => fe.id("eq", id)).subscribe(
@@ -251,6 +311,9 @@ export default function ({
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
       <Animated.ScrollView
+        refreshControl={
+          <RefreshControl onRefresh={onRefresh} refreshing={refreshing} />
+        }
         showsVerticalScrollIndicator={false}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],

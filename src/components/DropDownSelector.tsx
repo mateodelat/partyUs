@@ -21,7 +21,10 @@ export default function ({
   handleSelectItem: (item: string) => void;
   selectedItem?: string;
 }) {
-  const { height, width } = Dimensions.get("screen");
+  let { height, width } = Dimensions.get("screen");
+  width = width < height ? width : height;
+  height = height < width ? height : width;
+
   const [shown, setShown] = useState(false);
   return (
     <View>

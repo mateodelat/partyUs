@@ -68,11 +68,13 @@ export default function ({ onCreateSesionID, isProductionMode }: OpenpayProps) {
   };
 
   return (
-    <WebView
-      style={{ opacity: 0.99 }}
-      source={{ uri: state?.uri }}
-      injectedJavaScript={state?.injectedJavaScript}
-    />
+    <View>
+      <WebView
+        style={{ opacity: 0.99 }}
+        source={{ uri: state?.uri }}
+        injectedJavaScript={state?.injectedJavaScript}
+      />
+    </View>
   );
 }
 

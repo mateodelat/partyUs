@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
 import UserContext from "./UserContext";
+import { View, ActivityIndicator, Text } from "react-native";
+
 import { PropsWithChildren } from "react";
 import { Usuario } from "../models";
 import { API, DataStore, Hub } from "aws-amplify";
-import { getUserSub, verifyUserLoggedIn } from "../../constants";
+import {
+  azulClaro,
+  azulOscuro,
+  getUserSub,
+  verifyUserLoggedIn,
+} from "../../constants";
 
 // Obtener el usuario recien loggeado
 const getUsuario = /* GraphQL */ `
@@ -41,6 +48,7 @@ export default function ({ children }: PropsWithChildren<any>) {
   };
 
   const [usuario, setUsuario] = useState<Usuario>(defultUSR);
+  const [loading, setLoading] = useState(false);
 
   async function fetchUsuario(sub: string, api?: boolean) {
     if (api) {
@@ -59,13 +67,27 @@ export default function ({ children }: PropsWithChildren<any>) {
         })
       );
     } else {
-      DataStore.query(Usuario, sub).then((r) => {
+      DataStore.query(Usuario, sub).then(async (r) => {
         if (!r) {
-          throw new Error(
-            "Error, no hay usuario en la base de datos con el id: " +
-              r +
-              " para asignar al use context"
-          );
+          // Pedirlo directamete de graphql
+          r = await (
+            API.graphql({
+              query: getUsuario,
+              variables: { id: sub },
+            }) as any
+          ).then((r) => {
+            r = r.data.getUsuario;
+            console.log(r);
+            return r;
+          });
+
+          if (!r) {
+            throw new Error(
+              "Error, no hay usuario en la base de datos con el id: " +
+                r +
+                " para asignar al use context"
+            );
+          }
         }
 
         console.log("Usuario obtenido de database");
@@ -103,6 +125,7 @@ export default function ({ children }: PropsWithChildren<any>) {
         case "signOut":
           // Borrar usuario default
           setUsuario(defultUSR);
+          DataStore.clear();
 
           // cancelAllScheduledNotificationsAsync();
           // Bugsnag.setUser("", "", "");
@@ -127,9 +150,37 @@ export default function ({ children }: PropsWithChildren<any>) {
       value={{
         usuario,
         setUsuario,
+
+        loading,
+        setLoading,
       }}
     >
       {children}
+      {loading && (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#000000dd",
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ActivityIndicator size={"large"} color={"#fff"} />
+          <Text
+            style={{
+              marginTop: 20,
+              fontSize: 18,
+              color: "#fff",
+            }}
+          >
+            Cargando...
+          </Text>
+        </View>
+      )}
     </UserContext.Provider>
   );
 }

@@ -38,10 +38,6 @@ class PlusButton extends React.Component<MyProps> {
     this.props.navigation.navigate("AgregarEventoStack");
   };
 
-  handleButton3 = () => {
-    this.props.navigation.navigate("AgregarEventoStack");
-  };
-
   handlePress = async () => {
     // Si el usuario no es organizador se manda alerta
     const { user, navigation } = this.props;

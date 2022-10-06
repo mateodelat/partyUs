@@ -24,6 +24,8 @@ import {
   redondear,
   rojo,
   rojoClaro,
+  vibrar,
+  VibrationType,
 } from "../../../../constants";
 
 import { AntDesign } from "@expo/vector-icons";
@@ -35,10 +37,7 @@ import { OpType } from "@aws-amplify/datastore";
 import { Boleto, MusicEnum, PlaceEnum } from "../../../models";
 import Boton from "../../../components/Boton";
 import BoletoItem from "./BoletoItem";
-import InputOnFocus from "../../../components/InputOnFocus";
 import { Cupon } from "../../../models";
-import Line from "../../../components/Line";
-import { Evento } from "../../../models";
 
 export type BoletoType = Boleto & {
   quantity?: number;
@@ -166,9 +165,13 @@ export default function ({
           : 0);
 
       if (minus) {
-        cantidad - cambio < 0 ? (cambio = 0) : (cantidad -= cambio);
+        cantidad - cambio < 0
+          ? (cambio = 0)
+          : (cantidad -= cambio) && vibrar(VibrationType.light);
       } else {
-        cantidad + cambio > max ? (cambio = max) : (cantidad += cambio);
+        cantidad + cambio > max
+          ? (cambio = max)
+          : (cantidad += cambio) && vibrar(VibrationType.light);
       }
 
       cantidad = cambio === 0 && minus ? 0 : redondear(cantidad, cambio);
@@ -196,7 +199,7 @@ export default function ({
     try {
       const cupon = await DataStore.query(Cupon, (e) =>
         e
-          .id("eq", cuponDescuento.toUpperCase())
+          .id("eq", cuponDescuento.replace(/ /g, "").toUpperCase())
           .vencimiento("gt", new Date().getTime())
           .restantes("gt", 0)
       ).then((r) => r[0]);
@@ -221,11 +224,7 @@ export default function ({
 
   return (
     <View style={{ flex: 1 }}>
-      <Header
-        title={titulo}
-        navigation={navigation}
-        style={{ paddingHorizontal: 5 }}
-      />
+      <Header title={titulo} style={{ paddingHorizontal: 5 }} />
 
       <View style={styles.container}>
         <FlatList

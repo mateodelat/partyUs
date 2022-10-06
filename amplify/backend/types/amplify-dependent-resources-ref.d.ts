@@ -15,14 +15,14 @@ export type AmplifyDependentResourcesAttributes = {
             "Region": "string",
             "LambdaExecutionRole": "string"
         },
-        "partyusmodulelayer": {
-            "Arn": "string"
-        },
         "createReserva": {
             "Name": "string",
             "Arn": "string",
             "Region": "string",
             "LambdaExecutionRole": "string"
+        },
+        "partyusmoduleCreateReserva": {
+            "Arn": "string"
         }
     },
     "auth": {

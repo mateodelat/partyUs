@@ -97,7 +97,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       ? events
       : ((await DataStore.query(Evento, Predicates.ALL, {
           sort: (e) => e.fechaInicial("ASCENDING").titulo("ASCENDING"),
-          limit: 7,
+          // limit: 7,
         })) as any);
 
     let precioMin: number | undefined;
@@ -222,7 +222,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
   async function asignarUbicacion() {
     return requestLocation().then((r) => {
-      setUserLocation(r.userLocation);
+      setUserLocation(r.userLocation as any);
       return r;
     });
   }
@@ -237,7 +237,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     // Si hay distancia y no hay ubicacion en el estado asignarla
     if (!!filters.dist && !userLocation) {
       await asignarUbicacion().then((r) => {
-        ubicacion = r;
+        ubicacion = r as any;
       });
     }
     const {
@@ -404,8 +404,12 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   // Funcion que cambia estado en un evento filtrado y en evento normal
   function updateEvent(newEvent: EventoType) {
     // Pasar nuevo evento por el filtro
-    const filtradoIdx = eventosFiltrados.findIndex((e) => e.id === newEvent.id);
-    const fetchedIdx = fetchedEvents.findIndex((e) => e.id === newEvent.id);
+    const filtradoIdx = eventosFiltrados.findIndex(
+      (e: any) => e.id === newEvent.id
+    );
+    const fetchedIdx = fetchedEvents.findIndex(
+      (e: any) => e.id === newEvent.id
+    );
 
     if (filtradoIdx !== -1) {
       let nuevosEventos = [...eventosFiltrados];
@@ -425,7 +429,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   }
 
   function handlePressItem(id?: string) {
-    const evento = eventosFiltrados.find((i) => i.id === id);
+    const evento = eventosFiltrados.find((i: any) => i.id === id);
     if (!evento) return;
 
     navigation.navigate("DetalleEvento", {
@@ -434,7 +438,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   }
 
   function handleLike(id?: string) {
-    const e = fetchedEvents.find((e) => e.id === id);
+    const e = fetchedEvents.find((e: any) => e.id === id);
     if (!e) return;
 
     updateEvent({

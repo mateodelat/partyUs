@@ -34,16 +34,20 @@ export default function ({
   cameraEnabled,
   aspectRatio,
   quality,
+
+  hideAleatorio,
 }: {
   setModalVisible: Dispatch<SetStateAction<boolean>>;
   setImage: ({}: { uri: string; key?: string; link?: boolean }) => void;
 
   // Parametros opcionales
-  video?: any;
+  video?: boolean;
+
+  hideAleatorio?: boolean;
 
   // Parametros para camara
   cameraEnabled?: any;
-  aspectRatio?: any;
+  aspectRatio?: [number, number];
   quality?: any;
 }) {
   const [innerModal, setInnerModal] = useState(false);
@@ -62,7 +66,11 @@ export default function ({
   }
 
   async function handleDeviceImage() {
-    let image = await openImagePickerAsync(!!video ? false : true, 0.9);
+    let image = await openImagePickerAsync(
+      !!video ? false : true,
+      0.9,
+      aspectRatio
+    );
     if (!image) return;
 
     setImage(image);
@@ -142,21 +150,25 @@ export default function ({
               </View>
 
               {/* Imagen random de fiesta */}
-              <Pressable onPress={handleRandomImage} style={styles.row}>
-                <View style={styles.icon}>
-                  {randomLoading ? (
-                    <ActivityIndicator size={"small"} color={"black"} />
-                  ) : (
-                    <MaterialCommunityIcons
-                      name="dice-multiple-outline"
-                      size={25}
-                      color="black"
-                    />
-                  )}
-                </View>
+              {!hideAleatorio && (
+                <Pressable onPress={handleRandomImage} style={styles.row}>
+                  <View style={styles.icon}>
+                    {randomLoading ? (
+                      <ActivityIndicator size={"small"} color={"black"} />
+                    ) : (
+                      <MaterialCommunityIcons
+                        name="dice-multiple-outline"
+                        size={25}
+                        color="black"
+                      />
+                    )}
+                  </View>
 
-                <Text style={styles.subTitle}>Imagen aleatoria de fiesta</Text>
-              </Pressable>
+                  <Text style={styles.subTitle}>
+                    Imagen aleatoria de fiesta
+                  </Text>
+                </Pressable>
+              )}
 
               {/* Imagen desde camara */}
               {cameraEnabled && (

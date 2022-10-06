@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useRef } from "react";
-import { azulClaro } from "../../../../constants";
+import { azulClaro, vibrar, VibrationType } from "../../../../constants";
 
 import { Entypo } from "@expo/vector-icons";
 
@@ -55,7 +55,10 @@ export default function ({
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPressIn={() => handlePressIn(true)}
+        onPressIn={() => {
+          handlePressIn(true);
+          vibrar(VibrationType.light);
+        }}
         onPressOut={() => handlePressOut(true)}
         style={styles.button}
       >
@@ -63,7 +66,10 @@ export default function ({
       </TouchableOpacity>
       <View style={styles.line} />
       <TouchableOpacity
-        onPressIn={() => handlePressIn(false)}
+        onPressIn={() => {
+          handlePressIn(false);
+          vibrar(VibrationType.light);
+        }}
         onPressOut={() => handlePressOut(false)}
         style={styles.button}
       >

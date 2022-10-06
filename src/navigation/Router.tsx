@@ -56,7 +56,7 @@ export default function () {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Pagar"
+        // initialRouteName="Perfil"
         screenOptions={{
           header: ({
             route: { name },
@@ -107,7 +107,7 @@ export default function () {
           name="Perfil"
           component={Perfil}
           options={{
-            title: "Mi perfil",
+            title: " ",
           }}
         />
         <Stack.Screen

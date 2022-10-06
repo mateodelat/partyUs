@@ -182,6 +182,49 @@ app.post('/payments/card', function (req, res) {
   }
 });
 
+
+/**************************************
+* Escuchar evento tras pago en tienda *
+**************************************/
+app.post('/payments/onPay', function (req, res) {
+  // Add your code here
+  try {
+    console.log(req.body)
+    res.json()
+
+  }
+  catch (e) {
+    console.log(e)
+    res.status(500)
+    res.json({
+      error: "Hubo un error",
+      body: e.message
+    })
+  }
+});
+
+/*******************************************************
+* Escuchar evento tras vencimiento de pago en efectivo *
+*******************************************************/
+app.post('/payments/onExpire', function (req, res) {
+  // Add your code here
+  try {
+    console.log(req.body)
+    res.json()
+
+  }
+  catch (e) {
+    console.log(e)
+    res.status(500)
+    res.json({
+      error: "Hubo un error",
+      body: e.message
+    })
+  }
+});
+
+
+
 /****************************
 * Borrar tarjetas cliente *
 ****************************/

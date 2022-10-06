@@ -80,7 +80,9 @@ export default ({
   images: { uri: string }[];
 }) => {
   const data = images;
-  let { width } = Dimensions.get("screen");
+  let { width, height } = Dimensions.get("screen");
+  width = width < height ? width : height;
+
   const aspectRatio = 11 / 8;
 
   ////////////Indicador y ocultarlo tras cierto tiempo////////////

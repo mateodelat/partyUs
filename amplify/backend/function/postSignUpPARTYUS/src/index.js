@@ -47,21 +47,19 @@ async function createCustomer({
     "external_id": id,
     "requires_account": true
   });
-  let authKey = Buffer.from(process.env.SECRET_KEY, 'base64')
+  let authKey = Buffer.from(process.env.SECRET_KEY).toString('base64').replace("=", "6")
 
   var config = {
     method: 'post',
     url: 'https://sandbox-api.openpay.mx/v1/mcwffetlymvvcqthcdxu/customers',
     headers: {
-      'Authorization': 'Basic ' + authKey + ":",
+      'Authorization': "Basic " + authKey,
       'Content-Type': 'application/json'
     },
     data: data
   };
-
   return await axios(config).then(
     (r) => {
-      console.log(r)
       return r.data.id;
     }
   );
@@ -79,6 +77,7 @@ const crearUsr = `
 
 
 exports.handler = async (event, context, callback) => {
+  console.log(event)
   const sub = event.userName;
   const attributes = event.request.userAttributes;
 
