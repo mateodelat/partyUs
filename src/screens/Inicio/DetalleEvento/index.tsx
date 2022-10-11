@@ -300,7 +300,11 @@ export default function ({
 
   async function handleContinar() {
     if (!(await getUserSub())) {
-      navigation.navigate("LoginStack");
+      navigation.navigate("LoginStack", {
+        onLogin: () => {
+          navigation.navigate("Boletos", evento);
+        },
+      });
     } else {
       navigation.navigate("Boletos", evento);
     }

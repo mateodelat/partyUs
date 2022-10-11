@@ -1,4 +1,12 @@
 {
+  "permissions": {
+    "api": {
+      "partyUsAPI": [
+        "Query",
+        "Mutation"
+      ]
+    }
+  },
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
@@ -17,13 +25,5 @@
       "cloudFormationParameterName": "secretKey",
       "environmentVariableName": "SECRET_KEY"
     }
-  ],
-  "permissions": {
-    "api": {
-      "partyUsAPI": [
-        "Query",
-        "Mutation"
-      ]
-    }
-  }
+  ]
 }

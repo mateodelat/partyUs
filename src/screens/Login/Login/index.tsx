@@ -28,9 +28,10 @@ export default function ({
   route,
 }: {
   navigation: NavigationProp;
-  route: Route;
+  route: { params: any };
 }) {
   const username = route?.params?.username;
+  const onLogin = route?.params?.onLogin;
 
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState(username);
@@ -80,6 +81,7 @@ export default function ({
         setEmail("");
         setButtonLoading(false);
         navigation.pop();
+        onLogin();
       })
       .catch(function (error) {
         setButtonLoading(false);

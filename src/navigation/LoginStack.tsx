@@ -1,16 +1,13 @@
 import React from "react";
 
-import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import { DefaultTheme } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Login from "../screens/Login/Login";
 import Register from "../screens/Login/Register";
 import Header from "./components/Header";
-import Landing from "../screens/Login/Landing";
-
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import PasswordForget from "../screens/Login/PasswordForget";
 import Confirm from "../screens/Login/Confirm";
-import { KeyboardAvoidingView, Platform, View } from "react-native";
+import { View } from "react-native";
 
 // import Register from '../screens/Login/Register';
 // import Landing from '../screens/Login/Landing';
@@ -24,7 +21,15 @@ const MyTheme = {
   },
 };
 
-export default function LoginStack() {
+export default function LoginStack({
+  route: {
+    params: { onLogin },
+  },
+}: {
+  route: {
+    params: { onLogin: () => void };
+  };
+}) {
   const Stack = createStackNavigator();
 
   return (
@@ -42,7 +47,7 @@ export default function LoginStack() {
             options: { title: tit },
           }) => {
             const title = tit ? tit : null;
-            return <Header title={title} navigation={navigation} />;
+            return <Header title={title} />;
           },
         }}
       >
@@ -53,7 +58,11 @@ export default function LoginStack() {
             headerShown: false,
           }}
         /> */}
-        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          initialParams={{ onLogin }}
+        />
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen
           name="PasswordForget"

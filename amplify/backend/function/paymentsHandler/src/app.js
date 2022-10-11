@@ -1,10 +1,17 @@
-const express = require('express')
+/* Amplify Params - DO NOT EDIT
+	API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
+	API_PARTYUSAPI_GRAPHQLAPIIDOUTPUT
+	API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT
+	ENV
+	REGION
+Amplify Params - DO NOT EDIT */const express = require('express')
 const bodyParser = require('body-parser')
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 
 
 var Openpay = require('openpay');
 var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
+// openpay.setProductionReady(true);
 
 
 // declare a new express app
@@ -189,8 +196,34 @@ app.post('/payments/card', function (req, res) {
 app.post('/payments/onPay', function (req, res) {
   // Add your code here
   try {
-    console.log(req.body)
-    res.json()
+    const { body } = req
+    const { status, method } = body.transaction //status: 'competed', method: store
+    const { type } = body //charge.succeeded
+
+    if (type !== "charge.succeeded") {
+      console.log("Transaccion no es de tipo charge.succeeded")
+      console.log(body)
+
+      res.json()
+
+    }
+
+
+    if (method !== "store") {
+      console.log("Transaccion no es pago con tarjeta")
+
+      console.log(body)
+      res.json()
+
+    }
+
+
+    if (status !== "completed") {
+      console.log(body)
+      console.log("La transaccion no tiene status.completed")
+      res.json("La transaccion no tiene status.completed")
+    }
+
 
   }
   catch (e) {
@@ -202,6 +235,7 @@ app.post('/payments/onPay', function (req, res) {
     })
   }
 });
+
 
 /*******************************************************
 * Escuchar evento tras vencimiento de pago en efectivo *

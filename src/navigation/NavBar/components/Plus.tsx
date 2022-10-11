@@ -16,7 +16,12 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { getUserSub, rojoClaro, shadowMedia } from "../../../../constants";
+import {
+  AsyncAlert,
+  getUserSub,
+  rojoClaro,
+  shadowMedia,
+} from "../../../../constants";
 import useUser from "../../../Hooks/useUser";
 import { Usuario } from "../../../models";
 

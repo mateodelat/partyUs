@@ -97,7 +97,7 @@ export default function ({
 
   const [sesionId, setSesionId] = useState<string>();
 
-  const { usuario } = useUser();
+  const { usuario, setLoading } = useUser();
 
   // Opciones que se llenan cuando damos agregar tarjeta
   const [tarjetasGuardadas, setTarjetasGuardadas] = useState<cardType[]>([]);
@@ -124,6 +124,7 @@ export default function ({
     setReservaID(res);
     console.log("Nuevo codigo de reserva: " + res);
     setButtonLoading(false);
+    setLoading(false);
   }, []);
 
   ///////////////////////////////////////////////////////////////
@@ -191,6 +192,7 @@ export default function ({
     }
     try {
       setButtonLoading(true);
+      setLoading(true);
       const result = (await fetchFromAPI("/createReserva", "POST", {
         tipoPago:
           tipoPago === "EFECTIVO"
@@ -212,6 +214,7 @@ export default function ({
         device_session_id: sesionId,
       })) as any;
       setButtonLoading(false);
+      setLoading(false);
 
       if (!result) {
         throw new Error("No se recibio ningun resultado");
@@ -250,6 +253,7 @@ export default function ({
     } catch (error: any) {
       error = error?.error ? error.error : error;
       setButtonLoading(false);
+      setLoading(false);
       const msg = error.message
         ? error.message
         : error.description
@@ -271,6 +275,7 @@ export default function ({
     setEditing(false);
     try {
       setButtonLoading(true);
+      setLoading(true);
       const tokenID = await fetchFromOpenpay<cardType>({
         path: "/tokens",
         type: "POST",
@@ -349,10 +354,12 @@ export default function ({
       ]);
     } catch (error: any) {
       setButtonLoading(false);
+      setLoading(false);
       console.log(error);
     }
 
     setButtonLoading(false);
+    setLoading(false);
   }
 
   async function handleRemovePayment(idx: number) {
@@ -560,7 +567,7 @@ export default function ({
                           <Entypo name="plus" size={30} color={"#aaa"} />
                         </View>
                       </Pressable>
-                      {/* <View style={styles.line} /> */}
+                      <View style={styles.line} />
                     </>
                   ) : (
                     <View>
@@ -690,13 +697,13 @@ export default function ({
                               </View>
                             </Pressable>
 
-                            {/* <View
-                            style={{
-                              borderColor: "#aaa",
-                              borderBottomWidth: 1,
-                              marginHorizontal: 30,
-                            }}
-                          /> */}
+                            <View
+                              style={{
+                                borderColor: "#aaa",
+                                borderBottomWidth: 1,
+                                marginHorizontal: 30,
+                              }}
+                            />
                           </View>
                         );
                       })}
@@ -704,41 +711,41 @@ export default function ({
                   )
                 }
 
-                {/* <Pressable
-                onPress={() => {
-                  setTipoPago("EFECTIVO");
-                }}
-                style={styles.metodoDePago}
-              >
-                <View style={{ ...styles.iconoIzquierda }}>
-                  <FontAwesome5
-                    name="money-bill-wave-alt"
-                    size={24}
-                    color={azulClaro}
-                  />
-                </View>
+                <Pressable
+                  onPress={() => {
+                    setTipoPago("EFECTIVO");
+                  }}
+                  style={styles.metodoDePago}
+                >
+                  <View style={{ ...styles.iconoIzquierda }}>
+                    <FontAwesome5
+                      name="money-bill-wave-alt"
+                      size={24}
+                      color={azulClaro}
+                    />
+                  </View>
 
-                <Text
-                  style={{
-                    ...styles.titulo,
-                    color: tipoPago === "EFECTIVO" ? "#222" : "#aaa",
-                  }}
-                >
-                  EFECTIVO
-                </Text>
-                <View
-                  style={{
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: 30,
-                    height: 30,
-                  }}
-                >
-                  {tipoPago === "EFECTIVO" && (
-                    <Entypo name="check" size={30} color={rojoClaro} />
-                  )}
-                </View>
-              </Pressable> */}
+                  <Text
+                    style={{
+                      ...styles.titulo,
+                      color: tipoPago === "EFECTIVO" ? "#222" : "#aaa",
+                    }}
+                  >
+                    EFECTIVO
+                  </Text>
+                  <View
+                    style={{
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 30,
+                      height: 30,
+                    }}
+                  >
+                    {tipoPago === "EFECTIVO" && (
+                      <Entypo name="check" size={30} color={rojoClaro} />
+                    )}
+                  </View>
+                </Pressable>
               </View>
               {/* Pago seguro */}
               <View

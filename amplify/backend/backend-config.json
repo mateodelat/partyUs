@@ -11,6 +11,15 @@
       "service": "Lambda",
       "dependsOn": [
         {
+          "category": "api",
+          "resourceName": "partyUsAPI",
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput",
+            "GraphQLAPIKeyOutput"
+          ]
+        },
+        {
           "category": "function",
           "resourceName": "partyuslayer",
           "attributes": [
@@ -76,6 +85,29 @@
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer",
       "build": true
+    },
+    "onPay": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "api",
+          "resourceName": "partyUsAPI",
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput",
+            "GraphQLAPIKeyOutput"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "partyuslayer",
+          "attributes": [
+            "Arn"
+          ]
+        }
+      ]
     }
   },
   "auth": {
@@ -159,6 +191,14 @@
         {
           "category": "function",
           "resourceName": "createReserva",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "onPay",
           "attributes": [
             "Name",
             "Arn"

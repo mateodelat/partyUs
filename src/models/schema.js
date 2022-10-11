@@ -248,7 +248,6 @@ export const schema = {
                             },
                             {
                                 "allow": "public",
-                                "provider": "apiKey",
                                 "operations": [
                                     "create",
                                     "read"
@@ -504,15 +503,14 @@ export const schema = {
                                     "Admin"
                                 ],
                                 "operations": [
-                                    "read",
                                     "create",
                                     "update",
-                                    "delete"
+                                    "delete",
+                                    "read"
                                 ]
                             },
                             {
                                 "allow": "public",
-                                "provider": "apiKey",
                                 "operations": [
                                     "read"
                                 ]
@@ -645,7 +643,6 @@ export const schema = {
                             },
                             {
                                 "allow": "public",
-                                "provider": "apiKey",
                                 "operations": [
                                     "read"
                                 ]
@@ -685,21 +682,21 @@ export const schema = {
                     "name": "boletoID",
                     "isArray": false,
                     "type": "ID",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "reservaID": {
                     "name": "reservaID",
                     "isArray": false,
                     "type": "ID",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "quantity": {
                     "name": "quantity",
                     "isArray": false,
                     "type": "Int",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "reserva": {
@@ -786,7 +783,6 @@ export const schema = {
                             },
                             {
                                 "allow": "public",
-                                "provider": "apiKey",
                                 "operations": [
                                     "read"
                                 ]
@@ -816,35 +812,35 @@ export const schema = {
                     "name": "total",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "comision": {
                     "name": "comision",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "pagadoAlOrganizador": {
                     "name": "pagadoAlOrganizador",
                     "isArray": false,
                     "type": "Float",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "cantidad": {
                     "name": "cantidad",
                     "isArray": false,
                     "type": "Int",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "pagado": {
                     "name": "pagado",
                     "isArray": false,
                     "type": "Boolean",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "pagoID": {
@@ -891,19 +887,52 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "fechaExpiracionUTC": {
+                    "name": "fechaExpiracionUTC",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "eventoID": {
                     "name": "eventoID",
                     "isArray": false,
                     "type": "ID",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
+                },
+                "evento": {
+                    "name": "evento",
+                    "isArray": false,
+                    "type": {
+                        "model": "Evento"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "eventoReservasId"
+                    }
                 },
                 "usuarioID": {
                     "name": "usuarioID",
                     "isArray": false,
                     "type": "ID",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
+                },
+                "usuario": {
+                    "name": "usuario",
+                    "isArray": false,
+                    "type": {
+                        "model": "Usuario"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "usuarioReservasId"
+                    }
                 },
                 "cuponID": {
                     "name": "cuponID",
@@ -911,6 +940,19 @@ export const schema = {
                     "type": "ID",
                     "isRequired": false,
                     "attributes": []
+                },
+                "cupon": {
+                    "name": "cupon",
+                    "isArray": false,
+                    "type": {
+                        "model": "Cupon"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "cuponReservasId"
+                    }
                 },
                 "Boletos": {
                     "name": "Boletos",
@@ -1009,7 +1051,6 @@ export const schema = {
                             },
                             {
                                 "allow": "public",
-                                "provider": "apiKey",
                                 "operations": [
                                     "read"
                                 ]
@@ -1018,162 +1059,6 @@ export const schema = {
                                 "allow": "private",
                                 "operations": [
                                     "read"
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ]
-        },
-        "Notificacion": {
-            "name": "Notificacion",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "tipo": {
-                    "name": "tipo",
-                    "isArray": false,
-                    "type": {
-                        "enum": "TipoNotificacion"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "titulo": {
-                    "name": "titulo",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "descripcion": {
-                    "name": "descripcion",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "usuarioID": {
-                    "name": "usuarioID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "imagen": {
-                    "name": "imagen",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "leido": {
-                    "name": "leido",
-                    "isArray": false,
-                    "type": "Boolean",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "showAt": {
-                    "name": "showAt",
-                    "isArray": false,
-                    "type": "AWSTimestamp",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "reservaID": {
-                    "name": "reservaID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "fechaID": {
-                    "name": "fechaID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "aventuraID": {
-                    "name": "aventuraID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "guiaID": {
-                    "name": "guiaID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "solicitudGuiaID": {
-                    "name": "solicitudGuiaID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "createdAt": {
-                    "name": "createdAt",
-                    "isArray": false,
-                    "type": "AWSDateTime",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isReadOnly": true
-                },
-                "updatedAt": {
-                    "name": "updatedAt",
-                    "isArray": false,
-                    "type": "AWSDateTime",
-                    "isRequired": false,
-                    "attributes": [],
-                    "isReadOnly": true
-                }
-            },
-            "syncable": true,
-            "pluralName": "Notificacions",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                },
-                {
-                    "type": "key",
-                    "properties": {
-                        "name": "byUsuario",
-                        "fields": [
-                            "usuarioID"
-                        ]
-                    }
-                },
-                {
-                    "type": "auth",
-                    "properties": {
-                        "rules": [
-                            {
-                                "provider": "userPools",
-                                "ownerField": "usuarioID",
-                                "allow": "owner",
-                                "identityClaim": "cognito:username",
-                                "operations": [
-                                    "create",
-                                    "update",
-                                    "delete",
-                                    "read"
-                                ]
-                            },
-                            {
-                                "allow": "public",
-                                "operations": [
-                                    "create"
                                 ]
                             }
                         ]
@@ -1277,7 +1162,6 @@ export const schema = {
                             },
                             {
                                 "allow": "public",
-                                "provider": "apiKey",
                                 "operations": [
                                     "read"
                                 ]
@@ -1294,6 +1178,158 @@ export const schema = {
                                 "operations": [
                                     "read",
                                     "update"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "Notificacion": {
+            "name": "Notificacion",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "tipo": {
+                    "name": "tipo",
+                    "isArray": false,
+                    "type": {
+                        "enum": "TipoNotificacion"
+                    },
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "titulo": {
+                    "name": "titulo",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "descripcion": {
+                    "name": "descripcion",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "usuarioID": {
+                    "name": "usuarioID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "leido": {
+                    "name": "leido",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "showAt": {
+                    "name": "showAt",
+                    "isArray": false,
+                    "type": "AWSTimestamp",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "reservaID": {
+                    "name": "reservaID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "fechaID": {
+                    "name": "fechaID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "eventoID": {
+                    "name": "eventoID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "organizadorID": {
+                    "name": "organizadorID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "Notificacions",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byUsuario",
+                        "fields": [
+                            "usuarioID"
+                        ]
+                    }
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "provider": "userPools",
+                                "ownerField": "usuarioID",
+                                "allow": "owner",
+                                "identityClaim": "cognito:username",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "provider": "iam",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
                                 ]
                             }
                         ]
@@ -1357,5 +1393,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "dad8e9f6bedbe2c2a60740508e5d0342"
+    "version": "c6b3770725de373137d44d36d68bdf1e"
 };

@@ -16,9 +16,11 @@
     "s3Key": {
       "Type": "String"
     },
-    "functionpartyuslayerArn": {
-      "Type": "String",
-      "Default": "functionpartyuslayerArn"
+    "merchantId": {
+      "Type": "String"
+    },
+    "secretKey": {
+      "Type": "String"
     },
     "apipartyUsAPIGraphQLAPIIdOutput": {
       "Type": "String",
@@ -32,11 +34,9 @@
       "Type": "String",
       "Default": "apipartyUsAPIGraphQLAPIKeyOutput"
     },
-    "merchantId": {
-      "Type": "String"
-    },
-    "secretKey": {
-      "Type": "String"
+    "functionpartyuslayerArn": {
+      "Type": "String",
+      "Default": "functionpartyuslayerArn"
     }
   },
   "Conditions": {
@@ -69,12 +69,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "paymentsHandler",
+            "onPay",
             {
               "Fn::Join": [
                 "",
                 [
-                  "paymentsHandler",
+                  "onPay",
                   "-",
                   {
                     "Ref": "env"
@@ -130,12 +130,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "partyusLambdaRole4cc1e074",
+            "partyusLambdaRoled8776e8e",
             {
               "Fn::Join": [
                 "",
                 [
-                  "partyusLambdaRole4cc1e074",
+                  "partyusLambdaRoled8776e8e",
                   "-",
                   {
                     "Ref": "env"

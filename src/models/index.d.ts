@@ -62,11 +62,11 @@ type ReservaMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
-type NotificacionMetaData = {
+type CuponMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
-type CuponMetaData = {
+type NotificacionMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
@@ -146,9 +146,9 @@ export declare class Boleto {
 
 export declare class ReservasBoletos {
   readonly id: string;
-  readonly boletoID: string;
-  readonly reservaID: string;
-  readonly quantity: number;
+  readonly boletoID?: string | null;
+  readonly reservaID?: string | null;
+  readonly quantity?: number | null;
   readonly reserva?: Reserva | null;
   readonly boleto?: Boleto | null;
   readonly createdAt?: string | null;
@@ -159,46 +159,30 @@ export declare class ReservasBoletos {
 
 export declare class Reserva {
   readonly id: string;
-  readonly total: number;
-  readonly comision: number;
-  readonly pagadoAlOrganizador: number;
-  readonly cantidad: number;
-  readonly pagado: boolean;
+  readonly total?: number | null;
+  readonly comision?: number | null;
+  readonly pagadoAlOrganizador?: number | null;
+  readonly cantidad?: number | null;
+  readonly pagado?: boolean | null;
   readonly pagoID?: string | null;
   readonly ingreso?: boolean | null;
   readonly horaIngreso?: string | null;
   readonly cancelado?: boolean | null;
   readonly canceledAt?: string | null;
   readonly cancelReason?: ReservaCancelReason | keyof typeof ReservaCancelReason | null;
-  readonly eventoID: string;
-  readonly usuarioID: string;
+  readonly fechaExpiracionUTC?: string | null;
+  readonly eventoID?: string | null;
+  readonly evento?: Evento | null;
+  readonly usuarioID?: string | null;
+  readonly usuario?: Usuario | null;
   readonly cuponID?: string | null;
+  readonly cupon?: Cupon | null;
   readonly Boletos?: (ReservasBoletos | null)[] | null;
   readonly organizadorID?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Reserva, ReservaMetaData>);
   static copyOf(source: Reserva, mutator: (draft: MutableModel<Reserva, ReservaMetaData>) => MutableModel<Reserva, ReservaMetaData> | void): Reserva;
-}
-
-export declare class Notificacion {
-  readonly id: string;
-  readonly tipo: TipoNotificacion | keyof typeof TipoNotificacion;
-  readonly titulo: string;
-  readonly descripcion?: string | null;
-  readonly usuarioID: string;
-  readonly imagen?: string | null;
-  readonly leido?: boolean | null;
-  readonly showAt?: number | null;
-  readonly reservaID?: string | null;
-  readonly fechaID?: string | null;
-  readonly aventuraID?: string | null;
-  readonly guiaID?: string | null;
-  readonly solicitudGuiaID?: string | null;
-  readonly createdAt?: string | null;
-  readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Notificacion, NotificacionMetaData>);
-  static copyOf(source: Notificacion, mutator: (draft: MutableModel<Notificacion, NotificacionMetaData>) => MutableModel<Notificacion, NotificacionMetaData> | void): Notificacion;
 }
 
 export declare class Cupon {
@@ -212,4 +196,22 @@ export declare class Cupon {
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<Cupon, CuponMetaData>);
   static copyOf(source: Cupon, mutator: (draft: MutableModel<Cupon, CuponMetaData>) => MutableModel<Cupon, CuponMetaData> | void): Cupon;
+}
+
+export declare class Notificacion {
+  readonly id: string;
+  readonly tipo: TipoNotificacion | keyof typeof TipoNotificacion;
+  readonly titulo: string;
+  readonly descripcion?: string | null;
+  readonly usuarioID: string;
+  readonly leido?: boolean | null;
+  readonly showAt?: number | null;
+  readonly reservaID?: string | null;
+  readonly fechaID?: string | null;
+  readonly eventoID?: string | null;
+  readonly organizadorID?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  constructor(init: ModelInit<Notificacion, NotificacionMetaData>);
+  static copyOf(source: Notificacion, mutator: (draft: MutableModel<Notificacion, NotificacionMetaData>) => MutableModel<Notificacion, NotificacionMetaData> | void): Notificacion;
 }

@@ -66,9 +66,8 @@ export default function Perfil({ navigation }: { navigation: any }) {
   }
 
   function handleSignOut() {
-    // Auth.signOut();
-    // navigation.pop();
-    console.log("Cerrar sesion");
+    Auth.signOut();
+    navigation.pop();
   }
 
   function handleEditProfile() {
@@ -234,7 +233,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
           }}
           textStyle={{ color: azulClaro }}
           titulo="Mis boletos"
-          onPress={handleEditProfile}
+          onPress={() => Alert.alert("Ir a mis boletos")}
         />
         {organizador && (
           <Boton

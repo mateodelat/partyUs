@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
 import UserContext from "./UserContext";
 import { View, ActivityIndicator, Text } from "react-native";
 
@@ -40,14 +40,21 @@ const getUsuario = /* GraphQL */ `
   }
 `;
 
-export default function ({ children }: PropsWithChildren<any>) {
+export default function ({
+  children,
+
+  usuario,
+  setUsuario,
+}: PropsWithChildren<{
+  usuario: Usuario;
+  setUsuario: Dispatch<SetStateAction<Usuario>>;
+}>) {
   const defultUSR = {
     id: "guest",
     nickname: "guest",
     email: "guest",
   };
 
-  const [usuario, setUsuario] = useState<Usuario>(defultUSR);
   const [loading, setLoading] = useState(false);
 
   async function fetchUsuario(sub: string, api?: boolean) {
@@ -90,7 +97,6 @@ export default function ({ children }: PropsWithChildren<any>) {
           }
         }
 
-        console.log("Usuario obtenido de database");
         setUsuario(r);
       });
     }

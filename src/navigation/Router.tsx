@@ -110,6 +110,15 @@ export default function () {
             title: " ",
           }}
         />
+
+        <Stack.Screen
+          name="MisBoletos"
+          component={Perfil}
+          options={{
+            title: " ",
+          }}
+        />
+
         <Stack.Screen
           name="Notifications"
           component={Notifications}

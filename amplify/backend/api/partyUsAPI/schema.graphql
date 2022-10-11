@@ -4,7 +4,7 @@ type Usuario
     rules: [
       { allow: owner, ownerField: "owner" }
       { allow: groups, groups: ["Admin"] }
-      { allow: public, provider: apiKey, operations: [create, read] }
+      { allow: public, operations: [create, read] }
       { allow: private, provider: iam, operations: [read] }
       { allow: private, operations: [read] }
     ]
@@ -71,14 +71,10 @@ type Evento
       { allow: private, provider: iam }
       # El dueño es el unico que puede moverle a sus eventos
       { allow: owner, ownerField: "CreatorID" }
-      {
-        allow: groups
-        groups: ["Admin"]
-        operations: [read, create, update, delete]
-      }
+      { allow: groups, groups: ["Admin"] }
       #
       # Todos los demas solo pueden verlos
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, operations: [read] }
       { allow: private, operations: [read] }
     ]
   ) {
@@ -103,6 +99,7 @@ type Evento
   precioMax: Int
 
   CreatorID: ID @index(name: "byUsuario")
+  creator: Usuario @belongsTo
 
   Boletos: [Boleto] @hasMany(indexName: "byEvento", fields: ["id"])
   Reservas: [Reserva] @hasMany(indexName: "byEvento", fields: ["id"])
@@ -117,6 +114,9 @@ type Notificacion
       #
       # Cualquiera con API key puede crear una notificacion
       { allow: public, operations: [create] }
+      #
+      # Permitir crear la notificacion desde lambda
+      { allow: private, provider: iam }
     ]
   ) {
   id: ID!
@@ -126,16 +126,12 @@ type Notificacion
   descripcion: String
   usuarioID: ID! @index(name: "byUsuario")
 
-  imagen: String
-
   leido: Boolean
-  showAt: AWSTimestamp
+  showAt: AWSDateTime
 
   reservaID: ID
-  fechaID: ID
-  aventuraID: ID
-  guiaID: ID
-  solicitudGuiaID: ID
+  eventoID: ID
+  organizadorID: ID
 }
 
 type Boleto
@@ -146,7 +142,7 @@ type Boleto
       { allow: owner }
       #
       # Los demas solo pueden leer el boleto
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, operations: [read] }
       { allow: private, operations: [read] }
       { allow: private, provider: iam }
     ]
@@ -172,7 +168,7 @@ type Cupon
       { allow: groups, groups: ["Admin"] }
       #
       # Todos los demas pueden query
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, operations: [read] }
       { allow: private, operations: [read] }
       { allow: private, provider: iam, operations: [read, update] }
     ]
@@ -202,7 +198,7 @@ type Reserva
       { allow: owner, ownerField: "usuarioID", operations: [update] }
       #
       # Todos los demas pueden ver la reserva
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, operations: [read] }
       { allow: private, operations: [read] }
     ]
   ) {
@@ -221,10 +217,16 @@ type Reserva
   cancelado: Boolean
   canceledAt: AWSDateTime
   cancelReason: reservaCancelReason
+  fechaExpiracionUTC: AWSDateTime
 
   eventoID: ID @index(name: "byEvento")
+  evento: Evento @belongsTo
+
   usuarioID: ID @index(name: "byUsuario")
+  usuario: Usuario @belongsTo
+
   cuponID: ID @index(name: "byCupon")
+  cupon: Cupon @belongsTo
 
   Boletos: [ReservasBoletos] @hasMany(indexName: "byReserva", fields: ["id"])
 
@@ -242,7 +244,7 @@ type ReservasBoletos
       { allow: private, provider: iam }
       #
       # Todos los demas pueden ver la reserva
-      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, operations: [read] }
       { allow: private, operations: [read] }
     ]
   ) {
