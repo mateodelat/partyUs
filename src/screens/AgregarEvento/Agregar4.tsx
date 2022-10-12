@@ -15,6 +15,7 @@ import {
   azulClaro,
   azulFondo,
   enumToArray,
+  formatDiaMesCompleto,
   getBlob,
   getUserSub,
   isUrl,
@@ -40,6 +41,8 @@ import {
 } from "../../models";
 
 import { createEvento } from "../../graphql/mutations";
+import { Notificacion } from "../../models";
+import { TipoNotificacion } from "../../models";
 
 const musicList = enumToArray(MusicEnum);
 const comoditiesList = enumToArray(ComoditiesEnum);
@@ -221,6 +224,26 @@ export default function Agregar2({
           })
         );
       });
+
+      // Mandar notificacion al guia de nueva reserva
+      DataStore.save(
+        new Notificacion({
+          tipo: TipoNotificacion.EVENTOCREADO,
+          titulo: "Nuevo evento",
+          descripcion: `Tu evento ${
+            evento.titulo
+          } para el ${formatDiaMesCompleto(
+            evento.fechaInicial
+          )} se ha creado con exito.`,
+          usuarioID: sub,
+
+          showAt: new Date().toISOString(),
+
+          eventoID: evento.id,
+          organizadorID: sub,
+        })
+      );
+
       // Crear evento con id personalizado para coincidir con los boletos y manejar las imagenes con precision
       const eventoAEnviar = {
         id: evento.id,

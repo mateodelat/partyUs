@@ -363,6 +363,7 @@ export const handler = async (event
                     items {
                         pagado
                         id
+                        _deleted
                     }
                 }
 
@@ -417,14 +418,14 @@ export const handler = async (event
 
             if (tipoPago === "EFECTIVO" && total !== 0) {
                 const efectivoDeny = !!r.listReservas.items.find(e => {
-                    return !e.pagado
+                    return !e.pagado && !e._deleted
                 })
 
                 if (efectivoDeny) {
                     console.log({
                         Reservas: r.listReservas.items
                     })
-                    // throw new Error("Solo se permite tener una reserva en efectivo por evento.");
+                    throw new Error("Solo se permite tener una reserva en efectivo por evento.");
                 }
 
             }
@@ -743,7 +744,10 @@ export const handler = async (event
             total,
             pagado: tipoPago === "EFECTIVO" && total !== 0 ? false : true,
             usuarioID,
-            fechaExpiracionUTC: new Date().toISOString()
+            fechaExpiracionUTC: new Date(limitDate).toISOString(),
+            cashBarcode: body?.voucher?.barcode_url,
+            _version: 1,
+            tipoPago
         };
 
         const q = `
@@ -793,19 +797,6 @@ export const handler = async (event
                 : ``
             }
   
-        createNotificacion(input: {
-            tipo: RESERVACREADA,
-            showAt: "${new Date().toISOString()}",
-            titulo:"Reserva exitosa",
-            usuarioID:"${usuarioID}",
-            reservaID:"${reservaID}",
-            organizadorID:"${organizadorID}"
-            descripcion: "Tu reserva en ${evento.titulo} con ${totalPersonasReservadas} personas se ha creado con exito. ${tipoPago === "EFECTIVO" ?
-                `Realiza el pago antes del ${formatDateShort(limitDate.getTime() - 5 * 3600000) + "  a las " + formatAMPM(limitDate.getTime() - 5 * 3600000)} para confirmar tu lugar.` :
-                "Escanea el codigo en la entrada haciendo click aqui"}"
-        }){
-            id
-        }
 
         createReserva(input: $reservaInput) {
             id

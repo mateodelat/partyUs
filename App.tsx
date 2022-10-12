@@ -61,11 +61,12 @@ export default function App() {
   // }
 
   useEffect(() => {
-    DataStore.clear();
+    DataStore.start();
 
     // Crear listener para cuando se acaben de obtener los modelos de datastore en caso de cierre de sesion
     const dstore = Hub.listen("datastore", async (hubData) => {
       const { event, data } = hubData.payload;
+      console.log(event);
 
       if (event === "ready") {
         setLoading(false);
@@ -97,7 +98,7 @@ export default function App() {
     };
   }, []);
 
-  if (!loading) return <Loading />;
+  if (loading) return <Loading />;
   else
     return (
       <ErrorWrapper>

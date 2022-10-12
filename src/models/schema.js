@@ -408,6 +408,19 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "creator": {
+                    "name": "creator",
+                    "isArray": false,
+                    "type": {
+                        "model": "Usuario"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "usuarioEventosId"
+                    }
+                },
                 "Boletos": {
                     "name": "Boletos",
                     "isArray": true,
@@ -692,13 +705,6 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "quantity": {
-                    "name": "quantity",
-                    "isArray": false,
-                    "type": "Int",
-                    "isRequired": false,
-                    "attributes": []
-                },
                 "reserva": {
                     "name": "reserva",
                     "isArray": false,
@@ -724,6 +730,13 @@ export const schema = {
                         "connectionType": "BELONGS_TO",
                         "targetName": "boletoReservasId"
                     }
+                },
+                "quantity": {
+                    "name": "quantity",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
                 },
                 "createdAt": {
                     "name": "createdAt",
@@ -843,8 +856,31 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "paymentTime": {
+                    "name": "paymentTime",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "tipoPago": {
+                    "name": "tipoPago",
+                    "isArray": false,
+                    "type": {
+                        "enum": "TipoPago"
+                    },
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "pagoID": {
                     "name": "pagoID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "cashBarcode": {
+                    "name": "cashBarcode",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -1235,19 +1271,12 @@ export const schema = {
                 "showAt": {
                     "name": "showAt",
                     "isArray": false,
-                    "type": "AWSTimestamp",
+                    "type": "AWSDateTime",
                     "isRequired": false,
                     "attributes": []
                 },
                 "reservaID": {
                     "name": "reservaID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "fechaID": {
-                    "name": "fechaID",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": false,
@@ -1369,6 +1398,13 @@ export const schema = {
                 "SEGURIDAD"
             ]
         },
+        "TipoPago": {
+            "name": "TipoPago",
+            "values": [
+                "EFECTIVO",
+                "TARJETA"
+            ]
+        },
         "ReservaCancelReason": {
             "name": "ReservaCancelReason",
             "values": [
@@ -1379,19 +1415,21 @@ export const schema = {
         "TipoNotificacion": {
             "name": "TipoNotificacion",
             "values": [
-                "RESERVACREADA",
+                "RESERVATARJETACREADA",
+                "RESERVAEFECTIVOCREADA",
                 "RESERVACANCELADA",
-                "AGREGAREVENTOS",
+                "RESERVAEFECTIVOPAGADA",
                 "ADMIN",
                 "BIENVENIDA",
                 "EVENTOCREADO",
                 "EVENTOACTUALIZACION",
-                "EVENTOCANCELADA",
+                "EVENTOCANCELADO",
                 "RECORDATORIOEVENTO",
+                "RECORDATORIOPAGO",
                 "CALIFICAUSUARIO"
             ]
         }
     },
     "nonModels": {},
-    "version": "c6b3770725de373137d44d36d68bdf1e"
+    "version": "a3596f62c8b959280d866a38f2bc8c06"
 };

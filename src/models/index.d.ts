@@ -24,21 +24,28 @@ export enum ComoditiesEnum {
   SEGURIDAD = "SEGURIDAD"
 }
 
+export enum TipoPago {
+  EFECTIVO = "EFECTIVO",
+  TARJETA = "TARJETA"
+}
+
 export enum ReservaCancelReason {
   EVENTOCERRADO = "EVENTOCERRADO",
   CANCELADOPORCLIENTE = "CANCELADOPORCLIENTE"
 }
 
 export enum TipoNotificacion {
-  RESERVACREADA = "RESERVACREADA",
+  RESERVATARJETACREADA = "RESERVATARJETACREADA",
+  RESERVAEFECTIVOCREADA = "RESERVAEFECTIVOCREADA",
   RESERVACANCELADA = "RESERVACANCELADA",
-  AGREGAREVENTOS = "AGREGAREVENTOS",
+  RESERVAEFECTIVOPAGADA = "RESERVAEFECTIVOPAGADA",
   ADMIN = "ADMIN",
   BIENVENIDA = "BIENVENIDA",
   EVENTOCREADO = "EVENTOCREADO",
   EVENTOACTUALIZACION = "EVENTOACTUALIZACION",
-  EVENTOCANCELADA = "EVENTOCANCELADA",
+  EVENTOCANCELADO = "EVENTOCANCELADO",
   RECORDATORIOEVENTO = "RECORDATORIOEVENTO",
+  RECORDATORIOPAGO = "RECORDATORIOPAGO",
   CALIFICAUSUARIO = "CALIFICAUSUARIO"
 }
 
@@ -121,6 +128,7 @@ export declare class Evento {
   readonly precioMin?: number | null;
   readonly precioMax?: number | null;
   readonly CreatorID?: string | null;
+  readonly creator?: Usuario | null;
   readonly Boletos?: (Boleto | null)[] | null;
   readonly Reservas?: (Reserva | null)[] | null;
   readonly createdAt?: string | null;
@@ -148,9 +156,9 @@ export declare class ReservasBoletos {
   readonly id: string;
   readonly boletoID?: string | null;
   readonly reservaID?: string | null;
-  readonly quantity?: number | null;
   readonly reserva?: Reserva | null;
   readonly boleto?: Boleto | null;
+  readonly quantity?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   constructor(init: ModelInit<ReservasBoletos, ReservasBoletosMetaData>);
@@ -164,7 +172,10 @@ export declare class Reserva {
   readonly pagadoAlOrganizador?: number | null;
   readonly cantidad?: number | null;
   readonly pagado?: boolean | null;
+  readonly paymentTime?: string | null;
+  readonly tipoPago?: TipoPago | keyof typeof TipoPago | null;
   readonly pagoID?: string | null;
+  readonly cashBarcode?: string | null;
   readonly ingreso?: boolean | null;
   readonly horaIngreso?: string | null;
   readonly cancelado?: boolean | null;
@@ -205,9 +216,8 @@ export declare class Notificacion {
   readonly descripcion?: string | null;
   readonly usuarioID: string;
   readonly leido?: boolean | null;
-  readonly showAt?: number | null;
+  readonly showAt?: string | null;
   readonly reservaID?: string | null;
-  readonly fechaID?: string | null;
   readonly eventoID?: string | null;
   readonly organizadorID?: string | null;
   readonly createdAt?: string | null;

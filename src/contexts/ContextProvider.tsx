@@ -1,16 +1,13 @@
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
 import UserContext from "./UserContext";
-import { View, ActivityIndicator, Text } from "react-native";
+import { View, ActivityIndicator, Text, Platform } from "react-native";
 
 import { PropsWithChildren } from "react";
 import { Usuario } from "../models";
 import { API, DataStore, Hub } from "aws-amplify";
-import {
-  azulClaro,
-  azulOscuro,
-  getUserSub,
-  verifyUserLoggedIn,
-} from "../../constants";
+import { getUserSub, rojoClaro } from "../../constants";
+
+import * as Notifications from "expo-notifications";
 
 // Obtener el usuario recien loggeado
 const getUsuario = /* GraphQL */ `
@@ -75,6 +72,7 @@ export default function ({
       );
     } else {
       DataStore.query(Usuario, sub).then(async (r) => {
+        registerForPushNotificationsAsync(r);
         if (!r) {
           // Pedirlo directamete de graphql
           r = await (
@@ -98,6 +96,40 @@ export default function ({
         }
 
         setUsuario(r);
+      });
+    }
+  }
+  async function registerForPushNotificationsAsync(usuario: Usuario) {
+    let token: Notifications.ExpoPushToken["data"];
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== "granted") {
+      alert("Failed to get push token for push notification!");
+      return;
+    }
+    token = (await Notifications.getExpoPushTokenAsync())?.data;
+
+    // Subir a datastore el token
+    if (token && token !== usuario.notificationToken) {
+      await DataStore.save(
+        Usuario.copyOf(usuario, (usr) => {
+          usr.notificationToken = token;
+        })
+      );
+      console.log("Token actualizado con exito" + token);
+    }
+
+    if (Platform.OS === "android") {
+      Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: rojoClaro,
       });
     }
   }

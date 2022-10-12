@@ -39,6 +39,7 @@ import {
   AsyncAlert,
   vibrar,
   VibrationType,
+  msInHour,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
@@ -51,16 +52,10 @@ import CardInput, { saveParams } from "../../../components/CardInput";
 
 import OpenPay from "../../../components/OpenPay";
 import useUser from "../../../Hooks/useUser";
-import {
-  address_type,
-  cardType,
-  chargeType,
-  errorOpenPay,
-  fee_type,
-  transaction_type,
-} from "../../../../types/openpay";
-import handleCrearReserva from "./handleCrearReserva";
-import base64 from "react-native-base64";
+import { cardType } from "../../../../types/openpay";
+import { DataStore } from "aws-amplify";
+import { TipoNotificacion } from "../../../models";
+import { Notificacion } from "../../../models";
 
 export default function ({
   route,
@@ -157,6 +152,10 @@ export default function ({
   };
 
   const handleConfirm = async () => {
+    const personasTotales = boletos
+      .map((e: any) => e.quantity)
+      .reduce((prev, a) => prev + a);
+
     let tarjetaID: undefined | string;
     if (total !== 0) {
       if (tipoPago === undefined) {
@@ -233,6 +232,46 @@ export default function ({
 
         vibrar(VibrationType.sucess);
 
+        // Notificacion de reserva exitosa
+        DataStore.save(
+          new Notificacion({
+            tipo: TipoNotificacion.RESERVAEFECTIVOCREADA,
+            titulo: "Reserva exitosa",
+            descripcion: `Tu reserva en ${titulo}${
+              personasTotales !== 1
+                ? " con " + personasTotales + " personas"
+                : ""
+            } se ha creado con exito. Realiza el pago antes del ${
+              formatDateShort(limitDate.getTime() - 5 * 3600000) +
+              " a las " +
+              formatAMPM(limitDate.getTime() - 5 * 3600000)
+            } para confirmar tu lugar.`,
+            usuarioID: sub,
+
+            showAt: new Date().toISOString(),
+
+            reservaID,
+            eventoID,
+            organizadorID: CreatorID,
+          })
+        );
+
+        // Notificacion de recordatorio de pago 1 hora antes del vencimiento
+        DataStore.save(
+          new Notificacion({
+            tipo: TipoNotificacion.RECORDATORIOPAGO,
+            titulo: "Recordatorio pago",
+            descripcion: `Atencion, la fecha limite de pago en efectivo para ${titulo} es en menos de 1 hora`,
+            usuarioID: sub,
+
+            showAt: new Date(limitDate.getTime() - msInHour).toISOString(),
+
+            reservaID,
+            eventoID,
+            organizadorID: CreatorID,
+          })
+        );
+
         navigation.popToTop();
         // Si el tipo de pago fue en efectivo, obtener la referencia y navegar a la pestaña pago
         navigation.navigate("ReferenciaPago", {
@@ -245,6 +284,26 @@ export default function ({
           limitDate: limitDate.getTime(),
         });
       } else if (result.tipoPago === "TARJETA" || total === 0) {
+        // Notificacion de reserva exitosa
+        DataStore.save(
+          new Notificacion({
+            tipo: TipoNotificacion.RESERVATARJETACREADA,
+            titulo: "Reserva exitosa",
+            descripcion: `Tu reserva en ${titulo}${
+              personasTotales !== 1
+                ? " con " + personasTotales + " personas"
+                : ""
+            } se ha creado con exito. Simplemente has click aqui para ver tu boleto de entrada`,
+            usuarioID: sub,
+
+            showAt: new Date().toISOString(),
+
+            reservaID,
+            eventoID,
+            organizadorID: CreatorID,
+          })
+        );
+
         navigation.popToTop();
         navigation.navigate("ExitoScreen");
       } else {

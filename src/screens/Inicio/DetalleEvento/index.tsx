@@ -38,12 +38,13 @@ import {
   shadowMedia,
   getUserSub,
   precioConComision,
+  timer,
 } from "../../../../constants";
 import { API, DataStore, Predicates, Storage } from "aws-amplify";
 import { OpType } from "@aws-amplify/datastore";
 
 import Line from "../../../components/Line";
-import { MusicEnum, Usuario } from "../../../models";
+import { MusicEnum, Reserva, Usuario } from "../../../models";
 import Descripcion from "./Descripcion";
 
 import { Feather } from "@expo/vector-icons";
@@ -211,6 +212,7 @@ export default function ({
           imagenes: (await imagenes) as any,
           boletos: await boletos,
           owner: await owner,
+          ubicacion: JSON.parse(e.ubicacion),
         };
       })
       .then((r) => {
@@ -261,23 +263,27 @@ export default function ({
 
     // Pedir las fotos de perfil de los primeros 5 usuarios
 
-    DataStore.query(Usuario, Predicates.ALL, {
-      limit: 6,
-    }).then(async (r) => {
-      r = await Promise.all(
-        r.map(async (e) => {
-          const foto = await getImageUrl(e.foto);
+    DataStore.query(Reserva, (r) => r.eventoID("eq", evento.id), {}).then(
+      async (r) => {
+        let usuarios = [];
+        await Promise.all(
+          r.map(async (e) => {
+            const usr = await DataStore.query(Usuario, e.usuarioID);
+            const foto = await getImageUrl(usr.foto);
 
-          return {
-            ...e,
-            foto,
-          };
-        })
-      );
-      r = [...r];
+            usuarios = [
+              ...usuarios,
+              {
+                ...usr,
+                foto,
+              },
+            ];
+          })
+        );
 
-      setUsuariosReservados(r);
-    });
+        setUsuariosReservados(usuarios);
+      }
+    );
 
     return () => {
       sub.unsubscribe();

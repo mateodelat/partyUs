@@ -8,7 +8,7 @@ import Header from "./components/Header";
 import AgregarEventoStack from "./AgregarEventoStack";
 import MisReservas from "../screens/Inicio/MisReservas";
 import QRCode from "../screens/Inicio/QRCode";
-import Notifications from "../screens/Inicio/Notifications";
+import Notifications from "../screens/Inicio/Notifications/Notifications";
 import Home from "../screens/Inicio/Home";
 import DetalleEvento from "../screens/Inicio/DetalleEvento";
 import Perfil from "../screens/Inicio/Perfil";

@@ -43,9 +43,7 @@ type Usuario
   calificacion: Float
   numResenas: Int
   notificationToken: String
-
   userPaymentID: String
-
   verified: Boolean
     @auth(
       rules: [
@@ -209,8 +207,13 @@ type Reserva
   cantidad: Int
 
   pagado: Boolean
+  paymentTime: AWSDateTime
+
+  tipoPago: tipoPago
 
   pagoID: String
+  cashBarcode: String
+
   ingreso: Boolean
   horaIngreso: AWSDateTime
 
@@ -252,15 +255,20 @@ type ReservasBoletos
 
   boletoID: ID @index(name: "byBoletos")
   reservaID: ID @index(name: "byReserva")
-  quantity: Int
 
   reserva: Reserva @belongsTo
   boleto: Boleto @belongsTo
+  quantity: Int
 }
 
 enum reservaCancelReason {
   EVENTOCERRADO
   CANCELADOPORCLIENTE
+}
+
+enum tipoPago {
+  EFECTIVO
+  TARJETA
 }
 
 enum placeEnum {
@@ -288,18 +296,21 @@ enum comoditiesEnum {
 }
 
 enum TipoNotificacion {
-  RESERVACREADA
+  RESERVATARJETACREADA
+  RESERVAEFECTIVOCREADA
   RESERVACANCELADA
 
-  AGREGAREVENTOS
+  RESERVAEFECTIVOPAGADA
 
   ADMIN
   BIENVENIDA
 
   EVENTOCREADO
   EVENTOACTUALIZACION
-  EVENTOCANCELADA
+  EVENTOCANCELADO
+
   RECORDATORIOEVENTO
+  RECORDATORIOPAGO
 
   CALIFICAUSUARIO
 }
