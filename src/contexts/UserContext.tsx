@@ -1,3 +1,4 @@
+import { StatusBarStyle } from "expo-status-bar";
 import { Context, createContext, Dispatch, SetStateAction } from "react";
 import { tipoDocumento } from "../../constants";
 import { Usuario } from "../models";
@@ -6,6 +7,8 @@ import { TextoAbajoPasaporteType } from "../screens/SolicitudOrganizador/compone
 const UserContext: Context<{
   usuario: Usuario;
   setUsuario: Dispatch<SetStateAction<Usuario>>;
+
+  setStatusStyle: Dispatch<SetStateAction<StatusBarStyle>>;
 
   loading: boolean;
   setLoading: Dispatch<SetStateAction<boolean>>;
@@ -18,6 +21,7 @@ const UserContext: Context<{
   setUsuario: (v: SetStateAction<Usuario>) => {
     return;
   },
+  setStatusStyle: (a: any) => null,
   loading: false,
   setLoading: (e: any) => null,
 });

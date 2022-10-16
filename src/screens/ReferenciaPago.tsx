@@ -3,6 +3,7 @@ import {
   CameraRoll,
   Image,
   Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -30,6 +31,7 @@ import MediaLibrary, {
 import ViewShot from "react-native-view-shot";
 import MessageBox from "../components/MessageBox";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Boton from "../components/Boton";
 
 export default function ({
   route,
@@ -54,6 +56,8 @@ export default function ({
 
   const [showAll, setShowAll] = useState(false);
   const [imageStatus, setImageStatus] = useState<"GUARDANDO..." | "GUARDADA">();
+
+  const [modalVisible, setModalVisible] = useState(false);
 
   const viewShowRef = useRef<ViewShot>(null);
 
@@ -92,7 +96,19 @@ export default function ({
   const { top } = useSafeAreaInsets();
   return (
     <>
-      <Header title={titulo} style={{ paddingBottom: 0 }} />
+      <Header
+        title={titulo}
+        style={{ paddingBottom: 0 }}
+        RightIcon={() => (
+          <TouchableOpacity
+            style={styles.helpIcon}
+            onPress={() => setModalVisible(true)}
+          >
+            <Feather name="help-circle" size={30} color="black" />
+          </TouchableOpacity>
+        )}
+      />
+
       <MessageBox
         message={imageStatus === "GUARDADA" ? "IMAGEN GUARDADA" : imageStatus}
         time={imageStatus === "GUARDADA" ? 1500 : 0}
@@ -149,11 +165,7 @@ export default function ({
                   </View>
                 )}
               </TouchableOpacity>
-              <Text style={styles.topDesc}>
-                Gracias por tu compra, paga en cualquiera de las sucursales para
-                completar tu reserva.
-              </Text>
-              <Text style={styles.amount}>MX{formatMoney(amount)}</Text>
+              <Text style={styles.amount}>MX{formatMoney(amount, true)}</Text>
               <View
                 style={{
                   ...styles.bolita,
@@ -209,12 +221,22 @@ export default function ({
 
             {/* Contenedores de abajo */}
             <View style={styles.bottomContainer}>
-              <Text style={{ fontSize: 12 }}>Fecha de vencimiento</Text>
+              <Text style={{ fontSize: 12 }}>Limite de pago</Text>
               <Text style={styles.number}>
                 {formatDateShort(limitDate) + " " + formatAMPM(limitDate)}
               </Text>
             </View>
             <View
+              style={{
+                ...styles.bottomContainer,
+                borderTopWidth: 1,
+                borderColor: "lightgray",
+              }}
+            >
+              <Text style={{ fontSize: 12 }}>Concepto</Text>
+              <Text style={styles.number}>{titulo}</Text>
+            </View>
+            {/* <View
               style={{
                 ...styles.bottomContainer,
                 borderBottomWidth: 0,
@@ -225,7 +247,7 @@ export default function ({
               <Text style={{ fontSize: 12, marginLeft: 20 }}>
                 Pagas y se acredita en 1 hora
               </Text>
-            </View>
+            </View> */}
           </View>
           <View style={styles.footerImageContainer}>
             <Image
@@ -239,6 +261,54 @@ export default function ({
           </View>
         </ViewShot>
       </ScrollView>
+
+      {/* Informacion para realizar el pago */}
+      <Modal
+        animationType={"none"}
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <Pressable
+          onPress={() => setModalVisible(false)}
+          style={{ flex: 1, backgroundColor: "#00000099" }}
+        />
+
+        <View style={{ backgroundColor: "#00000099" }}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.tituloModal}>Pagar reserva en efectivo</Text>
+            <View style={styles.line} />
+            <Text style={styles.descripcionModal}>
+              1. Acude a cualquier tienda aliada dentro de la fecha límite de
+              pago.
+            </Text>
+            <Text style={styles.descripcionModal}>
+              2. Dile a la persona de caja que realizarás un pago en efectivo
+              Paynet, proporciona el código o número de referencia.
+            </Text>
+            <Text style={styles.descripcionModal}>
+              3. Antes de pagar verifica que los datos coincidan con los de este
+              recibo de pago.
+            </Text>
+            <Text style={styles.descripcionModal}>
+              4. Realiza el pago en efectivo por el total a pagar, este se
+              reflejará a mas tardar en una hora.
+            </Text>
+            <Text style={styles.descripcionModal}>
+              5. Conserva tu comprobante de pago para cualquier aclaración.
+            </Text>
+            <Boton
+              titulo="OK"
+              onPress={() => setModalVisible(false)}
+              style={{
+                marginTop: 20,
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -285,6 +355,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     maxWidth: "95%",
   },
+  helpIcon: {
+    position: "absolute",
+    padding: 20,
+    right: 0,
+    paddingVertical: 5,
+    zIndex: 1,
+  },
+
   topContainer: {
     padding: 20,
     borderBottomWidth: 1,
@@ -299,8 +377,6 @@ const styles = StyleSheet.create({
   },
 
   bottomContainer: {
-    borderBottomWidth: 1,
-    borderColor: "lightgray",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -342,5 +418,30 @@ const styles = StyleSheet.create({
     height: 60,
     resizeMode: "stretch",
     marginBottom: 10,
+  },
+
+  tituloModal: {
+    fontSize: 22,
+    fontWeight: "900",
+    marginBottom: 10,
+  },
+
+  modalContainer: {
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+    backgroundColor: "#fff",
+    padding: 20,
+  },
+
+  descripcionModal: {
+    color: "#000",
+    marginBottom: 5,
+  },
+
+  line: {
+    width: "100%",
+    height: 0.5,
+    backgroundColor: "gray",
+    marginVertical: 10,
   },
 });

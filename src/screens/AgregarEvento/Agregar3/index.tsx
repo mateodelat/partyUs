@@ -396,7 +396,7 @@ function TextMonney({
         }}
       >
         {minus && "- "}
-        {formatMoney(cantidad)}
+        {formatMoney(cantidad, true)}
       </Text>
     </View>
   );

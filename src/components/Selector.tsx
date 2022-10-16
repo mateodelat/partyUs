@@ -54,7 +54,7 @@ export default function ({
       <TextInput
         keyboardType="decimal-pad"
         style={styles.txt}
-        value={formatMoney(value, true)}
+        value={formatMoney(value)}
         onChangeText={handleChangeText}
       />
       <TouchableOpacity onPress={handleMinus} style={styles.minusButton}>

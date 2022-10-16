@@ -58,6 +58,8 @@ import Boton from "../../../components/Boton";
 import { Evento } from "../../../models";
 import { Boleto } from "../../../models";
 import { getEvento, getUsuario } from "../../../graphql/queries";
+import { ReservasBoletos } from "../../../models";
+import Loading from "../../../components/Loading";
 
 export default function ({
   route,
@@ -66,12 +68,15 @@ export default function ({
   route: { params: EventoType };
   navigation: NavigationProp;
 }) {
-  const [evento, setEvento] = useState(route.params);
+  const [evento, setEvento] = useState({
+    ...route.params,
+    personasReservadas: 0,
+  });
 
   let {
     titulo,
     imagenes,
-    owner,
+    creator,
     comodities,
     musica,
     musOtra,
@@ -110,7 +115,7 @@ export default function ({
 
   const [following, setFollowing] = useState(false);
 
-  const [fotoPerfil, setFotoPerfil] = useState(owner?.foto);
+  const [fotoPerfil, setFotoPerfil] = useState(creator?.foto);
 
   const [usuariosReservados, setUsuariosReservados] = useState<
     Usuario[] | undefined
@@ -120,60 +125,49 @@ export default function ({
     navigation.pop();
   }
 
-  async function fetchInfoEvento(e: Evento) {
-    if (!e.imagenes) {
-      throw new Error("Error no hay imagenenes que mapear en el evento");
-    }
+  const [refreshing, setRefreshing] = useState(false);
 
-    if (!e.CreatorID) {
-      throw new Error("Error no hay id de creador del evento");
-    }
-    const imagenes = Promise.all(
-      e.imagenes.map(async (r: string | null) => {
-        // Ver si es llave de s3
-        let key = r;
+  async function fetchReservas(ePrev?: object) {
+    // Pedir todas las reservas validas
+    return await DataStore.query(Reserva, (r) =>
+      r
+        .eventoID("eq", evento.id)
+        .cancelado("ne", true)
+        .fechaExpiracionUTC("gt", new Date().toISOString())
+    ).then(async (r) => {
+      let usuarios = [];
+      let personasReservadas = 0;
+      await Promise.all(
+        r.map(async (e) => {
+          const usr = await DataStore.query(Usuario, e.usuarioID);
+          const foto = await getImageUrl(usr.foto);
 
-        return {
-          key,
-          uri: await getImageUrl(r),
-        };
-      })
-    );
+          personasReservadas += e.cantidad;
 
-    const boletos = DataStore.query(Boleto, (bo) => bo.eventoID("eq", e.id));
-
-    const owner = DataStore.query(Usuario, e.CreatorID);
-
-    await Promise.all([owner, imagenes, boletos]);
-
-    if (!owner) {
-      throw new Error(
-        "Error obteniendo el usuario creador en el inicio del evento " +
-          e.id +
-          " con id de creador " +
-          e.CreatorID
+          usuarios = [
+            ...usuarios,
+            {
+              ...usr,
+              foto,
+            },
+          ];
+        })
       );
-    }
 
-    return {
-      ...e,
-      imagenes: (await imagenes) as any,
-      boletos: await boletos,
-      owner: await owner,
-    } as EventoType;
+      setEvento((prev) => ({
+        ...prev,
+        personasReservadas,
+      }));
+
+      setUsuariosReservados(usuarios);
+    });
   }
 
-  const [refreshing, setRefreshing] = useState(false);
   function onRefresh() {
-    (
-      API.graphql({
-        query: getEvento,
-        variables: { id: evento.id },
-      }) as any
-    )
-      .then(async (e) => {
-        e = e.data.getEvento;
+    setRefreshing(true);
 
+    DataStore.query(Evento, evento.id)
+      .then(async (e) => {
         const imagenes = Promise.all(
           e.imagenes.map(async (r: any) => {
             // Ver si es llave de s3
@@ -194,11 +188,14 @@ export default function ({
           }
         );
 
-        const owner = DataStore.query(Usuario, e.CreatorID ? e.CreatorID : "");
+        const creator = DataStore.query(
+          Usuario,
+          e.CreatorID ? e.CreatorID : ""
+        );
 
-        await Promise.all([owner, imagenes, boletos]);
+        await Promise.all([creator, imagenes, boletos]);
 
-        if (!owner) {
+        if (!creator) {
           throw new Error(
             "Error obteniendo el usuario creador en el inicio del evento " +
               e.id +
@@ -211,14 +208,16 @@ export default function ({
           ...e,
           imagenes: (await imagenes) as any,
           boletos: await boletos,
-          owner: await owner,
-          ubicacion: JSON.parse(e.ubicacion),
-        };
+          creator: await creator,
+        } as EventoType;
       })
-      .then((r) => {
+      .then(async (r) => {
         setEvento({
           ...r,
+          personasReservadas: evento.personasReservadas,
         });
+        await fetchReservas(r);
+        setRefreshing(false);
       });
   }
 
@@ -230,7 +229,7 @@ export default function ({
     const sub = DataStore.observe(Evento, (fe) => fe.id("eq", id)).subscribe(
       async (msg) => {
         if (msg.opType === OpType.UPDATE || msg.opType === OpType.DELETE) {
-          setEvento(await fetchInfoEvento(msg.element));
+          // setEvento(await fetchInfoEvento(msg.element));
 
           console.log("Fecha actualizada");
 
@@ -259,31 +258,11 @@ export default function ({
     );
 
     // Si la foto de perfil no es url pedirla de S3
-    getImageUrl(owner?.foto).then(setFotoPerfil);
+    getImageUrl(creator?.foto).then(setFotoPerfil);
 
     // Pedir las fotos de perfil de los primeros 5 usuarios
 
-    DataStore.query(Reserva, (r) => r.eventoID("eq", evento.id), {}).then(
-      async (r) => {
-        let usuarios = [];
-        await Promise.all(
-          r.map(async (e) => {
-            const usr = await DataStore.query(Usuario, e.usuarioID);
-            const foto = await getImageUrl(usr.foto);
-
-            usuarios = [
-              ...usuarios,
-              {
-                ...usr,
-                foto,
-              },
-            ];
-          })
-        );
-
-        setUsuariosReservados(usuarios);
-      }
-    );
+    fetchReservas();
 
     return () => {
       sub.unsubscribe();
@@ -305,6 +284,14 @@ export default function ({
   }
 
   async function handleContinar() {
+    if (refreshing) {
+      Alert.alert(
+        "Espera",
+        "Estamos obteniendo los datos, espera unos instantes"
+      );
+      return;
+    }
+
     if (!(await getUserSub())) {
       navigation.navigate("LoginStack", {
         onLogin: () => {
@@ -316,7 +303,7 @@ export default function ({
     }
   }
 
-  const showVerified = owner?.verified;
+  const showVerified = creator?.verified;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -359,12 +346,12 @@ export default function ({
                 ) : (
                   <>
                     <Text>
-                      {owner?.calificacion === null
+                      {creator?.calificacion === null
                         ? "n/a"
-                        : owner?.calificacion}
+                        : creator?.calificacion}
                     </Text>
                     <FontAwesome
-                      name={owner?.calificacion === null ? "star-o" : "star"}
+                      name={creator?.calificacion === null ? "star-o" : "star"}
                       size={10}
                       color="black"
                     />
@@ -375,7 +362,7 @@ export default function ({
 
             <View style={{ justifyContent: "center", flex: 1 }}>
               <Text style={styles.creado}>CREADO POR</Text>
-              <Text style={styles.nicknameTxt}>{owner?.nickname}</Text>
+              <Text style={styles.nicknameTxt}>{creator?.nickname}</Text>
             </View>
 
             {/* Boton de seguir */}

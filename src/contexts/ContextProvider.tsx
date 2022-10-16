@@ -5,46 +5,22 @@ import { View, ActivityIndicator, Text, Platform } from "react-native";
 import { PropsWithChildren } from "react";
 import { Usuario } from "../models";
 import { API, DataStore, Hub } from "aws-amplify";
-import { getUserSub, rojoClaro } from "../../constants";
+import { getUserSub, graphqlRequest, rojoClaro } from "../../constants";
 
 import * as Notifications from "expo-notifications";
-
-// Obtener el usuario recien loggeado
-const getUsuario = /* GraphQL */ `
-  query GetUsuario($id: ID!) {
-    getUsuario(id: $id) {
-      id
-      nickname
-      nombre
-      materno
-      paterno
-      email
-      foto
-      imagenFondo
-      phoneNumber
-      phoneCode
-      organizador
-      admin
-      idUploaded
-      idData
-      idKey
-      fechaNacimiento
-      calificacion
-      numResenas
-      notificationToken
-      verified
-    }
-  }
-`;
+import { getUsuario } from "../graphql/queries";
+import { StatusBarStyle } from "expo-status-bar";
 
 export default function ({
   children,
 
   usuario,
   setUsuario,
+  setStatusStyle,
 }: PropsWithChildren<{
   usuario: Usuario;
   setUsuario: Dispatch<SetStateAction<Usuario>>;
+  setStatusStyle: Dispatch<SetStateAction<StatusBarStyle>>;
 }>) {
   const defultUSR = {
     id: "guest",
@@ -57,34 +33,20 @@ export default function ({
   async function fetchUsuario(sub: string, api?: boolean) {
     if (api) {
       setUsuario(
-        await (
-          API.graphql({
-            query: getUsuario,
-            variables: { id: sub },
-          }) as any
-        ).then((r: any) => {
-          r = r.data.getUsuario;
-
-          console.log(r);
-
-          return r;
-        })
+        await graphqlRequest<{ getUsuario: Usuario }>({
+          query: getUsuario,
+          variables: { id: sub },
+        }).then((r) => r.getUsuario)
       );
     } else {
       DataStore.query(Usuario, sub).then(async (r) => {
         registerForPushNotificationsAsync(r);
         if (!r) {
           // Pedirlo directamete de graphql
-          r = await (
-            API.graphql({
-              query: getUsuario,
-              variables: { id: sub },
-            }) as any
-          ).then((r) => {
-            r = r.data.getUsuario;
-            console.log(r);
-            return r;
-          });
+          r = await graphqlRequest<{ getUsuario: Usuario }>({
+            query: getUsuario,
+            variables: { id: sub },
+          }).then((r) => r.getUsuario);
 
           if (!r) {
             throw new Error(
@@ -121,7 +83,7 @@ export default function ({
           usr.notificationToken = token;
         })
       );
-      console.log("Token actualizado con exito" + token);
+      console.log("Token de notificacion actualizado con exito" + token);
     }
 
     if (Platform.OS === "android") {
@@ -188,6 +150,8 @@ export default function ({
       value={{
         usuario,
         setUsuario,
+
+        setStatusStyle,
 
         loading,
         setLoading,

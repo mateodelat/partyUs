@@ -11,77 +11,43 @@ Amplify Params - DO NOT EDIT */
 /**
  * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
  */
+const { graphqlOperation } = require('/opt/graphqlOperation')
+const { createNotificacionReturns, updateReservaReturns } = require('/opt/graphqlReturns')
 
-import crypto from "@aws-crypto/sha256-js";
-import { defaultProvider } from "@aws-sdk/credential-provider-node";
-import { SignatureV4 } from "@aws-sdk/signature-v4";
-import { HttpRequest } from "@aws-sdk/protocol-http";
-
-import { default as fetch, Request } from 'node-fetch';
-
-import { createRequire } from "module"
-const require = createRequire(import.meta.url)
 const Openpay = require("openpay")
-
 var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
-
-const { Sha256 } = crypto;
-
-const AWS_REGION = process.env.AWS_REGION || "us-east-1";
-
+const axios = require('axios');
 
 
 async function graphqlRequest({ query, variables }) {
-  const endpoint = new URL(
-    process.env.API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
-  );
+  const endpoint = process.env.API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
 
-  const signer = new SignatureV4({
-    credentials: defaultProvider(),
-    region: AWS_REGION,
-    service: "appsync",
-    sha256: Sha256,
-  });
-
-  const requestToBeSigned = new HttpRequest({
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      host: endpoint.host,
-    },
-    hostname: endpoint.host,
-    body: JSON.stringify(
-      !!variables
-        ? { query, variables }
-        : {
-          query,
-        }
-    ),
-    path: endpoint.pathname,
-  });
-
-  const signed = await signer.sign(requestToBeSigned);
-  const request = new Request(endpoint, signed);
-
-
-
-  let statusCode = 200;
-  let body;
-  let response;
+  console.log("Input graphql operation:")
+  console.log({
+    query, variables
+  })
+  let body = {}
 
   try {
-    response = await fetch(request)
-    body = await response.json()
-    if (body.errors) statusCode = 400;
+    body = await graphqlOperation(!!variables
+      ? { query, variables }
+      : {
+        query,
+      },
+      endpoint
+    )
+    console.log("Resultado de operacion con graphql:")
+    console.log(body)
+
+
+
+
   } catch (error) {
-    console.log("Error fetcheando objeto")
-    statusCode = 500;
+    console.log(error)
     body = {
       error: [
         {
-          status: response.status,
           message: error.message,
-          stack: error.stack,
         },
       ],
     };
@@ -89,6 +55,7 @@ async function graphqlRequest({ query, variables }) {
 
   return body
 }
+
 
 function formatResponse({ error, body, statusCode = 200 }) {
   let r = {
@@ -112,21 +79,21 @@ function formatResponse({ error, body, statusCode = 200 }) {
 
 }
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
   const getReserva = /* GraphQL */ `
-  query GetReserva($id: ID!) {
-    getReserva(id: $id) {
-      id
-      total
-      comision
-      pagadoAlOrganizador
-      organizadorID
-      usuarioID
-      _version
-      eventoID
+    query GetReserva($id: ID!) {
+      getReserva(id: $id) {
+        id
+        total
+        comision
+        pagadoAlOrganizador
+        organizadorID
+        usuarioID
+        _version
+        eventoID
+      }
     }
-  }
-`;
+  `;
   event.body = JSON.parse(event.body)
   if (!event?.body) {
     return formatResponse({
@@ -200,22 +167,23 @@ export const handler = async (event) => {
 
       await graphqlRequest({
         query: /* GraphQL */ `
-        query getUsuarios {
-          client: getUsuario(id: "${usuarioID}") {
-            userPaymentID
-            notificationToken
+          query getUsuarios {
+            client: getUsuario(id: "${usuarioID}") {
+              userPaymentID
+              notificationToken
+            }
+            organizador: getUsuario(id: "${organizadorID}") {
+              userPaymentID
+            }
+            
+            listNotificacions(filter: {reservaID: {eq: "${reservaID}"}, tipo: {eq: RECORDATORIOPAGO}, usuarioID: {eq: "${usuarioID}"}}) {
+              items {
+                id
+                _version
+            }
+            }
           }
-          organizador: getUsuario(id: "${organizadorID}") {
-            userPaymentID
-          }
-          
-          listNotificacions(filter: {reservaID: {eq: "${reservaID}"}, tipo: {eq: RECORDATORIOPAGO}, usuarioID: {eq: "${usuarioID}"}}) {
-            items {
-              id
-          }
-          }
-        }
-      `,
+        `,
       }).then((r) => {
         r = r.data;
         console.log(r)
@@ -242,12 +210,6 @@ export const handler = async (event) => {
       eventoID
     } = reserva;
 
-    console.log(`listNotificacions(filter: {reservaID: {eq: "${reservaID}"}, tipo: {eq: RECORDATORIOPAGO}, usuarioID: {eq: "${usuarioID}"}}) {
-      items {
-        id
-        _version
-    }
-`)
 
     const updateReservaInput = {
       id: reservaID,
@@ -322,30 +284,35 @@ export const handler = async (event) => {
     ///////////////////////////////////////////////////////
     await graphqlRequest({
       query: /* GraphQL */ `
-      mutation UpdateReserva($input: UpdateReservaInput!) {
-        updateReserva(input: $input) {
-          id
-          _version
-        }
-
-        ${notificacionABorrar.id ? `deleteNotificacion(input: {id: "${notificacionABorrar.id}" _version:${notificacionABorrar._version}}) {
-    id
-  }`: ""}
-
-        createNotificacion(input: {
-        tipo: RESERVAEFECTIVOPAGADA,
-        showAt: "${new Date().toISOString()}",
-        titulo:"Pago exitoso",
-        usuarioID:"${usuarioID}",
-        reservaID:"${reservaID}",
-        organizadorID:"${organizadorID}"
-        descripcion: "Tu pago en efectivo por $${amount} fue procesado con exito. Haz click aqui para ver tu boleto",
-    }){
-        id
-        _version
-    }
-    }
-    `,
+        mutation UpdateReserva($input: UpdateReservaInput!) {
+          updateReserva(input: $input) {
+           ${updateReservaReturns}
+          }
+  
+          ${notificacionABorrar.id ? `deleteNotificacion(input: {id: "${notificacionABorrar.id}" _version:${notificacionABorrar._version}}) {
+         id
+         _version
+         _deleted
+         _lastChangedAt
+         createdAt
+         updatedAt
+ 
+    }`: ""}
+  
+          createNotificacion(input: {
+          tipo: RESERVAEFECTIVOPAGADA,
+          showAt: "${new Date().toISOString()}",
+          titulo:"Pago exitoso",
+          usuarioID:"${usuarioID}",
+          reservaID:"${reservaID}",
+          organizadorID:"${organizadorID}"
+          descripcion: "Tu pago en efectivo por $${amount} fue procesado con exito. Haz click aqui para ver tu boleto",
+      }){
+        ${createNotificacionReturns}
+ 
+      }
+      }
+      `,
       variables: { input: updateReservaInput },
     }).then((r) => {
       console.log("Reserva actualizada con exito: ");
@@ -386,14 +353,15 @@ export const handler = async (event) => {
         body: JSON.stringify(message),
       })
 
-      await fetch("https://exp.host/--/api/v2/push/send", {
+      await axios({
         method: "POST",
+        url: "https://exp.host/--/api/v2/push/send",
         headers: {
           "Accept": "application/json",
           "Accept-encoding": "gzip, deflate",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(message),
+        data: JSON.stringify(message),
       }).then((r) => {
         console.log("Push notification send to ", notificationToken);
         console.log(r)

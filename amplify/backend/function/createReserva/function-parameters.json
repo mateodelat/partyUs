@@ -2,7 +2,7 @@
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
-      "resourceName": "partyusmoduleCreateReserva",
+      "resourceName": "partyusgraphqlOperations",
       "env": "staging",
       "version": "Always choose latest version",
       "isLatestVersionSelected": true

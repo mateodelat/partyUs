@@ -176,6 +176,7 @@ export declare class Reserva {
   readonly tipoPago?: TipoPago | keyof typeof TipoPago | null;
   readonly pagoID?: string | null;
   readonly cashBarcode?: string | null;
+  readonly cashReference?: string | null;
   readonly ingreso?: boolean | null;
   readonly horaIngreso?: string | null;
   readonly cancelado?: boolean | null;

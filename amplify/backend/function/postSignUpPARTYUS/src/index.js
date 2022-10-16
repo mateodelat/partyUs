@@ -70,6 +70,14 @@ const crearUsr = `
     ) {
       createUsuario(input: $input) {
         id
+        
+         _version
+         _deleted
+         _lastChangedAt
+         createdAt
+         updatedAt
+ 
+
       }
     }
   `;

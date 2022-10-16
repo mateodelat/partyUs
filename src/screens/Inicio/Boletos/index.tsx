@@ -4,6 +4,7 @@ import {
   FlatList,
   Modal,
   Pressable,
+  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -15,15 +16,11 @@ import { EventoType } from "../Home";
 import Header from "../../../navigation/components/Header";
 import {
   azulClaro,
-  azulFondo,
-  container,
-  enumToArray,
   formatMoney,
-  msInDay,
+  graphqlRequest,
   precioConComision,
   redondear,
   rojo,
-  rojoClaro,
   vibrar,
   VibrationType,
 } from "../../../../constants";
@@ -34,10 +31,11 @@ import { DataStore } from "aws-amplify";
 
 import { OpType } from "@aws-amplify/datastore";
 
-import { Boleto, MusicEnum, PlaceEnum } from "../../../models";
+import { Boleto } from "../../../models";
 import Boton from "../../../components/Boton";
 import BoletoItem from "./BoletoItem";
 import { Cupon } from "../../../models";
+import { listBoletos } from "../../../graphql/queries";
 
 export type BoletoType = Boleto & {
   quantity?: number;
@@ -58,12 +56,13 @@ export default function ({
     "Invalido",
   }
 
-  const [boletos, setBoletos] = useState<BoletoType[]>([
-    ...route.params.boletos,
-  ]);
+  const [boletos, setBoletos] = useState<BoletoType[] | undefined>(
+    route.params.boletos
+  );
   const [descriptionShownIdx, setDescriptionShownIdx] = useState<number>();
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [cuponDescuento, setCuponDescuento] = useState("");
   const [cuponStatus, setCuponStatus] = useState<cuponEnum>();
@@ -72,7 +71,7 @@ export default function ({
   let subtotal = 0;
   let comision = 0;
 
-  boletos.map((e) => {
+  boletos?.map((e) => {
     let { quantity } = e;
     quantity = quantity ? quantity : 0;
 
@@ -95,51 +94,13 @@ export default function ({
 
   // Agregar suscripcion para cambio de tipo de boletos
   useEffect(() => {
-    const sub = DataStore.observe(Boleto, (fe) =>
-      fe.eventoID("eq", eventID)
-    ).subscribe(async (msg) => {
-      const { titulo, id } = msg.element;
-      let neBol = [...boletos];
-
-      // Si se agrego tipo de boleto, agregarlo
-      if (msg.opType === OpType.INSERT) {
-        Alert.alert("Atencion", "Boleto " + titulo + " agregado");
-
-        neBol = [...neBol, msg.element].sort(
-          (a: any, b: any) => (a.precio < b.precio) as any
-        );
-      }
-      // Boleto actualizado
-      else if (msg.opType === OpType.UPDATE) {
-        Alert.alert("Atencion", "Boleto " + titulo + " actualizado");
-
-        neBol = neBol.map((e) => {
-          if (e.id === id) {
-            return msg.element;
-          } else return e;
-        });
-      }
-      // Boleto borrado
-      else if (msg.opType === OpType.DELETE) {
-        Alert.alert("Atencion", "Boleto " + titulo + " borrado");
-      }
-
-      console.log({
-        neBol,
-      });
-
-      // setBoletos(neBol);
-    });
-
-    return () => {
-      sub.unsubscribe();
-    };
+    onRefresh();
   }, []);
 
   function handleContinuar() {
     // Verificar que haya seleccionado boletos
 
-    let existenBoletos = !!boletos.find((e) => !!e.quantity);
+    let existenBoletos = !!boletos?.find((e) => !!e.quantity);
 
     if (!existenBoletos) {
       Alert.alert("Error", "Agrega minimo un boleto");
@@ -198,16 +159,28 @@ export default function ({
     setCuponStatus(cuponEnum.loading);
     try {
       const cupon = await DataStore.query(Cupon, (e) =>
-        e
-          .id("eq", cuponDescuento.replace(/ /g, "").toUpperCase())
-          .vencimiento("gt", new Date().getTime())
-          .restantes("gt", 0)
+        e.id("eq", cuponDescuento.replace(/ /g, "").toUpperCase())
       ).then((r) => r[0]);
+      // .vencimiento("gt", new Date().getTime())
+      // .restantes("gt", 0)
 
       // Si hay porcentaje de descuento, tomarlo primero
       if (cupon) {
-        setDescuento(cupon);
-        setCuponStatus(cuponEnum.Disponible);
+        if (cupon.vencimiento < new Date().getTime()) {
+          Alert.alert("Error", "El cupon ya vencio");
+          setCuponStatus(cuponEnum.Invalido);
+          setDescuento(undefined);
+          return;
+        } else if (cupon.restantes < 0) {
+          Alert.alert("Error", "No quedan cupones restantes");
+          setCuponStatus(cuponEnum.Invalido);
+          setDescuento(undefined);
+          return;
+        } else {
+          setDescuento(cupon);
+
+          setCuponStatus(cuponEnum.Disponible);
+        }
       } else {
         setCuponStatus(cuponEnum.Invalido);
         setDescuento(undefined);
@@ -222,6 +195,18 @@ export default function ({
     }
   }
 
+  async function onRefresh() {
+    setRefreshing(true);
+
+    await graphqlRequest<{ listBoletos: { items: Boleto[] } }>({
+      query: listBoletos,
+      variables: { filter: { eventoID: { eq: eventID } } },
+    }).then((r) => {
+      setBoletos(r.listBoletos.items.map((r) => r));
+    });
+    setRefreshing(false);
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <Header title={titulo} style={{ paddingHorizontal: 5 }} />
@@ -229,6 +214,16 @@ export default function ({
       <View style={styles.container}>
         <FlatList
           data={boletos}
+          ListEmptyComponent={() => (
+            <View
+              style={{
+                backgroundColor: "red",
+              }}
+            />
+          )}
+          refreshControl={
+            <RefreshControl onRefresh={onRefresh} refreshing={refreshing} />
+          }
           showsVerticalScrollIndicator={false}
           keyExtractor={(_, i) => i.toString()}
           renderItem={({ item, index }) => {
@@ -294,11 +289,11 @@ export default function ({
 
             <View style={styles.priceStatement}>
               <Text style={styles.titulo}>Subtotal:</Text>
-              <Text style={styles.precio}>{formatMoney(subtotal)}</Text>
+              <Text style={styles.precio}>{formatMoney(subtotal, true)}</Text>
             </View>
             <View style={styles.priceStatement}>
               <Text style={styles.titulo}>Costos servicio(con IVA):</Text>
-              <Text style={styles.precio}>{formatMoney(comision)}</Text>
+              <Text style={styles.precio}>{formatMoney(comision, true)}</Text>
             </View>
             {descuento && (
               <View style={styles.priceStatement}>
@@ -306,7 +301,7 @@ export default function ({
                 <Text style={styles.precio}>
                   {descuento.porcentajeDescuento
                     ? descuento.porcentajeDescuento * 100 + "%"
-                    : "-" + formatMoney(descuento.cantidadDescuento)}
+                    : "-" + formatMoney(descuento.cantidadDescuento, true)}
                 </Text>
               </View>
             )}
@@ -321,7 +316,7 @@ export default function ({
             />
             <View style={styles.priceStatement}>
               <Text style={styles.titulo}>Total:</Text>
-              <Text style={styles.precio}>{formatMoney(total)}</Text>
+              <Text style={styles.precio}>{formatMoney(total, true)}</Text>
             </View>
           </Pressable>
         )}

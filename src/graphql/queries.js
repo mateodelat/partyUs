@@ -64,18 +64,22 @@ export const getUsuario = /* GraphQL */ `
           pagadoAlOrganizador
           cantidad
           pagado
+          paymentTime
+          tipoPago
           pagoID
+          cashBarcode
           ingreso
           horaIngreso
           cancelado
           canceledAt
           cancelReason
+          fechaExpiracionUTC
           eventoID
           usuarioID
           cuponID
           organizadorID
-          createdAt
           updatedAt
+          createdAt
           _version
           _deleted
           _lastChangedAt
@@ -218,6 +222,44 @@ export const getEvento = /* GraphQL */ `
       precioMin
       precioMax
       CreatorID
+      creator {
+        id
+        nickname
+        nombre
+        materno
+        paterno
+        email
+        foto
+        imagenFondo
+        direccion
+        phoneNumber
+        phoneCode
+        organizador
+        admin
+        idUploaded
+        idData
+        idKey
+        fechaNacimiento
+        calificacion
+        numResenas
+        notificationToken
+        userPaymentID
+        verified
+        owner
+        Eventos {
+          nextToken
+          startedAt
+        }
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
       Boletos {
         items {
           id
@@ -245,18 +287,22 @@ export const getEvento = /* GraphQL */ `
           pagadoAlOrganizador
           cantidad
           pagado
+          paymentTime
+          tipoPago
           pagoID
+          cashBarcode
           ingreso
           horaIngreso
           cancelado
           canceledAt
           cancelReason
+          fechaExpiracionUTC
           eventoID
           usuarioID
           cuponID
           organizadorID
-          createdAt
           updatedAt
+          createdAt
           _version
           _deleted
           _lastChangedAt
@@ -298,6 +344,36 @@ export const listEventos = /* GraphQL */ `
         precioMin
         precioMax
         CreatorID
+        creator {
+          id
+          nickname
+          nombre
+          materno
+          paterno
+          email
+          foto
+          imagenFondo
+          direccion
+          phoneNumber
+          phoneCode
+          organizador
+          admin
+          idUploaded
+          idData
+          idKey
+          fechaNacimiento
+          calificacion
+          numResenas
+          notificationToken
+          userPaymentID
+          verified
+          owner
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         Boletos {
           nextToken
           startedAt
@@ -349,6 +425,36 @@ export const syncEventos = /* GraphQL */ `
         precioMin
         precioMax
         CreatorID
+        creator {
+          id
+          nickname
+          nombre
+          materno
+          paterno
+          email
+          foto
+          imagenFondo
+          direccion
+          phoneNumber
+          phoneCode
+          organizador
+          admin
+          idUploaded
+          idData
+          idKey
+          fechaNacimiento
+          calificacion
+          numResenas
+          notificationToken
+          userPaymentID
+          verified
+          owner
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         Boletos {
           nextToken
           startedAt
@@ -376,14 +482,11 @@ export const getNotificacion = /* GraphQL */ `
       titulo
       descripcion
       usuarioID
-      imagen
       leido
       showAt
       reservaID
-      fechaID
-      aventuraID
-      guiaID
-      solicitudGuiaID
+      eventoID
+      organizadorID
       createdAt
       updatedAt
       _version
@@ -405,14 +508,11 @@ export const listNotificacions = /* GraphQL */ `
         titulo
         descripcion
         usuarioID
-        imagen
         leido
         showAt
         reservaID
-        fechaID
-        aventuraID
-        guiaID
-        solicitudGuiaID
+        eventoID
+        organizadorID
         createdAt
         updatedAt
         _version
@@ -443,14 +543,11 @@ export const syncNotificacions = /* GraphQL */ `
         titulo
         descripcion
         usuarioID
-        imagen
         leido
         showAt
         reservaID
-        fechaID
-        aventuraID
-        guiaID
-        solicitudGuiaID
+        eventoID
+        organizadorID
         createdAt
         updatedAt
         _version
@@ -478,8 +575,8 @@ export const getBoleto = /* GraphQL */ `
           boletoID
           reservaID
           quantity
-          createdAt
           updatedAt
+          createdAt
           _version
           _deleted
           _lastChangedAt
@@ -580,18 +677,22 @@ export const getCupon = /* GraphQL */ `
           pagadoAlOrganizador
           cantidad
           pagado
+          paymentTime
+          tipoPago
           pagoID
+          cashBarcode
           ingreso
           horaIngreso
           cancelado
           canceledAt
           cancelReason
+          fechaExpiracionUTC
           eventoID
           usuarioID
           cuponID
           organizadorID
-          createdAt
           updatedAt
+          createdAt
           _version
           _deleted
           _lastChangedAt
@@ -678,23 +779,144 @@ export const getReserva = /* GraphQL */ `
       pagadoAlOrganizador
       cantidad
       pagado
+      paymentTime
+      tipoPago
       pagoID
+      cashBarcode
       ingreso
       horaIngreso
       cancelado
       canceledAt
       cancelReason
+      fechaExpiracionUTC
       eventoID
+      evento {
+        id
+        imagenes
+        imagenPrincipalIDX
+        titulo
+        detalles
+        ubicacion
+        fechaInicial
+        fechaFinal
+        tosAceptance
+        tipoLugar
+        musica
+        comodities
+        musOtra
+        personasReservadas
+        personasMax
+        precioMin
+        precioMax
+        CreatorID
+        creator {
+          id
+          nickname
+          nombre
+          materno
+          paterno
+          email
+          foto
+          imagenFondo
+          direccion
+          phoneNumber
+          phoneCode
+          organizador
+          admin
+          idUploaded
+          idData
+          idKey
+          fechaNacimiento
+          calificacion
+          numResenas
+          notificationToken
+          userPaymentID
+          verified
+          owner
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        Boletos {
+          nextToken
+          startedAt
+        }
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
       usuarioID
+      usuario {
+        id
+        nickname
+        nombre
+        materno
+        paterno
+        email
+        foto
+        imagenFondo
+        direccion
+        phoneNumber
+        phoneCode
+        organizador
+        admin
+        idUploaded
+        idData
+        idKey
+        fechaNacimiento
+        calificacion
+        numResenas
+        notificationToken
+        userPaymentID
+        verified
+        owner
+        Eventos {
+          nextToken
+          startedAt
+        }
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
       cuponID
+      cupon {
+        id
+        restantes
+        vencimiento
+        porcentajeDescuento
+        cantidadDescuento
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
       Boletos {
         items {
           id
           boletoID
           reservaID
           quantity
-          createdAt
           updatedAt
+          createdAt
           _version
           _deleted
           _lastChangedAt
@@ -703,8 +925,8 @@ export const getReserva = /* GraphQL */ `
         startedAt
       }
       organizadorID
-      createdAt
       updatedAt
+      createdAt
       _version
       _deleted
       _lastChangedAt
@@ -725,22 +947,93 @@ export const listReservas = /* GraphQL */ `
         pagadoAlOrganizador
         cantidad
         pagado
+        paymentTime
+        tipoPago
         pagoID
+        cashBarcode
         ingreso
         horaIngreso
         cancelado
         canceledAt
         cancelReason
+        fechaExpiracionUTC
         eventoID
+        evento {
+          id
+          imagenes
+          imagenPrincipalIDX
+          titulo
+          detalles
+          ubicacion
+          fechaInicial
+          fechaFinal
+          tosAceptance
+          tipoLugar
+          musica
+          comodities
+          musOtra
+          personasReservadas
+          personasMax
+          precioMin
+          precioMax
+          CreatorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         usuarioID
+        usuario {
+          id
+          nickname
+          nombre
+          materno
+          paterno
+          email
+          foto
+          imagenFondo
+          direccion
+          phoneNumber
+          phoneCode
+          organizador
+          admin
+          idUploaded
+          idData
+          idKey
+          fechaNacimiento
+          calificacion
+          numResenas
+          notificationToken
+          userPaymentID
+          verified
+          owner
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         cuponID
+        cupon {
+          id
+          restantes
+          vencimiento
+          porcentajeDescuento
+          cantidadDescuento
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         Boletos {
           nextToken
           startedAt
         }
         organizadorID
-        createdAt
         updatedAt
+        createdAt
         _version
         _deleted
         _lastChangedAt
@@ -770,22 +1063,93 @@ export const syncReservas = /* GraphQL */ `
         pagadoAlOrganizador
         cantidad
         pagado
+        paymentTime
+        tipoPago
         pagoID
+        cashBarcode
         ingreso
         horaIngreso
         cancelado
         canceledAt
         cancelReason
+        fechaExpiracionUTC
         eventoID
+        evento {
+          id
+          imagenes
+          imagenPrincipalIDX
+          titulo
+          detalles
+          ubicacion
+          fechaInicial
+          fechaFinal
+          tosAceptance
+          tipoLugar
+          musica
+          comodities
+          musOtra
+          personasReservadas
+          personasMax
+          precioMin
+          precioMax
+          CreatorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         usuarioID
+        usuario {
+          id
+          nickname
+          nombre
+          materno
+          paterno
+          email
+          foto
+          imagenFondo
+          direccion
+          phoneNumber
+          phoneCode
+          organizador
+          admin
+          idUploaded
+          idData
+          idKey
+          fechaNacimiento
+          calificacion
+          numResenas
+          notificationToken
+          userPaymentID
+          verified
+          owner
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         cuponID
+        cupon {
+          id
+          restantes
+          vencimiento
+          porcentajeDescuento
+          cantidadDescuento
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         Boletos {
           nextToken
           startedAt
         }
         organizadorID
-        createdAt
         updatedAt
+        createdAt
         _version
         _deleted
         _lastChangedAt
@@ -801,7 +1165,6 @@ export const getReservasBoletos = /* GraphQL */ `
       id
       boletoID
       reservaID
-      quantity
       reserva {
         id
         total
@@ -809,22 +1172,93 @@ export const getReservasBoletos = /* GraphQL */ `
         pagadoAlOrganizador
         cantidad
         pagado
+        paymentTime
+        tipoPago
         pagoID
+        cashBarcode
         ingreso
         horaIngreso
         cancelado
         canceledAt
         cancelReason
+        fechaExpiracionUTC
         eventoID
+        evento {
+          id
+          imagenes
+          imagenPrincipalIDX
+          titulo
+          detalles
+          ubicacion
+          fechaInicial
+          fechaFinal
+          tosAceptance
+          tipoLugar
+          musica
+          comodities
+          musOtra
+          personasReservadas
+          personasMax
+          precioMin
+          precioMax
+          CreatorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         usuarioID
+        usuario {
+          id
+          nickname
+          nombre
+          materno
+          paterno
+          email
+          foto
+          imagenFondo
+          direccion
+          phoneNumber
+          phoneCode
+          organizador
+          admin
+          idUploaded
+          idData
+          idKey
+          fechaNacimiento
+          calificacion
+          numResenas
+          notificationToken
+          userPaymentID
+          verified
+          owner
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         cuponID
+        cupon {
+          id
+          restantes
+          vencimiento
+          porcentajeDescuento
+          cantidadDescuento
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         Boletos {
           nextToken
           startedAt
         }
         organizadorID
-        createdAt
         updatedAt
+        createdAt
         _version
         _deleted
         _lastChangedAt
@@ -848,8 +1282,9 @@ export const getReservasBoletos = /* GraphQL */ `
         _lastChangedAt
         owner
       }
-      createdAt
+      quantity
       updatedAt
+      createdAt
       _version
       _deleted
       _lastChangedAt
@@ -867,7 +1302,6 @@ export const listReservasBoletos = /* GraphQL */ `
         id
         boletoID
         reservaID
-        quantity
         reserva {
           id
           total
@@ -875,18 +1309,22 @@ export const listReservasBoletos = /* GraphQL */ `
           pagadoAlOrganizador
           cantidad
           pagado
+          paymentTime
+          tipoPago
           pagoID
+          cashBarcode
           ingreso
           horaIngreso
           cancelado
           canceledAt
           cancelReason
+          fechaExpiracionUTC
           eventoID
           usuarioID
           cuponID
           organizadorID
-          createdAt
           updatedAt
+          createdAt
           _version
           _deleted
           _lastChangedAt
@@ -906,8 +1344,9 @@ export const listReservasBoletos = /* GraphQL */ `
           _lastChangedAt
           owner
         }
-        createdAt
+        quantity
         updatedAt
+        createdAt
         _version
         _deleted
         _lastChangedAt
@@ -934,7 +1373,6 @@ export const syncReservasBoletos = /* GraphQL */ `
         id
         boletoID
         reservaID
-        quantity
         reserva {
           id
           total
@@ -942,18 +1380,22 @@ export const syncReservasBoletos = /* GraphQL */ `
           pagadoAlOrganizador
           cantidad
           pagado
+          paymentTime
+          tipoPago
           pagoID
+          cashBarcode
           ingreso
           horaIngreso
           cancelado
           canceledAt
           cancelReason
+          fechaExpiracionUTC
           eventoID
           usuarioID
           cuponID
           organizadorID
-          createdAt
           updatedAt
+          createdAt
           _version
           _deleted
           _lastChangedAt
@@ -973,8 +1415,9 @@ export const syncReservasBoletos = /* GraphQL */ `
           _lastChangedAt
           owner
         }
-        createdAt
+        quantity
         updatedAt
+        createdAt
         _version
         _deleted
         _lastChangedAt

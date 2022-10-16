@@ -6,6 +6,7 @@ import {
   Text,
   View,
   Dimensions,
+  ViewStyle,
 } from "react-native";
 import React from "react";
 import Logo from "./Logo";
@@ -13,14 +14,16 @@ import Logo from "./Logo";
 export default function ({
   indicator,
   color,
+  style,
 }: {
   indicator?: boolean;
+  style?: ViewStyle;
   color?: ColorValue;
 }) {
   color = color ? color : "#000";
 
   return (
-    <View style={styles.container}>
+    <View style={{ ...styles.container, ...style }}>
       {indicator ? (
         <ActivityIndicator size={"large"} color={color} />
       ) : (

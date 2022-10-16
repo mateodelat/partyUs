@@ -4,7 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 
 import { Alert } from "react-native";
-import { Auth, DataStore, Storage } from "aws-amplify";
+import { API, Auth, DataStore, Storage } from "aws-amplify";
 import { Usuario } from "../src/models";
 import { MERCHANT_ID, PUBLIC_KEY } from "./keys";
 
@@ -42,14 +42,14 @@ export function isUrl(str: string | null | undefined) {
 }
 export const mapPlacesKey = "AIzaSyAMO0bWIDnoKqunvXjCJ65qgZdb5FBtf_s";
 
-export function formatMoney(num?: number | null, hideCents?: boolean) {
+export function formatMoney(num?: number | null, showCents?: boolean) {
   if (!num) {
     num = 0;
   }
 
   return (
     "$" +
-    num?.toFixed(hideCents ? 0 : 2)?.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
+    num?.toFixed(!showCents ? 0 : 2)?.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
   );
 }
 
@@ -120,14 +120,15 @@ export async function callGoogleVisionAsync(
 }
 
 export const formatDateShort = (
-  msInicial?: number | null | Date,
-  msFinal?: number
+  msInicial?: number | null | Date | string,
+  msFinal?: number,
+  UTC?: boolean
 ) => {
   if (!msInicial) return "dd mm";
   const dateInicial = new Date(msInicial);
 
-  var ddInicial = String(dateInicial.getDate());
-  var mmInicial = String(dateInicial.getMonth());
+  var ddInicial = String(dateInicial[UTC ? "getUTCDate" : "getDate"]());
+  var mmInicial = String(dateInicial[UTC ? "getUTCMonth" : "getMonth"]());
 
   if (msFinal) {
     const dateFinal = new Date(msFinal);
@@ -173,6 +174,38 @@ export const meses = [
   "nov",
   "dic",
 ];
+
+export async function graphqlRequest<T>({
+  query,
+  variables,
+  authMode,
+}: {
+  query: string;
+  variables?: object;
+  authMode?:
+    | "API_KEY"
+    | "AWS_IAM"
+    | "OPENID_CONNECT"
+    | "AMAZON_COGNITO_USER_POOLS"
+    | "AWS_LAMBDA";
+}) {
+  try {
+    const a = (await (
+      API.graphql({
+        query,
+        variables,
+        authMode,
+      }) as any
+    ).then((r: any) => {
+      return r.data;
+    })) as Promise<T>;
+    console.log("API graphql");
+    return a;
+  } catch (error) {
+    console.log(error);
+    Alert.alert("Error", "Hubo un error obteniendo datos: " + error.message);
+  }
+}
 
 export const getBase64FromUrl = async (url: string) => {
   function blobToBase64(blob: Blob) {
@@ -744,14 +777,16 @@ export function enumToArray<T>(enumme: T) {
 }
 
 export function formatAMPM(
-  dateInMs: number | Date | undefined | null,
-  hideAMPM?: boolean
+  dateInMs: number | Date | undefined | null | string,
+  hideAMPM?: boolean,
+  UTC?: boolean
 ) {
   if (!dateInMs) return "-- : --";
 
   const date = new Date(dateInMs);
-  var hours = date.getHours();
-  var minutes: number | string = date.getMinutes();
+
+  var hours = date[UTC ? "getUTCHours" : "getHours"]();
+  var minutes: number | string = date[UTC ? "getUTCMinutes" : "getMinutes"]();
   var ampm = hours >= 12 ? "pm" : "am";
   hours = hours % 12;
   hours = hours ? hours : 12; // the hour '0' should be '12'
@@ -1048,8 +1083,10 @@ export function precioConComision(inicial: number | undefined | null) {
   return redondear(inicial * (1 + comisionApp), 10, tipoRedondeo.ARRIBA);
 }
 
-export const getWeekDay = (d: Date | undefined) => {
+export const getWeekDay = (d: Date | undefined | number) => {
   if (!d) return "";
+  d = new Date(d);
+
   const week = d.getDay();
 
   let r = "";
@@ -1097,7 +1134,7 @@ export const comisionApp = 0.15;
  * @returns dd mmm aaaa
  */
 export const formatDay = (
-  date: number | Date | undefined | null,
+  date: number | Date | undefined | null | string,
   noYear?: boolean
 ) => {
   if (!date) {

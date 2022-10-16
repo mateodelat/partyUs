@@ -36,6 +36,8 @@ import Loading from "./Loading";
 import { Dispatch } from "react";
 import Header from "../navigation/components/Header";
 import HeaderModal from "./HeaderModal";
+import useUser from "../Hooks/useUser";
+import { StatusBar } from "expo-status-bar";
 
 const { height } = Dimensions.get("window");
 export type locationType = Region & {
@@ -65,6 +67,7 @@ export default ({
   titulo?: string;
 }) => {
   const map = useRef<any>(null);
+  const { setStatusStyle } = useUser();
 
   const [region, setRegion] = useState(selectedPlace as Region);
   const [actualRegion, setActualRegion] = useState(selectedPlace as Region);
@@ -79,6 +82,7 @@ export default ({
 
   // Checar si la ubicacion esta activada solo si se activa el modal
   useEffect(() => {
+    setStatusStyle("dark");
     modalVisible &&
       verificarUbicacion().then(async (r) => {
         // Si no hay permisos de ubicacion
@@ -279,6 +283,7 @@ export default ({
       visible={modalVisible}
       onRequestClose={handleCancel}
     >
+      <StatusBar translucent={false} animated={false} />
       <Pressable
         onPress={() => {
           Keyboard.dismiss();

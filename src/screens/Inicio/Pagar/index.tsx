@@ -81,7 +81,7 @@ export default function ({
     titulo,
     fechaInicial,
     fechaFinal,
-    owner,
+    creator,
     descuento,
     id: eventoID,
     CreatorID,
@@ -117,7 +117,6 @@ export default function ({
     getUserSub().then(setSub);
     getUserCards();
     setReservaID(res);
-    console.log("Nuevo codigo de reserva: " + res);
     setButtonLoading(false);
     setLoading(false);
   }, []);
@@ -229,7 +228,7 @@ export default function ({
         }
         const { barcode_url, reference, limitDate: limit } = result.voucher;
         const limitDate = new Date(limit);
-
+        console.log(limitDate);
         vibrar(VibrationType.sucess);
 
         // Notificacion de reserva exitosa
@@ -242,9 +241,7 @@ export default function ({
                 ? " con " + personasTotales + " personas"
                 : ""
             } se ha creado con exito. Realiza el pago antes del ${
-              formatDateShort(limitDate.getTime() - 5 * 3600000) +
-              " a las " +
-              formatAMPM(limitDate.getTime() - 5 * 3600000)
+              formatDateShort(limitDate) + " a las " + formatAMPM(limitDate)
             } para confirmar tu lugar.`,
             usuarioID: sub,
 
@@ -293,7 +290,7 @@ export default function ({
               personasTotales !== 1
                 ? " con " + personasTotales + " personas"
                 : ""
-            } se ha creado con exito. Simplemente has click aqui para ver tu boleto de entrada`,
+            } se ha creado con exito. Has click aqui para ver tu boleto de entrada`,
             usuarioID: sub,
 
             showAt: new Date().toISOString(),
@@ -385,7 +382,6 @@ export default function ({
 
             setTarjetasGuardadas((ol) => {
               const idx = ol.findIndex((e) => e.tokenID === tokenID);
-              console.log(idx);
               if (idx >= 0) {
                 ol.splice(idx, 1);
               }
@@ -491,7 +487,7 @@ export default function ({
                   {titulo}
                 </Text>
                 {/* Calificacion guia */}
-                {owner?.verified ? (
+                {creator?.verified ? (
                   <Octicons
                     name="verified"
                     size={20}
@@ -504,13 +500,13 @@ export default function ({
                     }
                   />
                 ) : (
-                  owner?.calificacion && (
+                  creator?.calificacion && (
                     <View
                       style={{ ...styles.row, marginTop: 0, marginLeft: 10 }}
                     >
                       <Entypo name="star" size={16} color="#F5BE18" />
                       <Text style={{ fontSize: 16, fontWeight: "bold" }}>
-                        {owner.calificacion}
+                        {creator.calificacion}
                       </Text>
                     </View>
                   )
@@ -525,7 +521,7 @@ export default function ({
               <View style={styles.row}>
                 {/* Guia */}
                 <View style={{ flexDirection: "row" }}>
-                  <Text style={{ color: azulClaro }}>@{owner?.nickname}</Text>
+                  <Text style={{ color: azulClaro }}>@{creator?.nickname}</Text>
                 </View>
               </View>
             </View>
@@ -566,7 +562,7 @@ export default function ({
                   {"-"}
                   {descuento.porcentajeDescuento
                     ? descuento.porcentajeDescuento * 100 + "%"
-                    : formatMoney(descuento.cantidadDescuento, true)}
+                    : formatMoney(descuento.cantidadDescuento)}
                 </Text>
               </View>
             )}

@@ -13,22 +13,14 @@
   REGION
 Amplify Params - DO NOT EDIT */
 
-import crypto from "@aws-crypto/sha256-js";
-import { defaultProvider } from "@aws-sdk/credential-provider-node";
-import { SignatureV4 } from "@aws-sdk/signature-v4";
-import { HttpRequest } from "@aws-sdk/protocol-http";
+const { graphqlOperation } = require('/opt/graphqlOperation')
+const { updateBoletoReturns, createReservasBoletosReturns, updateEventoReturns, updateCuponReturns, createReservaReturns } = require("/opt/graphqlReturns")
 
-import { default as fetch, Request } from 'node-fetch';
 
-import { createRequire } from "module"
-const require = createRequire(import.meta.url)
 const Openpay = require("openpay")
-
 var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
 
-const { Sha256 } = crypto;
 
-const AWS_REGION = process.env.AWS_REGION || "us-east-1";
 
 const comisionApp = 0.15;
 const msInDay = 86400000;
@@ -37,56 +29,6 @@ function precioConComision(inicial) {
     if (!inicial) return 0;
     return redondear(inicial * (1 + comisionApp), 10);
 }
-
-function formatAMPM(
-    dateInMs,
-    hideAMPM
-) {
-    if (!dateInMs) return "-- : --";
-
-    const date = new Date(dateInMs);
-    var hours = date.getUTCHours();
-    var minutes = date.getUTCMinutes();
-    var ampm = hours >= 12 ? "pm" : "am";
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
-    minutes = minutes < 10 ? "0" + minutes : minutes;
-
-    var strTime = hours + ":" + minutes;
-
-    !hideAMPM ? (strTime += " " + ampm) : null;
-
-    return strTime;
-}
-
-
-const formatDateShort = (
-    msInicial,
-) => {
-    if (!msInicial) return "dd mm";
-    const dateInicial = new Date(msInicial);
-
-    var ddInicial = String(dateInicial.getUTCDate());
-    var mmInicial = String(dateInicial.getUTCMonth());
-
-    const meses = [
-        "ene",
-        "feb",
-        "mar",
-        "abr",
-        "may",
-        "jun",
-        "jul",
-        "ago",
-        "sep",
-        "oct",
-        "nov",
-        "dic",
-    ];
-
-    return ddInicial + " " + meses[mmInicial];
-
-};
 
 
 const redondear = (numero, entero) => {
@@ -101,56 +43,28 @@ const redondear = (numero, entero) => {
 };
 
 async function graphqlRequest({ query, variables }) {
-    const endpoint = new URL(
-        process.env.API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
-    );
+    const endpoint = process.env.API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
 
-    const signer = new SignatureV4({
-        credentials: defaultProvider(),
-        region: AWS_REGION,
-        service: "appsync",
-        sha256: Sha256,
-    });
-
-    const requestToBeSigned = new HttpRequest({
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            host: endpoint.host,
-        },
-        hostname: endpoint.host,
-        body: JSON.stringify(
-            !!variables
-                ? { query, variables }
-                : {
-                    query,
-                }
-        ),
-        path: endpoint.pathname,
-    });
-
-    const signed = await signer.sign(requestToBeSigned);
-    const request = new Request(endpoint, signed);
-
-
-
-    let statusCode = 200;
-    let body;
-    let response;
+    let body = {}
 
     try {
-        response = await fetch(request)
-        body = await response.json()
-        if (body.errors) statusCode = 400;
+        body = await graphqlOperation(!!variables
+            ? { query, variables }
+            : {
+                query,
+            },
+            endpoint
+        )
+
+
+
+
     } catch (error) {
-        console.log("Error fetcheando objeto")
-        statusCode = 500;
+        console.log(error)
         body = {
             error: [
                 {
-                    status: response.status,
                     message: error.message,
-                    stack: error.stack,
                 },
             ],
         };
@@ -181,8 +95,11 @@ function formatResponse({ error, body, statusCode }) {
 
 }
 
-export const handler = async (event
+exports.handler = async (event
 ) => {
+
+
+
     event.body = JSON.parse(event.body)
     if (!event?.body) {
         return formatResponse({
@@ -374,6 +291,7 @@ export const handler = async (event
                 cantidadDescuento
                 porcentajeDescuento
                 restantes
+                vencimiento
               }`
                     : ""
                 }
@@ -453,6 +371,30 @@ export const handler = async (event
         clientPaymentID = clientPaymentIDFetched
         ownerPaymentID = ownerPaymentIDFetched
         // const ownerPaymentID = "ammifkd5zensfos9ypjw";
+
+
+
+        // Verificacion de validez del cupon si se ingresa
+        if (cupon?.vencimiento < new Date().getTime()) {
+            return formatResponse({
+                statusCode: 400,
+                error: {
+                    description:
+                        "El cupon ha expirado"
+                },
+            })
+        }
+
+        if (cupon?.restantes <= 0) {
+            return formatResponse({
+                statusCode: 400,
+                error: {
+                    description:
+                        "No hay personas disponibles para ese cupon"
+                },
+            })
+        }
+
 
         const porcentajeDescuento = cupon?.porcentajeDescuento;
         const cantidadDescuento = cupon?.cantidadDescuento;
@@ -746,10 +688,63 @@ export const handler = async (event
             usuarioID,
             fechaExpiracionUTC: new Date(limitDate).toISOString(),
             cashBarcode: body?.voucher?.barcode_url,
-            _version: 1,
-            tipoPago
+            cashReference: body?.voucher?.reference,
+            tipoPago,
+            paymentTime: new Date().toISOString(),
         };
 
+        console.log(`
+        mutation myMutation($reservaInput:CreateReservaInput!) {
+          ${boletosFetched.map((e, idx) => {
+            // Actualizar personas reservadas por boleto
+
+            const boletoCliente = boletos.find((cli) => cli.id === e.id);
+            if (!boletoCliente) {
+                throw new Error(
+                    "Ocurrio un error con los boletos obtenidos de la base de datos no se encotro el que coincida con " +
+                    e.id
+                );
+            }
+
+            const personasReservadas =
+                (e.personasReservadas ? e.personasReservadas : 0) +
+                boletoCliente.quantity;
+
+            return `
+            bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
+                ${updateBoletoReturns}
+            }
+            bol${idx}rel: createReservasBoletos(input:{
+              boletoID:"${e.id}",
+              reservaID:"${reservaID}",
+              quantity:${boletoCliente.quantity},
+            }){
+                ${createReservasBoletosReturns}
+                }
+            `;
+        })}
+  
+                updateEvento(input:{id:"${evento.id}", personasReservadas:${reservadosEvento}, _version:${evento._version}}){
+                ${updateEventoReturns}                    
+            }
+
+          ${
+            // Restar de cupon si existe ID
+            cuponID
+                ? `updateCupon(input: {id: "${cuponID}", restantes: ${cupon.restantes ? cupon.restantes - 1 : 0
+                },_version:${cupon._version}}) {
+                    ${updateCuponReturns}
+              }`
+                : ``
+            }
+  
+
+            
+        createReserva(input: $reservaInput) {
+            ${createReservaReturns}
+        }
+        }
+      `)
         const q = `
         mutation myMutation($reservaInput:CreateReservaInput!) {
           ${boletosFetched.map((e, idx) => {
@@ -769,38 +764,37 @@ export const handler = async (event
 
             return `
             bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
-              id
-              personasReservadas
+                ${updateBoletoReturns}
             }
             bol${idx}rel: createReservasBoletos(input:{
               boletoID:"${e.id}",
               reservaID:"${reservaID}",
-              quantity:${boletoCliente.quantity}
+              quantity:${boletoCliente.quantity},
             }){
-              id
-            }
+                ${createReservasBoletosReturns}
+                }
             `;
         })}
   
                 updateEvento(input:{id:"${evento.id}", personasReservadas:${reservadosEvento}, _version:${evento._version}}){
-                    id
-                }
+                ${updateEventoReturns}                    
+            }
 
           ${
             // Restar de cupon si existe ID
             cuponID
                 ? `updateCupon(input: {id: "${cuponID}", restantes: ${cupon.restantes ? cupon.restantes - 1 : 0
                 },_version:${cupon._version}}) {
-            id
-            restantes
-          }`
+                    ${updateCuponReturns}
+              }`
                 : ``
             }
   
 
+            
         createReserva(input: $reservaInput) {
-            id
-          }
+            ${createReservaReturns}
+        }
         }
       `
 

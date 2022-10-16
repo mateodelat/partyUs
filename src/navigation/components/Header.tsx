@@ -19,12 +19,14 @@ export default function ({
   color,
   textStyle,
   style,
+  RightIcon,
 }: {
   title?: string | null;
   handleBack?: undefined | (() => any);
   color?: ColorValue;
   textStyle?: TextStyle;
   style?: ViewStyle;
+  RightIcon?: React.FunctionComponent;
 }) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation() as any;
@@ -59,6 +61,7 @@ export default function ({
         >
           {title ? title : "Atras"}
         </Text>
+        {RightIcon && <RightIcon />}
       </Pressable>
     </View>
   );

@@ -16,12 +16,6 @@
     "s3Key": {
       "Type": "String"
     },
-    "merchantId": {
-      "Type": "String"
-    },
-    "secretKey": {
-      "Type": "String"
-    },
     "apipartyUsAPIGraphQLAPIIdOutput": {
       "Type": "String",
       "Default": "apipartyUsAPIGraphQLAPIIdOutput"
@@ -37,6 +31,16 @@
     "functionpartyuslayerArn": {
       "Type": "String",
       "Default": "functionpartyuslayerArn"
+    },
+    "functionpartyusgraphqlOperationsArn": {
+      "Type": "String",
+      "Default": "functionpartyusgraphqlOperationsArn"
+    },
+    "merchantId": {
+      "Type": "String"
+    },
+    "secretKey": {
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -117,6 +121,9 @@
         },
         "Runtime": "nodejs14.x",
         "Layers": [
+          {
+            "Ref": "functionpartyusgraphqlOperationsArn"
+          },
           {
             "Ref": "functionpartyuslayerArn"
           }

@@ -21,14 +21,14 @@ export type AmplifyDependentResourcesAttributes = {
             "Region": "string",
             "LambdaExecutionRole": "string"
         },
-        "partyusmoduleCreateReserva": {
-            "Arn": "string"
-        },
         "onPay": {
             "Name": "string",
             "Arn": "string",
             "Region": "string",
             "LambdaExecutionRole": "string"
+        },
+        "partyusgraphqlOperations": {
+            "Arn": "string"
         }
     },
     "auth": {

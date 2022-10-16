@@ -1,9 +1,17 @@
-import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import React, { useEffect, useState } from "react";
-import { DataStore, Predicates } from "aws-amplify";
+
 import { Notificacion } from "../../../models";
-import { getUserSub, shadowBaja } from "../../../../constants";
+import { shadowBaja } from "../../../../constants";
 import Element from "./Element";
+import { DataStore } from "aws-amplify";
+import useUser from "../../../Hooks/useUser";
 
 export default function () {
   useEffect(() => {
@@ -13,12 +21,12 @@ export default function () {
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>();
   const [refreshing, setRefreshing] = useState(false);
 
+  const { usuario } = useUser();
+
   async function handleFetch() {
-    return DataStore.query(Notificacion, Predicates.ALL, {
-      sort: (e) => e.showAt("DESCENDING"),
-    }).then((r) => {
-      setNotificaciones([...r]);
-    });
+    DataStore.query(Notificacion, (e) => e.usuarioID("eq", usuario.id), {
+      sort: (e) => e.showAt("DESCENDING").createdAt("DESCENDING"),
+    }).then(setNotificaciones);
   }
 
   async function onRefresh() {
@@ -31,8 +39,8 @@ export default function () {
   }
 
   async function handlePressItem(item: Notificacion, index: number) {
-    console.log(await getUserSub());
-    // console.log(item);
+    // console.log(await DataStore.query(Reserva, item.reservaID));
+    console.log(item);
   }
 
   return (
@@ -45,27 +53,38 @@ export default function () {
           />
         }
       >
-        {notificaciones?.map((item, index) => {
-          return (
-            <View
-              key={index}
-              style={{
-                flex: 1,
-                marginBottom: index === notificaciones.length - 1 ? 40 : 0,
-                ...styles.notificationContainer,
-              }}
-            >
-              <Element
-                tipo={item.tipo}
-                titulo={item.titulo}
-                descripcion={item.descripcion}
-                tiempo={item.showAt ? item.showAt : item.createdAt}
-                leido={!!item.leido}
-                onPress={() => handlePressItem(item, index)}
-              />
-            </View>
-          );
-        })}
+        {notificaciones?.length === 0 ? (
+          <Text
+            style={{
+              fontSize: 16,
+              padding: 40,
+            }}
+          >
+            No hay notificaciones
+          </Text>
+        ) : (
+          notificaciones?.map((item, index) => {
+            return (
+              <View
+                key={index}
+                style={{
+                  flex: 1,
+                  marginBottom: index === notificaciones.length - 1 ? 40 : 0,
+                  ...styles.notificationContainer,
+                }}
+              >
+                <Element
+                  tipo={item.tipo}
+                  titulo={item.titulo}
+                  descripcion={item.descripcion}
+                  tiempo={item.showAt ? item.showAt : item.createdAt}
+                  leido={!!item.leido}
+                  onPress={() => handlePressItem(item, index)}
+                />
+              </View>
+            );
+          })
+        )}
       </ScrollView>
     </View>
   );

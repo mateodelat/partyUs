@@ -79,7 +79,7 @@ export default function ({
             marginTop: 10,
           }}
         >
-          <Text style={styles.monney}>{formatMoney(precio, true)}</Text>
+          <Text style={styles.monney}>{formatMoney(precio)}</Text>
           <Pressable>
             <SimpleSelector
               quantity={!!quantity ? quantity : 0}

@@ -65,7 +65,7 @@
         },
         {
           "category": "function",
-          "resourceName": "partyusmoduleCreateReserva",
+          "resourceName": "partyusgraphqlOperations",
           "attributes": [
             "Arn"
           ]
@@ -80,11 +80,6 @@
           ]
         }
       ]
-    },
-    "partyusmoduleCreateReserva": {
-      "providerPlugin": "awscloudformation",
-      "service": "LambdaLayer",
-      "build": true
     },
     "onPay": {
       "build": true,
@@ -92,6 +87,20 @@
       "service": "Lambda",
       "dependsOn": [
         {
+          "category": "function",
+          "resourceName": "partyuslayer",
+          "attributes": [
+            "Arn"
+          ]
+        },
+        {
+          "category": "function",
+          "resourceName": "partyusgraphqlOperations",
+          "attributes": [
+            "Arn"
+          ]
+        },
+        {
           "category": "api",
           "resourceName": "partyUsAPI",
           "attributes": [
@@ -99,15 +108,13 @@
             "GraphQLAPIEndpointOutput",
             "GraphQLAPIKeyOutput"
           ]
-        },
-        {
-          "category": "function",
-          "resourceName": "partyuslayer",
-          "attributes": [
-            "Arn"
-          ]
         }
       ]
+    },
+    "partyusgraphqlOperations": {
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer",
+      "build": true
     }
   },
   "auth": {

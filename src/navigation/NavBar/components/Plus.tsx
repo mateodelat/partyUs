@@ -36,7 +36,7 @@ class PlusButton extends React.Component<MyProps> {
   mode = new Animated.Value(0);
 
   handleButton1 = () => {
-    this.props.navigation.navigate("QRCode");
+    this.props.navigation.navigate("QRScanner");
   };
 
   handleButton2 = () => {

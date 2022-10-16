@@ -57,6 +57,7 @@ import {
   Evento,
   MusicEnum,
   PlaceEnum,
+  Reserva,
   Usuario,
 } from "../../../models";
 import useUser from "../../../Hooks/useUser";
@@ -74,7 +75,7 @@ export type EventoType = Evento & {
   favoritos?: boolean;
   boletos: Boleto[];
   imagenes: { key: string; uri: string }[] | string[];
-  owner?: Usuario;
+  creator?: Usuario;
   comodities?: ComoditiesEnum[];
   ubicacion: locationType;
 };
@@ -154,11 +155,14 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           return boletos;
         });
 
-        const owner = DataStore.query(Usuario, e.CreatorID ? e.CreatorID : "");
+        const creator = DataStore.query(
+          Usuario,
+          e.CreatorID ? e.CreatorID : ""
+        );
 
-        await Promise.all([owner, imagenes, boletos]);
+        await Promise.all([creator, imagenes, boletos]);
 
-        if (!owner) {
+        if (!creator) {
           throw new Error(
             "Error obteniendo el usuario creador en el inicio del evento " +
               e.id +
@@ -171,7 +175,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           ...e,
           imagenes: (await imagenes) as any,
           boletos: await boletos,
-          owner: await owner,
+          creator: await creator,
         };
       })
     );
@@ -183,7 +187,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
     // Si se pasan eventos (checar si son solo verificados)
     if (events && checkVerified) {
-      eventos = eventos.filter((e) => e.owner?.verified);
+      eventos = eventos.filter((e) => e.creator?.verified);
     }
 
     setEventosFiltrados(eventos);
@@ -446,6 +450,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     const evento = eventosFiltrados.find((i: any) => i.id === id);
     if (!evento) return;
 
+    console.log(evento);
     navigation.navigate("DetalleEvento", {
       ...evento,
     });
@@ -499,7 +504,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   }
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar translucent={true} />
       <Pressable
         onPress={Keyboard.dismiss}
         style={{
@@ -577,10 +581,10 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
                 // Buscar por titulo y descripcion localmente
                 setEventosFiltrados((ne) => {
                   return fetchedEvents.filter((ev: EventoType) => {
-                    let { titulo, owner, detalles } = ev;
+                    let { titulo, creator, detalles } = ev;
                     titulo = normalizeString(titulo);
                     detalles = normalizeString(detalles);
-                    const username = normalizeString(owner?.nickname);
+                    const username = normalizeString(creator?.nickname);
                     return (
                       titulo.includes(s) ||
                       detalles.includes(s) ||

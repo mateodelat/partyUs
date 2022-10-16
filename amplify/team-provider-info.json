@@ -25,7 +25,7 @@
         "postSignUpPARTYUS": {
           "secretKey": "sk_e266853b34704432b3fbac85079350ac",
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/postSignUpPARTYUS-356539316e4347775039-build.zip"
+          "s3Key": "amplify-builds/postSignUpPARTYUS-6564506173776c504f37-build.zip"
         },
         "partyuslayer": {
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
@@ -33,19 +33,19 @@
         },
         "createReserva": {
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/createReserva-4e6e796a504f69636c57-build.zip",
+          "s3Key": "amplify-builds/createReserva-5162636a5a5a6b6c5439-build.zip",
           "secretKey": "sk_e266853b34704432b3fbac85079350ac",
           "merchantId": "mcwffetlymvvcqthcdxu"
         },
-        "partyusmoduleCreateReserva": {
-          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/partyusmoduleCreateReserva-LambdaLayerVersion219767eb-build.zip"
-        },
         "onPay": {
-          "merchantId": "mcwffetlymvvcqthcdxu",
-          "secretKey": "sk_e266853b34704432b3fbac85079350ac",
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/onPay-69544662703752547271-build.zip"
+          "s3Key": "amplify-builds/onPay-484269454f74784f6444-build.zip",
+          "merchantId": "mcwffetlymvvcqthcdxu",
+          "secretKey": "sk_e266853b34704432b3fbac85079350ac"
+        },
+        "partyusgraphqlOperations": {
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/partyusgraphqlOperations-LambdaLayerVersion4551fa7f-build.zip"
         }
       },
       "api": {

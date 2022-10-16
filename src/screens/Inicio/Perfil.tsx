@@ -30,6 +30,7 @@ import HeaderModal from "../../components/HeaderModal";
 import { MaterialIcons } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Auth, DataStore, Storage } from "aws-amplify";
@@ -232,8 +233,8 @@ export default function Perfil({ navigation }: { navigation: any }) {
             borderColor: azulClaro,
           }}
           textStyle={{ color: azulClaro }}
-          titulo="Mis boletos"
-          onPress={() => Alert.alert("Ir a mis boletos")}
+          titulo="Reservas"
+          onPress={() => navigation.navigate("MisReservas")}
         />
         {organizador && (
           <Boton
@@ -341,7 +342,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
           style={{ ...styles.optionsTxtContainer, borderBottomWidth: 0 }}
         >
           <View style={{ width: 30, alignItems: "center" }}>
-            <FontAwesome5 name="bell" size={24} color="black" />
+            <Ionicons name={"md-help-buoy-sharp"} size={24} color="black" />
           </View>
 
           <Text style={styles.optionsTxt}>Soporte</Text>
@@ -547,6 +548,7 @@ const styles = StyleSheet.create({
 
     flexDirection: "row",
     alignItems: "center",
+    minHeight: 55.6,
   },
 
   optionsTxt: {

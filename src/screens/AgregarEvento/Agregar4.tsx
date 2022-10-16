@@ -18,6 +18,7 @@ import {
   formatDiaMesCompleto,
   getBlob,
   getUserSub,
+  graphqlRequest,
   isUrl,
   mayusFirstLetter,
   vibrar,
@@ -274,10 +275,11 @@ export default function Agregar2({
 
         CreatorID: sub,
       };
-      await API.graphql({
+      await graphqlRequest({
         query: createEvento,
         variables: { input: eventoAEnviar },
       });
+
       setLoading(false);
 
       navigation.popToTop();

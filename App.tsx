@@ -17,9 +17,12 @@ import Router from "./src/navigation/Router";
 import { LogBox } from "react-native";
 import ErrorWrapper from "./src/components/ErrorWrapper";
 import Loading from "./src/components/Loading";
+import { StatusBar, StatusBarStyle } from "expo-status-bar";
+import moment from "moment";
 
 LogBox.ignoreLogs([/\[WARN\] .* DataStore/g]);
 // LogBox.ignoreAllLogs();
+moment.locale("es");
 
 export default function App() {
   Amplify.configure({
@@ -37,13 +40,7 @@ export default function App() {
   };
 
   const [usuario, setUsuario] = useState(defaultUSR);
-
-  // const [cargandoModelos, setCargandoModelos] = useState(false);
-
-  // const [currentUser, setCurrentUser]: [
-  //   { email?: string; nickname?: string },
-  //   SetStateAction<any>
-  // ] = useState({});
+  const [statusStyle, setStatusStyle] = useState<StatusBarStyle>("dark");
 
   // async function start() {
   //   const info = await Auth.currentUserInfo().then((r) => {
@@ -102,7 +99,13 @@ export default function App() {
   else
     return (
       <ErrorWrapper>
-        <ContextProvider usuario={usuario} setUsuario={setUsuario}>
+        <ContextProvider
+          usuario={usuario}
+          setUsuario={setUsuario}
+          setStatusStyle={setStatusStyle}
+        >
+          <StatusBar style={statusStyle} translucent={true} />
+
           <Router />
         </ContextProvider>
       </ErrorWrapper>

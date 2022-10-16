@@ -31,7 +31,6 @@ const ImageFullScreen = ({
 
   initialImageIdx !== undefined ? initialImageIdx : 0;
   let { height, width } = Dimensions.get("screen");
-  console.log(height);
   height = height > width ? height : width;
 
   return (
