@@ -132,7 +132,7 @@ export default function () {
           name="Notifications"
           component={Notifications}
           options={{
-            title: "Notificaciones",
+            headerShown: false,
           }}
         />
         <Stack.Screen

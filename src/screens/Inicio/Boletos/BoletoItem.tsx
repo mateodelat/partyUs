@@ -33,12 +33,14 @@ export default function ({
   personasReservadas = personasReservadas ? personasReservadas : 0;
 
   // Calcular si hay menos de 15 personas disponibles
-  const availablePlaces = cantidad ? cantidad - personasReservadas : 0;
+  let availablePlaces = cantidad
+    ? cantidad - personasReservadas - (quantity ? quantity : 0)
+    : 0;
   const infoTxt = (() => {
     if (availablePlaces === 1) {
       return "Ultimo disponible";
     }
-    if (availablePlaces <= 15) {
+    if (availablePlaces <= 50) {
       return "Quedan " + availablePlaces;
     } else {
       return "";

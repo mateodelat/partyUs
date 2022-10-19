@@ -89,10 +89,9 @@ export default function ({
   const boletos = route.params.boletos.filter((e: any) => e.quantity);
 
   const [modalVisible, setModalVisible] = useState(false);
-
   const [sesionId, setSesionId] = useState<string>();
 
-  const { usuario, setLoading } = useUser();
+  const { setNewNotifications, usuario, setLoading } = useUser();
 
   // Opciones que se llenan cuando damos agregar tarjeta
   const [tarjetasGuardadas, setTarjetasGuardadas] = useState<cardType[]>([]);
@@ -228,7 +227,6 @@ export default function ({
         }
         const { barcode_url, reference, limitDate: limit } = result.voucher;
         const limitDate = new Date(limit);
-        console.log(limitDate);
         vibrar(VibrationType.sucess);
 
         // Notificacion de reserva exitosa
@@ -306,6 +304,7 @@ export default function ({
       } else {
         throw new Error("No se encontro tipo de pago del resultado");
       }
+      setNewNotifications((prev) => prev++);
     } catch (error: any) {
       error = error?.error ? error.error : error;
       setButtonLoading(false);
@@ -578,9 +577,7 @@ export default function ({
               <Text style={{ ...styles.titulo, fontWeight: "bold" }}>
                 Total
               </Text>
-              <Text style={styles.precioTotal}>
-                $ {Math.round(precioTotal)}
-              </Text>
+              <Text style={styles.precioTotal}>{formatMoney(precioTotal)}</Text>
             </View>
           </View>
 

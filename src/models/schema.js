@@ -900,8 +900,22 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "pagoID": {
-                    "name": "pagoID",
+                "chargeID": {
+                    "name": "chargeID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "transactionID": {
+                    "name": "transactionID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "feeID": {
+                    "name": "feeID",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -1110,15 +1124,6 @@ export const schema = {
                                     "delete",
                                     "read"
                                 ]
-                            },
-                            {
-                                "provider": "userPools",
-                                "ownerField": "usuarioID",
-                                "allow": "owner",
-                                "operations": [
-                                    "update"
-                                ],
-                                "identityClaim": "cognito:username"
                             },
                             {
                                 "allow": "public",
@@ -1494,5 +1499,5 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "5a1e53df716a4c9cf313e613f13875c5"
+    "version": "16fbb45235966609a70cf3b2082016f3"
 };

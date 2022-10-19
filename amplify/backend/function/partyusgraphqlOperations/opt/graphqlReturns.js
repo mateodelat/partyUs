@@ -22,7 +22,8 @@ updatedAt
 createdAt
 _version
 _deleted
-_lastChangedAt`
+_lastChangedAt
+`
 
 
 
@@ -62,9 +63,29 @@ createdAt
 updatedAt
 _version
 _deleted
-_lastChangedAt`
+_lastChangedAt
+`
 
-exports.createReservaReturns = `
+
+exports.createNotificacionReturns = `
+id
+tipo
+titulo
+descripcion
+usuarioID
+leido
+showAt
+reservaID
+eventoID
+organizadorID
+createdAt
+updatedAt
+_version
+_deleted
+_lastChangedAt
+`
+
+exports.reservaReturns = `
 id
 total
 comision
@@ -73,7 +94,9 @@ cantidad
 pagado
 paymentTime
 tipoPago
-pagoID
+chargeID
+transactionID
+feeID
 cashBarcode
 ingreso
 horaIngreso
@@ -91,47 +114,3 @@ _version
 _deleted
 _lastChangedAt
 `
-
-exports.createNotificacionReturns = `
-id
-tipo
-titulo
-descripcion
-usuarioID
-leido
-showAt
-reservaID
-eventoID
-organizadorID
-createdAt
-updatedAt
-_version
-_deleted
-_lastChangedAt`
-
-exports.updateReservaReturns = `
-id
-total
-comision
-pagadoAlOrganizador
-cantidad
-pagado
-paymentTime
-tipoPago
-pagoID
-cashBarcode
-ingreso
-horaIngreso
-cancelado
-canceledAt
-cancelReason
-fechaExpiracionUTC
-eventoID
-usuarioID
-cuponID
-organizadorID
-updatedAt
-createdAt
-_version
-_deleted
-_lastChangedAt`

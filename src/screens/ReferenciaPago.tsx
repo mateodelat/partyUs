@@ -41,7 +41,7 @@ export default function ({
       amount: number;
       codebar: {
         uri: string;
-        number: number;
+        reference: number;
       };
       limitDate: number | Date;
       titulo: string;
@@ -201,7 +201,7 @@ export default function ({
                 source={{ uri: codebar.uri }}
                 style={styles.codebarImage}
               />
-              <Text style={styles.number}>{codebar.number}</Text>
+              <Text style={styles.number}>{codebar.reference}</Text>
               <TouchableOpacity
                 style={styles.buttonContainer}
                 onPress={handleSaveImage}
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
 
   number: {
     fontWeight: "bold",
-    fontSize: 12,
+    fontSize: 14,
     textAlign: "center",
   },
   amount: {

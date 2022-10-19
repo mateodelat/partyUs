@@ -237,14 +237,21 @@ app.post('/payments/onPay', function (req, res) {
 });
 
 
-/*******************************************************
-* Escuchar evento tras vencimiento de pago en efectivo *
-*******************************************************/
-app.post('/payments/onExpire', function (req, res) {
+/************************************************************
+* Cancelar cargo de pago con tarjeta y transaccion asociada *
+************************************************************/
+app.post('/payments/cancelCharge', function (req, res) {
   // Add your code here
   try {
-    console.log(req.body)
-    res.json()
+    const { body } = req
+    const { reservaID } = body.transaction
+
+    // console.log(reservaID)
+
+
+    res.json({ reservaID })
+
+
 
   }
   catch (e) {

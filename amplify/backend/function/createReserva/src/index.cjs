@@ -14,7 +14,7 @@
 Amplify Params - DO NOT EDIT */
 
 const { graphqlOperation } = require('/opt/graphqlOperation')
-const { updateBoletoReturns, createReservasBoletosReturns, updateEventoReturns, updateCuponReturns, createReservaReturns } = require("/opt/graphqlReturns")
+const { updateBoletoReturns, createReservasBoletosReturns, updateEventoReturns, updateCuponReturns, reservaReturns } = require("/opt/graphqlReturns")
 
 
 const Openpay = require("openpay")
@@ -115,7 +115,7 @@ exports.handler = async (event
 
     // Variables por si falla la creacion del boleto devolver cargos
     let chargeID = ""
-    let transferID = ""
+    let transactionID = ""
     let feeID = ""
 
     let clientPaymentID = ""
@@ -135,9 +135,7 @@ exports.handler = async (event
         boletos
     } = event.body;
     try {
-        console.log({
-            input: event.body
-        })
+        console.log(event.body)
 
 
         ////////////////////////////////////////////////////////////////////////
@@ -257,6 +255,22 @@ exports.handler = async (event
                 personasReservadas
                 titulo
                 fechaFinal
+                Reservas(filter: {cancelado: {ne: true}}) {
+                    items {
+                      _deleted
+                      cantidad
+                      fechaExpiracionUTC
+                      pagado
+                      Boletos {
+                        items {
+                          _deleted
+                          quantity
+                          boletoID
+                        }
+                      }
+                    }
+                }
+
               }
               cliente:getUsuario(id:$usuarioID){
                 userPaymentID,
@@ -276,9 +290,10 @@ exports.handler = async (event
                   _version
                 }
               }
-              listReservas(filter: {usuarioID: {eq: "${usuarioID}"}, eventoID:{eq:"${eventoID}"}}) {
+              listReservas(filter: {usuarioID: {eq: "${usuarioID}"}, eventoID:{eq:"${eventoID}"},pagado:{eq: false}, cancelado:{ne:true}}) {
                     items {
                         pagado
+                        cancelado
                         id
                         _deleted
                     }
@@ -329,9 +344,13 @@ exports.handler = async (event
             }
             r = r.data;
 
-            console.log({
-                datosFetcheados: r
-            })
+            // Asignar a 0 el numero de personas reservadas en todos los boletos
+            let boletosFiltrados = r.listBoletos.items.map(bol => ({
+                ...bol,
+                personasReservadas: 0
+            }))
+
+
             // Si hay mas reservas en efectivo por el mismo usuario dar error para evitar fraudes
 
             if (tipoPago === "EFECTIVO" && total !== 0) {
@@ -345,14 +364,59 @@ exports.handler = async (event
                     })
                     throw new Error("Solo se permite tener una reserva en efectivo por evento.");
                 }
-
             }
 
+            let personasEnEvento = 0
+
+            // Calcular personas reservadas en el evento a partir de las reservas validas
+            r.getEvento.Reservas.items.map(res => {
+
+                if (res._deleted) return false
+
+                // Si esta pagada o aun no ha expirado, ES VALIDA
+                else if (res.pagado || res.fechaExpiracionUTC > new Date().toISOString()) {
+                    // Sumar personas en reserva a personas en evento
+                    personasEnEvento += res.cantidad
+
+                    // Mapear boletos asociados a la reserva, encontrar el asociado y ajustar su cantiad
+                    res.Boletos.items.map(bol => {
+
+                        // Si fue borrada la relacion de reserva boleto lanzar error
+                        if (bol._deleted) throw new Error("La relacion reserva boleto ha sido borrada")
+
+                        const idx = boletosFiltrados.findIndex(b => b.id === bol.boletoID)
+
+                        if (idx < 0) {
+
+                            // Si el cliente solo busca un boleto, no hay nececidad de ver mas
+                            return
+                        } else {
+                            // Sumarle la cantidad del boleto asociado a el boleto maestro encontrado
+                            boletosFiltrados[idx].personasReservadas = boletosFiltrados[idx].personasReservadas + bol.quantity
+                        }
+
+
+
+                    })
+
+
+                    return true
+                }
+                else {
+                    return false
+                }
+
+            })
+
+            // Calcular personas reservadas en el boleto a partir de las reservas validas
 
             return {
                 cupon: r.getCupon,
-                evento: r.getEvento,
-                boletos: r.listBoletos.items,
+                evento: {
+                    ...r.getEvento,
+                    personasReservadas: personasEnEvento
+                },
+                boletos: boletosFiltrados,
                 client: r.cliente,
                 owner: r.owner,
             };
@@ -371,8 +435,6 @@ exports.handler = async (event
         clientPaymentID = clientPaymentIDFetched
         ownerPaymentID = ownerPaymentIDFetched
         // const ownerPaymentID = "ammifkd5zensfos9ypjw";
-
-
 
         // Verificacion de validez del cupon si se ingresa
         if (cupon?.vencimiento < new Date().getTime()) {
@@ -646,7 +708,7 @@ exports.handler = async (event
                                             order_id: "transfer>>>" + reservaID,
                                         },
                                         (error, r) => {
-                                            transferID = r.id
+                                            transactionID = r.id
 
                                             if (error) {
                                                 rej("Error creando la transferencia sobre el cargo");
@@ -682,7 +744,9 @@ exports.handler = async (event
             id: reservaID,
             organizadorID,
             pagadoAlOrganizador: enviarACreador,
-            pagoID: body.paymentID,
+            chargeID: body.paymentID,
+            transactionID,
+            feeID,
             total,
             pagado: tipoPago === "EFECTIVO" && total !== 0 ? false : true,
             usuarioID,
@@ -741,7 +805,7 @@ exports.handler = async (event
 
             
         createReserva(input: $reservaInput) {
-            ${createReservaReturns}
+            ${reservaReturns}
         }
         }
       `)
@@ -793,7 +857,7 @@ exports.handler = async (event
 
             
         createReserva(input: $reservaInput) {
-            ${createReservaReturns}
+            ${reservaReturns}
         }
         }
       `
@@ -865,7 +929,7 @@ exports.handler = async (event
                             order_id: "transferRefund>>>" + reservaID,
                         },
                         (error, r) => {
-                            transferID = r.id
+                            transactionID = r.id
 
                             if (error) {
                                 rej("Error creando la transferencia sobre el cargo");

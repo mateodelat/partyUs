@@ -21,6 +21,13 @@
       "permissions": {
         "setting": "open"
       }
+    },
+    "/cancelReserva": {
+      "name": "/cancelReserva",
+      "lambdaFunction": "cancelReserva",
+      "permissions": {
+        "setting": "open"
+      }
     }
   }
 }

@@ -12,7 +12,7 @@ Amplify Params - DO NOT EDIT */
  * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
  */
 const { graphqlOperation } = require('/opt/graphqlOperation')
-const { createNotificacionReturns, updateReservaReturns } = require('/opt/graphqlReturns')
+const { createNotificacionReturns, reservaReturns } = require('/opt/graphqlReturns')
 
 const Openpay = require("openpay")
 var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
@@ -91,6 +91,7 @@ exports.handler = async (event) => {
         usuarioID
         _version
         eventoID
+        cancelado
       }
     }
   `;
@@ -207,8 +208,85 @@ exports.handler = async (event) => {
       organizadorID,
       usuarioID,
       _version,
-      eventoID
+      eventoID,
+      cancelado
     } = reserva;
+
+
+
+    // Si el precio a transferir al guia no coincide con lo pagado, lanzar un error
+    if (comision + pagadoAlOrganizador !== amount) {
+      throw new Error(
+        "La suma de la comision y lo que hay que pagar al organizador no coincide con lo recibido en efectivo"
+      );
+    }
+
+    let feeID = ""
+    let transactionID = ""
+
+
+    // Solo realizar transaccion de dinero si la reserva no esta cancelada
+    if (!cancelado) {
+
+      await Promise.all([
+        ////////////////////////////////////
+        // Comision de app al organizador //
+        ////////////////////////////////////
+        new Promise((res, rej) => {
+          // Cargo comision al comprador
+          openpay.fees.create(
+            {
+              amount: comision,
+              description: "Reserva: " + reservaID + " comision partyus.",
+              order_id: "fee>>>" + reservaID,
+              customer_id: clientPaymentID,
+            },
+            function (error, fee) {
+              if (error) {
+                rej(error);
+              }
+
+              console.log("\nFEE RESULT:\n");
+              console.log(fee);
+
+              feeID = fee.id
+
+              res();
+            }
+          )
+        }),
+
+        ////////////////////////////////////////////////
+        // Transferencia del comprador al organizador //
+        ////////////////////////////////////////////////
+        new Promise((res, rej) => {
+          openpay.customers.transfers.create(
+            clientPaymentID,
+            {
+              customer_id: ownerPaymentID,
+              amount: pagadoAlOrganizador,
+              order_id: "transfer>>>" + reservaID,
+              description:
+                "Transferencia: " + reservaID + " pagada en efectivo.",
+            },
+            (error, r) => {
+              if (error) {
+                rej(error);
+              }
+
+              console.log("\nTRANSFER RESULT:\n");
+              console.log(r);
+
+              transactionID = r.id
+              res();
+            }
+          )
+        }),
+      ]);
+    } else {
+      console.log("Se recibio el pago pero la reserva esta cancelada. Agregando a saldo del usuario...")
+    }
+
 
 
     const updateReservaInput = {
@@ -218,76 +296,21 @@ exports.handler = async (event) => {
       fechaExpiracionUTC: undefined,
       cancelado: false,
       canceledAt: undefined,
+      transactionID,
+      feeID,
       _version,
     };
 
-    // Si el precio a transferir al guia no coincide con lo pagado, lanzar un error
-    if (comision + pagadoAlOrganizador !== amount) {
-      throw new Error(
-        "La suma de la comision y lo que hay que pagar al organizador no coincide con lo recibido en efectivo"
-      );
-    }
-
-    await Promise.all([
-      ////////////////////////////////////
-      // Comision de app al organizador //
-      ////////////////////////////////////
-      new Promise((res, rej) => {
-        // Cargo comision al comprador
-        openpay.fees.create(
-          {
-            amount: comision,
-            description: "Reserva: " + reservaID + " comision partyus.",
-            order_id: "fee>>>" + reservaID,
-            customer_id: clientPaymentID,
-          },
-          function (error, fee) {
-            if (error) {
-              rej(error);
-            }
-
-            console.log("\nFEE RESULT:\n");
-            console.log(fee);
-            res();
-          }
-        )
-      }),
-
-      ////////////////////////////////////////////////
-      // Transferencia del comprador al organizador //
-      ////////////////////////////////////////////////
-      new Promise((res, rej) => {
-        openpay.customers.transfers.create(
-          clientPaymentID,
-          {
-            customer_id: ownerPaymentID,
-            amount: pagadoAlOrganizador,
-            order_id: "transfer>>>" + reservaID,
-            description:
-              "Transferencia: " + reservaID + " pagada en efectivo.",
-          },
-          (error, r) => {
-            if (error) {
-              rej(error);
-            }
-
-            console.log("\nTRANSFER RESULT:\n");
-            console.log(r);
-            res();
-          }
-        )
-      }),
-    ]);
 
     ///////////////////////////////////////////////////////
     // Modificar estado de reserva y mandar notificacion //
     ///////////////////////////////////////////////////////
     await graphqlRequest({
-      query: /* GraphQL */ `
+      query: `
         mutation UpdateReserva($input: UpdateReservaInput!) {
-          updateReserva(input: $input) {
-           ${updateReservaReturns}
-          }
+          ${!cancelado ? `updateReserva(input: $input) {
+            ${reservaReturns}
+        }`: ""}
   
           ${notificacionABorrar.id ? `deleteNotificacion(input: {id: "${notificacionABorrar.id}" _version:${notificacionABorrar._version}}) {
          id
@@ -306,7 +329,7 @@ exports.handler = async (event) => {
           usuarioID:"${usuarioID}",
           reservaID:"${reservaID}",
           organizadorID:"${organizadorID}"
-          descripcion: "Tu pago en efectivo por $${amount} fue procesado con exito. Haz click aqui para ver tu boleto",
+          descripcion: "Tu pago en efectivo por $${amount} fue procesado con exito. ${(cancelado ? "Como la reserva esta cancelada se agrego al saldo de tu cuenta" : "Haz click aqui para ver tu boleto")},
       }){
         ${createNotificacionReturns}
  
@@ -332,7 +355,7 @@ exports.handler = async (event) => {
         to: notificationToken,
         sound: "default",
         title: "Pago recibido",
-        body: `Tu pago en efectivo por $${amount} fue procesado con exito. Entra a la app para ver tu boleto`,
+        body: `Tu pago en efectivo por $${amount} fue procesado con exito. ` + (cancelado ? "Como la reserva esta cancelada se agrego al saldo de tu cuenta" : "Entra a la app para ver tu boleto"),
         badge: 1,
         priority: "high",
         data,

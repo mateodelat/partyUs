@@ -66,8 +66,11 @@ export const onCreateUsuario = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -78,8 +81,8 @@ export const onCreateUsuario = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -160,8 +163,11 @@ export const onUpdateUsuario = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -172,8 +178,8 @@ export const onUpdateUsuario = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -254,8 +260,11 @@ export const onDeleteUsuario = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -266,8 +275,8 @@ export const onDeleteUsuario = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -371,8 +380,11 @@ export const onCreateEvento = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -383,8 +395,8 @@ export const onCreateEvento = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -488,8 +500,11 @@ export const onUpdateEvento = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -500,8 +515,8 @@ export const onUpdateEvento = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -605,8 +620,11 @@ export const onDeleteEvento = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -617,8 +635,8 @@ export const onDeleteEvento = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -713,8 +731,8 @@ export const onCreateBoleto = /* GraphQL */ `
           boletoID
           reservaID
           quantity
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -747,8 +765,8 @@ export const onUpdateBoleto = /* GraphQL */ `
           boletoID
           reservaID
           quantity
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -781,8 +799,8 @@ export const onDeleteBoleto = /* GraphQL */ `
           boletoID
           reservaID
           quantity
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -817,8 +835,11 @@ export const onCreateCupon = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -829,8 +850,8 @@ export const onCreateCupon = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -864,8 +885,11 @@ export const onUpdateCupon = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -876,8 +900,8 @@ export const onUpdateCupon = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -911,8 +935,11 @@ export const onDeleteCupon = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -923,8 +950,8 @@ export const onDeleteCupon = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -951,8 +978,11 @@ export const onCreateReserva = /* GraphQL */ `
       pagado
       paymentTime
       tipoPago
-      pagoID
+      chargeID
+      transactionID
+      feeID
       cashBarcode
+      cashReference
       ingreso
       horaIngreso
       cancelado
@@ -1085,8 +1115,8 @@ export const onCreateReserva = /* GraphQL */ `
           boletoID
           reservaID
           quantity
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -1095,8 +1125,8 @@ export const onCreateReserva = /* GraphQL */ `
         startedAt
       }
       organizadorID
-      updatedAt
       createdAt
+      updatedAt
       _version
       _deleted
       _lastChangedAt
@@ -1114,8 +1144,11 @@ export const onUpdateReserva = /* GraphQL */ `
       pagado
       paymentTime
       tipoPago
-      pagoID
+      chargeID
+      transactionID
+      feeID
       cashBarcode
+      cashReference
       ingreso
       horaIngreso
       cancelado
@@ -1248,8 +1281,8 @@ export const onUpdateReserva = /* GraphQL */ `
           boletoID
           reservaID
           quantity
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -1258,8 +1291,8 @@ export const onUpdateReserva = /* GraphQL */ `
         startedAt
       }
       organizadorID
-      updatedAt
       createdAt
+      updatedAt
       _version
       _deleted
       _lastChangedAt
@@ -1277,8 +1310,11 @@ export const onDeleteReserva = /* GraphQL */ `
       pagado
       paymentTime
       tipoPago
-      pagoID
+      chargeID
+      transactionID
+      feeID
       cashBarcode
+      cashReference
       ingreso
       horaIngreso
       cancelado
@@ -1411,8 +1447,8 @@ export const onDeleteReserva = /* GraphQL */ `
           boletoID
           reservaID
           quantity
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -1421,8 +1457,8 @@ export const onDeleteReserva = /* GraphQL */ `
         startedAt
       }
       organizadorID
-      updatedAt
       createdAt
+      updatedAt
       _version
       _deleted
       _lastChangedAt
@@ -1444,8 +1480,11 @@ export const onCreateReservasBoletos = /* GraphQL */ `
         pagado
         paymentTime
         tipoPago
-        pagoID
+        chargeID
+        transactionID
+        feeID
         cashBarcode
+        cashReference
         ingreso
         horaIngreso
         cancelado
@@ -1527,8 +1566,8 @@ export const onCreateReservasBoletos = /* GraphQL */ `
           startedAt
         }
         organizadorID
-        updatedAt
         createdAt
+        updatedAt
         _version
         _deleted
         _lastChangedAt
@@ -1553,8 +1592,8 @@ export const onCreateReservasBoletos = /* GraphQL */ `
         owner
       }
       quantity
-      updatedAt
       createdAt
+      updatedAt
       _version
       _deleted
       _lastChangedAt
@@ -1576,8 +1615,11 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
         pagado
         paymentTime
         tipoPago
-        pagoID
+        chargeID
+        transactionID
+        feeID
         cashBarcode
+        cashReference
         ingreso
         horaIngreso
         cancelado
@@ -1659,8 +1701,8 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
           startedAt
         }
         organizadorID
-        updatedAt
         createdAt
+        updatedAt
         _version
         _deleted
         _lastChangedAt
@@ -1685,8 +1727,8 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
         owner
       }
       quantity
-      updatedAt
       createdAt
+      updatedAt
       _version
       _deleted
       _lastChangedAt
@@ -1708,8 +1750,11 @@ export const onDeleteReservasBoletos = /* GraphQL */ `
         pagado
         paymentTime
         tipoPago
-        pagoID
+        chargeID
+        transactionID
+        feeID
         cashBarcode
+        cashReference
         ingreso
         horaIngreso
         cancelado
@@ -1791,8 +1836,8 @@ export const onDeleteReservasBoletos = /* GraphQL */ `
           startedAt
         }
         organizadorID
-        updatedAt
         createdAt
+        updatedAt
         _version
         _deleted
         _lastChangedAt
@@ -1817,8 +1862,8 @@ export const onDeleteReservasBoletos = /* GraphQL */ `
         owner
       }
       quantity
-      updatedAt
       createdAt
+      updatedAt
       _version
       _deleted
       _lastChangedAt

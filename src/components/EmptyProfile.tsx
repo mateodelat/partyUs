@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
 
     alignItems: "center",
+    backgroundColor: "#fff",
   },
 
   icon: {

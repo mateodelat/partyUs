@@ -3,7 +3,7 @@ import UserContext from "./UserContext";
 import { View, ActivityIndicator, Text, Platform } from "react-native";
 
 import { PropsWithChildren } from "react";
-import { Usuario } from "../models";
+import { Notificacion, Usuario } from "../models";
 import { API, DataStore, Hub } from "aws-amplify";
 import { getUserSub, graphqlRequest, rojoClaro } from "../../constants";
 
@@ -29,6 +29,7 @@ export default function ({
   };
 
   const [loading, setLoading] = useState(false);
+  const [newNotifications, setNewNotifications] = useState(0);
 
   async function fetchUsuario(sub: string, api?: boolean) {
     if (api) {
@@ -77,7 +78,7 @@ export default function ({
     token = (await Notifications.getExpoPushTokenAsync())?.data;
 
     // Subir a datastore el token
-    if (token && token !== usuario.notificationToken) {
+    if (token && token !== usuario?.notificationToken) {
       await DataStore.save(
         Usuario.copyOf(usuario, (usr) => {
           usr.notificationToken = token;
@@ -125,6 +126,7 @@ export default function ({
         case "signOut":
           // Borrar usuario default
           setUsuario(defultUSR);
+          setNewNotifications(0);
           DataStore.clear();
 
           // cancelAllScheduledNotificationsAsync();
@@ -139,15 +141,28 @@ export default function ({
           break;
       }
     });
+
+    const subscript = DataStore.observe(Notificacion).subscribe((r) => {
+      // Solo agregar si es notificacion nueva
+      if (r.opType === "INSERT") {
+        console.log("Nueva notificacion insertada");
+        setNewNotifications((prev) => prev++);
+      }
+    });
+
     return () => {
       Hub.remove("auth", () => null);
       r();
+      subscript.unsubscribe();
     };
   }, []);
 
   return (
     <UserContext.Provider
       value={{
+        newNotifications,
+        setNewNotifications,
+
         usuario,
         setUsuario,
 

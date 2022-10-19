@@ -194,8 +194,8 @@ type Reserva
       # Solo lambda puede crear reserva
       { allow: private, provider: iam }
       #
-      # El dueño puede cancelar la reserva
-      { allow: owner, ownerField: "usuarioID", operations: [update] }
+      # El dueño del evento puede ingresar la reserva
+      { allow: owner, ownerField: "organizadorID", operations: [update] }
       #
       # Todos los demas pueden ver la reserva
       { allow: public, operations: [read] }
@@ -214,7 +214,10 @@ type Reserva
 
   tipoPago: tipoPago
 
-  pagoID: String
+  # Tipos de cargo para el evento
+  chargeID: String
+  transactionID: String
+  feeID: String
 
   cashBarcode: String
   cashReference: String

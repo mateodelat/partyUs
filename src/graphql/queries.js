@@ -66,8 +66,11 @@ export const getUsuario = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -78,8 +81,8 @@ export const getUsuario = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -289,8 +292,11 @@ export const getEvento = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -301,8 +307,8 @@ export const getEvento = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -575,8 +581,8 @@ export const getBoleto = /* GraphQL */ `
           boletoID
           reservaID
           quantity
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -679,8 +685,11 @@ export const getCupon = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -691,8 +700,8 @@ export const getCupon = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -781,8 +790,11 @@ export const getReserva = /* GraphQL */ `
       pagado
       paymentTime
       tipoPago
-      pagoID
+      chargeID
+      transactionID
+      feeID
       cashBarcode
+      cashReference
       ingreso
       horaIngreso
       cancelado
@@ -915,8 +927,8 @@ export const getReserva = /* GraphQL */ `
           boletoID
           reservaID
           quantity
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -925,8 +937,8 @@ export const getReserva = /* GraphQL */ `
         startedAt
       }
       organizadorID
-      updatedAt
       createdAt
+      updatedAt
       _version
       _deleted
       _lastChangedAt
@@ -949,8 +961,11 @@ export const listReservas = /* GraphQL */ `
         pagado
         paymentTime
         tipoPago
-        pagoID
+        chargeID
+        transactionID
+        feeID
         cashBarcode
+        cashReference
         ingreso
         horaIngreso
         cancelado
@@ -1032,8 +1047,8 @@ export const listReservas = /* GraphQL */ `
           startedAt
         }
         organizadorID
-        updatedAt
         createdAt
+        updatedAt
         _version
         _deleted
         _lastChangedAt
@@ -1065,8 +1080,11 @@ export const syncReservas = /* GraphQL */ `
         pagado
         paymentTime
         tipoPago
-        pagoID
+        chargeID
+        transactionID
+        feeID
         cashBarcode
+        cashReference
         ingreso
         horaIngreso
         cancelado
@@ -1148,8 +1166,8 @@ export const syncReservas = /* GraphQL */ `
           startedAt
         }
         organizadorID
-        updatedAt
         createdAt
+        updatedAt
         _version
         _deleted
         _lastChangedAt
@@ -1174,8 +1192,11 @@ export const getReservasBoletos = /* GraphQL */ `
         pagado
         paymentTime
         tipoPago
-        pagoID
+        chargeID
+        transactionID
+        feeID
         cashBarcode
+        cashReference
         ingreso
         horaIngreso
         cancelado
@@ -1257,8 +1278,8 @@ export const getReservasBoletos = /* GraphQL */ `
           startedAt
         }
         organizadorID
-        updatedAt
         createdAt
+        updatedAt
         _version
         _deleted
         _lastChangedAt
@@ -1283,8 +1304,8 @@ export const getReservasBoletos = /* GraphQL */ `
         owner
       }
       quantity
-      updatedAt
       createdAt
+      updatedAt
       _version
       _deleted
       _lastChangedAt
@@ -1311,8 +1332,11 @@ export const listReservasBoletos = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -1323,8 +1347,8 @@ export const listReservasBoletos = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -1345,8 +1369,8 @@ export const listReservasBoletos = /* GraphQL */ `
           owner
         }
         quantity
-        updatedAt
         createdAt
+        updatedAt
         _version
         _deleted
         _lastChangedAt
@@ -1382,8 +1406,11 @@ export const syncReservasBoletos = /* GraphQL */ `
           pagado
           paymentTime
           tipoPago
-          pagoID
+          chargeID
+          transactionID
+          feeID
           cashBarcode
+          cashReference
           ingreso
           horaIngreso
           cancelado
@@ -1394,8 +1421,8 @@ export const syncReservasBoletos = /* GraphQL */ `
           usuarioID
           cuponID
           organizadorID
-          updatedAt
           createdAt
+          updatedAt
           _version
           _deleted
           _lastChangedAt
@@ -1416,8 +1443,8 @@ export const syncReservasBoletos = /* GraphQL */ `
           owner
         }
         quantity
-        updatedAt
         createdAt
+        updatedAt
         _version
         _deleted
         _lastChangedAt

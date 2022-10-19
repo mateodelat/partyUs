@@ -36,6 +36,8 @@ import Boton from "../../../components/Boton";
 import BoletoItem from "./BoletoItem";
 import { Cupon } from "../../../models";
 import { listBoletos } from "../../../graphql/queries";
+import { ReservasBoletos } from "../../../models";
+import { Reserva } from "../../../models";
 
 export type BoletoType = Boleto & {
   quantity?: number;
@@ -198,12 +200,65 @@ export default function ({
   async function onRefresh() {
     setRefreshing(true);
 
-    await graphqlRequest<{ listBoletos: { items: Boleto[] } }>({
-      query: listBoletos,
-      variables: { filter: { eventoID: { eq: eventID } } },
-    }).then((r) => {
-      setBoletos(r.listBoletos.items.map((r) => r));
+    // Pedir boletos del evento
+    await DataStore.query(Boleto, (bol) => bol.eventoID("eq", eventID), {
+      sort: (e) => e.precio("DESCENDING"),
+    }).then(async (bols) => {
+      // Poner reservas en boletos en 0 para calcularla de reservas validas
+      bols = bols.map((e) => ({
+        ...e,
+        personasReservadas: 0,
+      }));
+
+      const i = new Date().getTime();
+      // Pedir todas las reservas validas
+      return await DataStore.query(Reserva, (r) =>
+        r
+          .eventoID("eq", eventID)
+          .cancelado("ne", true)
+
+          // Si esta pagado se ignora la fecha de expiracion
+          .or((e) =>
+            e
+              .fechaExpiracionUTC("gt", new Date().toISOString())
+              .pagado("eq", true)
+          )
+      ).then(async (r) => {
+        let personasReservadas = 0;
+
+        await Promise.all(
+          r.map(async (e, idx) => {
+            personasReservadas += e.cantidad;
+
+            // Encontrar los boletos asociados a la reserva valida
+            const reservadosEnBoleto = DataStore.query(ReservasBoletos, (rel) =>
+              rel.reservaID("eq", e.id)
+            ).then((rels) => {
+              //
+              // Mapear las relaciones reserva boleto asociadas a la reserva del evento
+              rels.map((rel) => {
+                //
+                // Por cada relacion buscar el boleto asociado
+                const boletoIDX = bols.findIndex(
+                  (bol) => bol.id === rel.boletoID
+                );
+
+                const reservadosPrev = bols[boletoIDX].personasReservadas;
+
+                // Acualizar valor de boletos
+                (bols[boletoIDX] as any).personasReservadas =
+                  reservadosPrev + rel.quantity;
+              });
+            });
+
+            // Esperar todas las solicitudes
+            await reservadosEnBoleto;
+          })
+        );
+        setBoletos(bols);
+      });
     });
+
     setRefreshing(false);
   }
 

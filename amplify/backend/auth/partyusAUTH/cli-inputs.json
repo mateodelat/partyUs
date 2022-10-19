@@ -69,4 +69,4 @@
       "Ref": "AWS::StackId"
     }
   }
-}
+} 

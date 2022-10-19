@@ -9,9 +9,16 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+  useRef,
+} from "react";
 import {
   enumToArray,
   requestLocation,
@@ -25,9 +32,6 @@ import {
   normalizeString,
   mayusFirstLetter,
   getImageUrl,
-  formatDateShort,
-  formatAMPM,
-  fetchFromOpenpay,
 } from "../../../../constants";
 
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -45,31 +49,20 @@ import { TouchableHighlight } from "react-native-gesture-handler";
 import * as Location from "expo-location";
 import ElementoEvento from "../../../components/ElementoEvento";
 
-import {
-  API,
-  AuthModeStrategyType,
-  DataStore,
-  Predicates,
-  Storage,
-} from "aws-amplify";
+import { DataStore, Predicates } from "aws-amplify";
 import {
   ComoditiesEnum,
   Evento,
   MusicEnum,
   PlaceEnum,
-  Reserva,
   Usuario,
 } from "../../../models";
 import useUser from "../../../Hooks/useUser";
 import EmptyProfile from "../../../components/EmptyProfile";
 import { Boleto } from "../../../models";
 import { locationType } from "../../../components/ModalMap";
-import { StatusBar } from "expo-status-bar";
-import { Cupon } from "../../../models";
-import { TipoNotificacion } from "../../../models";
 import { Notificacion } from "../../../models";
-import { getEvento, getReserva, getUsuario } from "../../../graphql/queries";
-import { updateReserva } from "../../../graphql/mutations";
+import { Reserva } from "../../../models";
 
 export type EventoType = Evento & {
   favoritos?: boolean;
@@ -81,8 +74,6 @@ export type EventoType = Evento & {
 };
 
 export default function ({ navigation }: { navigation: NavigationProp }) {
-  const numberNotifications = 3;
-
   const { usuario } = useUser();
 
   const [minPrice, setMinPrice] = useState<number>();
@@ -105,6 +96,10 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   const [eventosFiltrados, setEventosFiltrados] = useState<EventoType[] | []>(
     []
   );
+
+  const notificationBellRef = useRef<React.RefObject<TouchableOpacity>>();
+
+  const { newNotifications, setNewNotifications } = useUser();
 
   async function fetchEvents(events?: Evento[], checkVerified?: boolean) {
     setLoading(true);
@@ -276,100 +271,105 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     precioMin = precioMin === minPrice ? 0 : precioMin;
 
     const i = new Date();
-    const eventos = (await DataStore.query(Evento, (e) =>
-      search
-        ? e
-            // Musica
-            .or((e) =>
-              e
-                .musica("contains", musica[0])
-                .musica("contains", musica[1])
-                .musica("contains", musica[2])
-                .musica("contains", musica[3])
-                .musica("contains", musica[4])
-                .musica("contains", musica[5])
-                .musica("contains", musica[6])
-            )
-            // Tipo del lugar
-            .or((e) =>
-              e
-                .tipoLugar("contains", tipoLugar[0])
-                .tipoLugar("contains", tipoLugar[1])
-                .tipoLugar("contains", tipoLugar[2])
-            )
+    const eventos = (await DataStore.query(
+      Evento,
+      (e) =>
+        search
+          ? e
+              // Musica
+              .or((e) =>
+                e
+                  .musica("contains", musica[0])
+                  .musica("contains", musica[1])
+                  .musica("contains", musica[2])
+                  .musica("contains", musica[3])
+                  .musica("contains", musica[4])
+                  .musica("contains", musica[5])
+                  .musica("contains", musica[6])
+              )
+              // Tipo del lugar
+              .or((e) =>
+                e
+                  .tipoLugar("contains", tipoLugar[0])
+                  .tipoLugar("contains", tipoLugar[1])
+                  .tipoLugar("contains", tipoLugar[2])
+              )
 
-            // Por texto de busqueda solo en titulo y descripcion
-            .or((e) =>
-              e
-                .detalles("contains", normalizeString(search))
-                .titulo("contains", normalizeString(search))
+              // Por texto de busqueda solo en titulo y descripcion
+              .or((e) =>
+                e
+                  .detalles("contains", normalizeString(search))
+                  .titulo("contains", normalizeString(search))
 
-                .detalles("contains", normalizeString(search).toLowerCase())
-                .titulo("contains", normalizeString(search).toLowerCase())
+                  .detalles("contains", normalizeString(search).toLowerCase())
+                  .titulo("contains", normalizeString(search).toLowerCase())
 
-                .detalles("contains", mayusFirstLetter(search))
-                .titulo("contains", mayusFirstLetter(search))
+                  .detalles("contains", mayusFirstLetter(search))
+                  .titulo("contains", mayusFirstLetter(search))
 
-                .detalles("contains", search)
-                .titulo("contains", search)
-            )
+                  .detalles("contains", search)
+                  .titulo("contains", search)
+              )
 
-            // Por fechas
-            .fechaInicial(
-              "gt",
-              // Si no hay fecha inicial poner la fecha de hoy minima
-              fechaMin ? fechaMin.getTime() : new Date().getTime()
-            )
-            .fechaFinal(
-              "lt",
-              fechaMax
-                ? fechaMax.getTime()
-                : // Si no hay fecha max la fecha de hoy en 5 años
-                  new Date().getTime() + msInDay * 365 * 5
-            )
+              // Por fechas
+              .fechaInicial(
+                "gt",
+                // Si no hay fecha inicial poner la fecha de hoy minima
+                fechaMin ? fechaMin.getTime() : new Date().getTime()
+              )
+              .fechaFinal(
+                "lt",
+                fechaMax
+                  ? fechaMax.getTime()
+                  : // Si no hay fecha max la fecha de hoy en 5 años
+                    new Date().getTime() + msInDay * 365 * 5
+              )
 
-            // Rango precios
-            // Si el precio minimo o el maximo se encuentra en el rango input
-            .precioMin("le", precioMax ? precioMax : valueMax)
-            .precioMax("ge", precioMin ? precioMin : 0)
-        : e
-            // Musica
-            .or((e) =>
-              e
-                .musica("contains", musica[0])
-                .musica("contains", musica[1])
-                .musica("contains", musica[2])
-                .musica("contains", musica[3])
-                .musica("contains", musica[4])
-                .musica("contains", musica[5])
-                .musica("contains", musica[6])
-            )
-            // Tipo del lugar
-            .or((e) =>
-              e
-                .tipoLugar("contains", tipoLugar[0])
-                .tipoLugar("contains", tipoLugar[1])
-                .tipoLugar("contains", tipoLugar[2])
-            )
+              // Rango precios
+              // Si el precio minimo o el maximo se encuentra en el rango input
+              .precioMin("le", precioMax ? precioMax : valueMax)
+              .precioMax("ge", precioMin ? precioMin : 0)
+          : e
+              // Musica
+              .or((e) =>
+                e
+                  .musica("contains", musica[0])
+                  .musica("contains", musica[1])
+                  .musica("contains", musica[2])
+                  .musica("contains", musica[3])
+                  .musica("contains", musica[4])
+                  .musica("contains", musica[5])
+                  .musica("contains", musica[6])
+              )
+              // Tipo del lugar
+              .or((e) =>
+                e
+                  .tipoLugar("contains", tipoLugar[0])
+                  .tipoLugar("contains", tipoLugar[1])
+                  .tipoLugar("contains", tipoLugar[2])
+              )
 
-            // Por fechas
-            .fechaInicial(
-              "gt",
-              // Si no hay fecha inicial poner la fecha de hoy minima
-              fechaMin ? fechaMin.getTime() : new Date().getTime()
-            )
-            .fechaFinal(
-              "lt",
-              fechaMax
-                ? fechaMax.getTime()
-                : // Si no hay fecha max la fecha de hoy en 5 años
-                  new Date().getTime() + msInDay * 365 * 5
-            )
+              // Por fechas
+              .fechaInicial(
+                "gt",
+                // Si no hay fecha inicial poner la fecha de hoy minima
+                fechaMin ? fechaMin.getTime() : new Date().getTime()
+              )
+              .fechaFinal(
+                "lt",
+                fechaMax
+                  ? fechaMax.getTime()
+                  : // Si no hay fecha max la fecha de hoy en 5 años
+                    new Date().getTime() + msInDay * 365 * 5
+              )
 
-            // Rango precios
-            // Si el precio minimo o el maximo se encuentra en el rango input
-            .precioMin("le", precioMax ? precioMax : valueMax)
-            .precioMax("ge", precioMin ? precioMin : 0)
+              // Rango precios
+              // Si el precio minimo o el maximo se encuentra en el rango input
+              .precioMin("le", precioMax ? precioMax : valueMax)
+              .precioMax("ge", precioMin ? precioMin : 0),
+      {
+        sort: (e) => e.fechaInicial("ASCENDING").titulo("ASCENDING"),
+      }
     ).then((r) => {
       // Filtrar por distancia y comodities
       r = r.filter((e) => {
@@ -413,8 +413,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       return r;
     })) as Evento[];
 
-    console.log(new Date().getTime() - i.getTime());
-
     fetchEvents(eventos, verified);
     setFilters(filters);
   }
@@ -450,7 +448,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     const evento = eventosFiltrados.find((i: any) => i.id === id);
     if (!evento) return;
 
-    console.log(evento);
     navigation.navigate("DetalleEvento", {
       ...evento,
     });
@@ -469,9 +466,11 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   async function onRefresh() {
     setRefreshing(true);
 
+    // Obtener nuevas notificaciones al usuario
+    queryNewNotifications();
+
     // Obtener eventos por filtro
     await handleSearch(filters);
-
     setRefreshing(false);
   }
 
@@ -490,6 +489,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   }
 
   async function handleNotifications() {
+    setNewNotifications(0);
     // Verificar que este loggeado
     if (!(await getUserSub())) {
       navigation.navigate("LoginStack", {
@@ -502,6 +502,20 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       navigation.navigate("Notifications");
     }
   }
+
+  function queryNewNotifications() {
+    DataStore.query(Notificacion, (e) =>
+      e.showAt("lt", new Date().toISOString()).leido("ne", true)
+    ).then((r) => {
+      setNewNotifications(r.length);
+    });
+  }
+
+  // Pedir notificaciones nuevas
+  useEffect(() => {
+    queryNewNotifications();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <Pressable
@@ -519,7 +533,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
         >
           <View style={styles.header}>
             {/* Imagen de perfil */}
-            <Pressable onPress={handleProfile}>
+            <TouchableOpacity onPress={handleProfile}>
               {usuario.foto ? (
                 <Image
                   style={styles.profilePicture}
@@ -530,35 +544,45 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
               ) : (
                 <EmptyProfile />
               )}
-            </Pressable>
-            <Pressable onPress={handleNotifications}>
-              <FontAwesome5 name="bell" size={24} color="black" />
+            </TouchableOpacity>
+            <View>
+              <TouchableOpacity
+                ref={notificationBellRef as any}
+                activeOpacity={0.4}
+                onPress={handleNotifications}
+              >
+                <FontAwesome5 name="bell" size={24} color="black" />
 
-              {numberNotifications && (
-                <View
-                  style={{
-                    backgroundColor: "red",
+                {!!newNotifications && (
+                  <View
+                    style={{
+                      backgroundColor: "red",
 
-                    borderRadius: 20,
+                      borderRadius: 20,
 
-                    position: "absolute",
-                    right: -9,
-                    top: -6,
-                    width: 18,
-                    height: 18,
+                      position: "absolute",
+                      right: -9,
+                      top: -6,
+                      width: 18,
+                      height: 18,
 
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text
-                    style={{ color: "#fff", fontWeight: "bold", fontSize: 12 }}
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
-                    {numberNotifications}
-                  </Text>
-                </View>
-              )}
-            </Pressable>
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontWeight: "bold",
+                        fontSize: 12,
+                      }}
+                    >
+                      {newNotifications}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Barra de busqueda */}
@@ -641,10 +665,16 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           renderItem={({ item, index }) => {
             if (!item) return <View />;
             return (
-              <ElementoEvento
-                data={item}
-                onPress={() => handlePressItem(item.id)}
-              />
+              <View
+                style={{
+                  marginBottom: index === eventosFiltrados.length - 1 ? 100 : 0,
+                }}
+              >
+                <ElementoEvento
+                  data={item}
+                  onPress={() => handlePressItem(item.id)}
+                />
+              </View>
             );
           }}
         />

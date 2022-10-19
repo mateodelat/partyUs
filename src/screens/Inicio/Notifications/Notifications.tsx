@@ -12,8 +12,9 @@ import { shadowBaja } from "../../../../constants";
 import Element from "./Element";
 import { DataStore } from "aws-amplify";
 import useUser from "../../../Hooks/useUser";
+import Header from "../../../navigation/components/Header";
 
-export default function () {
+export default function ({ navigation }) {
   useEffect(() => {
     handleFetch();
   }, []);
@@ -21,7 +22,7 @@ export default function () {
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>();
   const [refreshing, setRefreshing] = useState(false);
 
-  const { usuario } = useUser();
+  const { usuario, setNewNotifications } = useUser();
 
   async function handleFetch() {
     DataStore.query(Notificacion, (e) => e.usuarioID("eq", usuario.id), {
@@ -40,12 +41,25 @@ export default function () {
 
   async function handlePressItem(item: Notificacion, index: number) {
     // console.log(await DataStore.query(Reserva, item.reservaID));
-    console.log(item);
   }
 
   return (
     <View style={styles.container}>
+      <Header
+        title={"Notificaciones"}
+        handleBack={() => {
+          // Buscar notificaciones no leidas todavia
+          const sinLeer = notificaciones.filter(
+            (e) => !e.leido && e.showAt < new Date().toISOString()
+          ).length;
+
+          setNewNotifications(sinLeer);
+
+          navigation.pop();
+        }}
+      />
       <ScrollView
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             onRefresh={onRefresh}

@@ -3,21 +3,14 @@ import {
   Animated,
   FlatList,
   Image,
-  Modal,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
+  TouchableOpacity,
 } from "react-native";
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { EventoType } from "../Home";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import Carrousel from "./Carrousel";
@@ -39,6 +32,10 @@ import {
   getUserSub,
   precioConComision,
   timer,
+  formatMoney,
+  azulOscuro,
+  AsyncAlert,
+  fetchFromAPI,
 } from "../../../../constants";
 import { API, DataStore, Predicates, Storage } from "aws-amplify";
 import { OpType } from "@aws-amplify/datastore";
@@ -48,26 +45,39 @@ import { MusicEnum, Reserva, Usuario } from "../../../models";
 import Descripcion from "./Descripcion";
 
 import { Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 
 import ModalMap from "../../../components/ModalMap";
 import ProgressCircle from "../../../components/ProgressCircle";
-import { ComoditiesEnum } from "../../../models";
 import EmptyProfile from "../../../components/EmptyProfile";
 import Boton from "../../../components/Boton";
 import { Evento } from "../../../models";
 import { Boleto } from "../../../models";
-import { getEvento, getUsuario } from "../../../graphql/queries";
 import { ReservasBoletos } from "../../../models";
 import Loading from "../../../components/Loading";
+import useUser from "../../../Hooks/useUser";
+import { Notificacion } from "../../../models";
+import { TipoNotificacion } from "../../../models";
 
 export default function ({
   route,
   navigation,
 }: {
-  route: { params: EventoType };
+  route: {
+    params: EventoType & {
+      reserva?: Reserva & { eventoCancelado: () => void };
+    };
+  };
   navigation: NavigationProp;
 }) {
+  const reserva = route.params.reserva;
+
+  if (reserva?.cancelado) {
+    Alert.alert("Error", "La reserva ya fue cancelada");
+    navigation.pop();
+  }
+
   const [evento, setEvento] = useState({
     ...route.params,
     personasReservadas: 0,
@@ -92,8 +102,8 @@ export default function ({
   } = evento;
 
   titulo = titulo
-    ? titulo.length > 10
-      ? titulo.slice(0, 10) + "..."
+    ? titulo.length > 13
+      ? titulo.slice(0, 13) + "..."
       : titulo
     : "Detalles evento";
 
@@ -127,22 +137,37 @@ export default function ({
 
   const [refreshing, setRefreshing] = useState(false);
 
-  async function fetchReservas(ePrev?: object) {
+  const { setLoading, usuario, setNewNotifications } = useUser();
+
+  async function fetchReservas(boletos: Boleto[]) {
     // Pedir todas las reservas validas
     return await DataStore.query(Reserva, (r) =>
       r
         .eventoID("eq", evento.id)
         .cancelado("ne", true)
-        .fechaExpiracionUTC("gt", new Date().toISOString())
+
+        // Si esta pagado se ignora la fecha de expiracion
+        .or((e) =>
+          e
+            .fechaExpiracionUTC("gt", new Date().toISOString())
+            .pagado("eq", true)
+        )
     ).then(async (r) => {
       let usuarios = [];
       let personasReservadas = 0;
+
       await Promise.all(
-        r.map(async (e) => {
-          const usr = await DataStore.query(Usuario, e.usuarioID);
-          const foto = await getImageUrl(usr.foto);
+        r.map(async (e, idx) => {
+          let usr: Promise<Usuario> | Usuario;
+          let foto: Promise<string> | string;
 
           personasReservadas += e.cantidad;
+
+          // Por cada reserva, si es de las primeras 5 pedir su foto y usuario asociado
+          if (idx < 6) {
+            usr = await DataStore.query(Usuario, e.usuarioID);
+            foto = await getImageUrl(usr.foto);
+          }
 
           usuarios = [
             ...usuarios,
@@ -157,6 +182,7 @@ export default function ({
       setEvento((prev) => ({
         ...prev,
         personasReservadas,
+        boletos,
       }));
 
       setUsuariosReservados(usuarios);
@@ -165,6 +191,8 @@ export default function ({
 
   function onRefresh() {
     setRefreshing(true);
+
+    let boletos: Promise<Boleto[]>;
 
     DataStore.query(Evento, evento.id)
       .then(async (e) => {
@@ -180,13 +208,9 @@ export default function ({
           })
         );
 
-        const boletos = DataStore.query(
-          Boleto,
-          (bo) => bo.eventoID("eq", e.id),
-          {
-            sort: (e) => e.precio("DESCENDING"),
-          }
-        );
+        boletos = DataStore.query(Boleto, (bo) => bo.eventoID("eq", e.id), {
+          sort: (e) => e.precio("DESCENDING"),
+        });
 
         const creator = DataStore.query(
           Usuario,
@@ -214,9 +238,9 @@ export default function ({
       .then(async (r) => {
         setEvento({
           ...r,
-          personasReservadas: evento.personasReservadas,
+          personasReservadas: 0,
         });
-        await fetchReservas(r);
+        await fetchReservas(await boletos);
         setRefreshing(false);
       });
   }
@@ -260,10 +284,6 @@ export default function ({
     // Si la foto de perfil no es url pedirla de S3
     getImageUrl(creator?.foto).then(setFotoPerfil);
 
-    // Pedir las fotos de perfil de los primeros 5 usuarios
-
-    fetchReservas();
-
     return () => {
       sub.unsubscribe();
     };
@@ -281,6 +301,73 @@ export default function ({
     vibrar();
 
     setFollowing(!following);
+  }
+
+  async function handleCancelar() {
+    try {
+      await AsyncAlert(
+        "Cancelar reserva",
+        // Mensaje dependiendo si el usuario tiene dinero en la cuenta
+        reserva.pagado === true
+          ? "Al cancelar una reserva, se te devolvera el dinero a tu cuenta para que puedas reservar en otro evento. ¿Quieres continuar?"
+          : "¿Seguro que quieres cancelar tu reserva?"
+      ).then(async (r) => {
+        if (!r) return;
+
+        setLoading(true);
+        const result = await fetchFromAPI("/cancelReserva", "POST", {
+          reservaID: reserva.id,
+          organizadorID: reserva.organizadorID,
+          clientID: usuario.id,
+        });
+        setLoading(false);
+        console.log(result);
+
+        if (result?.error) {
+          throw new Error(result as any);
+        }
+
+        Alert.alert("Exito", "Tu reserva se cancelo con exito");
+        DataStore.save(
+          new Notificacion({
+            tipo: TipoNotificacion.RESERVACANCELADA,
+            titulo: "Cancelacion exitosa",
+            descripcion: reserva.pagado
+              ? `Se cancelo tu reserva en ${
+                  evento.titulo
+                } con exito. Se te agrego ${formatMoney(
+                  reserva.total
+                )} a tu cuenta para eventos futuros`
+              : `Se cancelo tu reserva en ${evento.titulo} con exito.`,
+
+            usuarioID: await getUserSub(),
+
+            showAt: new Date().toISOString(),
+
+            reservaID: reserva.id,
+            eventoID: evento.id,
+            organizadorID: evento.CreatorID,
+          })
+        );
+        // Cancelar el evento localente
+        reserva.eventoCancelado();
+
+        // Una nueva notificacion
+        setNewNotifications((prev) => prev++);
+        navigation.pop();
+      });
+    } catch (error) {
+      console.log(error);
+      error = error?.error ? error.error : error;
+      setLoading(false);
+      const msg = error.message
+        ? error.message
+        : error.description
+        ? error.description
+        : error;
+
+      Alert.alert("Error", "Ocurrio un error cancelando tu reserva: \n" + msg);
+    }
   }
 
   async function handleContinar() {
@@ -302,6 +389,45 @@ export default function ({
       navigation.navigate("Boletos", evento);
     }
   }
+
+  function navigateTicketEntrada() {
+    if (reserva.pagado) {
+      navigation.navigate("QRCode", reserva);
+    } else {
+      navigation.navigate("ReferenciaPagoModal", {
+        amount: reserva.total,
+        titulo,
+        codebar: {
+          uri: reserva.cashBarcode,
+          reference: reserva.cashReference,
+        },
+        limitDate: new Date(reserva.fechaExpiracionUTC).getTime(),
+      });
+    }
+  }
+
+  useEffect(() => {
+    if (reserva?.id) {
+      setBoletos("loading");
+      DataStore.query(ReservasBoletos, (e) =>
+        e.reservaID("eq", reserva.id)
+      ).then(async (r) => {
+        const res = await Promise.all(
+          r.map(async (r) => {
+            return {
+              ...r,
+              boleto: await DataStore.query(Boleto, r.boletoID),
+            };
+          })
+        );
+        setBoletos(res as any);
+      });
+    }
+  }, []);
+
+  const [boletos, setBoletos] = useState<
+    (ReservasBoletos & { boleto: Boleto })[] | "loading"
+  >();
 
   const showVerified = creator?.verified;
 
@@ -429,7 +555,7 @@ export default function ({
           {/* Fila de ubicacion */}
           <Pressable
             onPress={handleViewLocation}
-            style={{ ...styles.row, marginTop: 30, marginBottom: 60 }}
+            style={{ ...styles.row, marginTop: 30, marginBottom: 30 }}
           >
             {/* Icono del calendario */}
             <View style={styles.iconContainer}>
@@ -445,95 +571,154 @@ export default function ({
             </View>
           </Pressable>
 
-          {/* Usuarios registrados */}
-          <View style={styles.row}>
-            <ProgressCircle
-              percent={personasPercent}
-              radius={40}
-              borderWidth={5}
-              color={rojoClaro}
-              shadowColor={azulFondo}
-              bgColor="#fff"
-            >
-              <Text style={{ fontSize: 16 }} numberOfLines={1}>
-                <Text style={{ fontWeight: "500", fontSize: 16 }}>
-                  {personasReservadas}
+          {/* Boletos en caso de venir de detalle de reserva */}
+          {reserva ? (
+            <TouchableOpacity onPress={navigateTicketEntrada}>
+              <Line style={{ marginTop: 10 }} />
+              <Text style={styles.tipoPago}>{reserva.tipoPago}</Text>
+              {boletos === "loading" ? (
+                <Loading indicator style={{ marginTop: 30 }} />
+              ) : (
+                boletos?.map((e, idx) => {
+                  return (
+                    <View style={styles.boletoContainer} key={idx}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.subtitle}>Precio total</Text>
+                        <Text style={{ ...styles.value, color: rojoClaro }}>
+                          {formatMoney(
+                            precioConComision(e.boleto.precio) * e.quantity
+                          )}
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={styles.subtitle}>{e.boleto.titulo}</Text>
+                        <View
+                          style={{
+                            justifyContent: "flex-end",
+                            alignItems: "center",
+                            marginRight: 0,
+                            flexDirection: "row",
+                          }}
+                        >
+                          <Text style={styles.value}>{e.quantity}</Text>
+                          <Ionicons
+                            style={{
+                              marginLeft: 5,
+                            }}
+                            name="person"
+                            size={20}
+                            color="black"
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })
+              )}
+            </TouchableOpacity>
+          ) : (
+            //  Usuarios registrados
+
+            <View style={{ ...styles.row, marginTop: 30 }}>
+              <ProgressCircle
+                percent={personasPercent}
+                radius={40}
+                borderWidth={5}
+                color={rojoClaro}
+                shadowColor={azulFondo}
+                bgColor="#fff"
+              >
+                <Text style={{ fontSize: 16 }} numberOfLines={1}>
+                  <Text style={{ fontWeight: "500", fontSize: 16 }}>
+                    {personasReservadas}
+                  </Text>
+                  /{personasMax}
                 </Text>
-                /{personasMax}
-              </Text>
-            </ProgressCircle>
+              </ProgressCircle>
 
-            <View style={{ marginRight: 20 }} />
+              <View style={{ marginRight: 20 }} />
 
-            {/* Fotos de perfil */}
-            {(usuariosReservados
-              ? usuariosReservados
-              : [...Array(6).keys()]
-            ).map((e: number | Usuario, i: number) => {
-              const left = -20 * i;
+              {/* Fotos de perfil */}
+              {(usuariosReservados
+                ? usuariosReservados
+                : [...Array(6).keys()]
+              ).map((e: number | Usuario, i: number) => {
+                const left = -20 * i;
 
-              const hayMas = i === 6;
+                const hayMas = i === 6;
 
-              if (typeof e === "number") {
+                if (typeof e === "number") {
+                  return (
+                    <View
+                      key={i}
+                      style={{
+                        ...styles.imagenPerfilContainer,
+                        left,
+                      }}
+                    ></View>
+                  );
+                }
+
+                // Si es mayor que 6 devolver null
+                if (i > 6) return <View key={i}></View>;
+
                 return (
                   <View
                     key={i}
                     style={{
                       ...styles.imagenPerfilContainer,
                       left,
+                      backgroundColor: hayMas ? rojoClaro : "transparent",
                     }}
-                  ></View>
-                );
-              }
-
-              // Si es mayor que 6 devolver null
-              if (i > 6) return <View key={i}></View>;
-
-              return (
-                <View
-                  key={i}
-                  style={{
-                    ...styles.imagenPerfilContainer,
-                    left,
-                    backgroundColor: hayMas ? rojoClaro : "transparent",
-                  }}
-                >
-                  {hayMas ? (
-                    <View
-                      style={{
-                        justifyContent: "center",
-                        alignItems: "center",
-                        flex: 1,
-                      }}
-                    >
-                      <Text
+                  >
+                    {hayMas ? (
+                      <View
                         style={{
-                          color: "#fff",
-                          fontWeight: "900",
-                          fontSize: 12,
+                          justifyContent: "center",
+                          alignItems: "center",
+                          flex: 1,
                         }}
                       >
-                        +{personasReservadas ? personasReservadas - 5 : 0}
-                      </Text>
-                    </View>
-                  ) : e.foto ? (
-                    <Image style={{ flex: 1 }} source={{ uri: e.foto }} />
-                  ) : (
-                    <EmptyProfile size={30} />
-                  )}
-                </View>
-              );
-            })}
-          </View>
+                        <Text
+                          style={{
+                            color: "#fff",
+                            fontWeight: "900",
+                            fontSize: 12,
+                          }}
+                        >
+                          +{usuariosReservados.length - 5}
+                        </Text>
+                      </View>
+                    ) : e.foto ? (
+                      <Image style={{ flex: 1 }} source={{ uri: e.foto }} />
+                    ) : (
+                      <EmptyProfile size={30} />
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          )}
         </View>
 
-        <Boton
-          style={{ margin: 20 }}
-          titulo={"Apuntarse"}
-          onPress={handleContinar}
-        />
+        {!reserva && (
+          <Boton
+            style={{ margin: 20 }}
+            titulo={"Apuntarse"}
+            onPress={handleContinar}
+          />
+        )}
       </Animated.ScrollView>
-
+      {reserva && (
+        <TouchableOpacity
+          onPress={handleCancelar}
+          style={{ alignItems: "center", padding: 20 }}
+        >
+          <Text style={{ fontSize: 18, color: rojoClaro, fontWeight: "900" }}>
+            Cancelar
+          </Text>
+        </TouchableOpacity>
+      )}
       <ModalMap
         selectedPlace={ubicacion}
         modalVisible={modalVisible}
@@ -554,7 +739,6 @@ export default function ({
           </View>
         )}
       />
-
       {modalVisible && (
         <View
           style={{
@@ -607,6 +791,20 @@ const styles = StyleSheet.create({
     width: 40,
 
     ...shadowMedia,
+  },
+
+  tipoPago: {
+    fontSize: 16,
+    fontWeight: "bold",
+    position: "absolute",
+    zIndex: 1,
+    alignSelf: "center",
+
+    top: -1,
+    backgroundColor: "#fff",
+    paddingHorizontal: 10,
+
+    color: rojoClaro,
   },
 
   innerContainer: {
@@ -681,5 +879,29 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     paddingLeft: 20,
     borderLeftWidth: 0.5,
+  },
+
+  boletoContainer: {
+    flexDirection: "row",
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
+
+  titulo: {
+    fontWeight: "900",
+    fontSize: 26,
+    textAlign: "center",
+    color: "#fff",
+    marginVertical: 10,
+  },
+
+  value: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+
+  subtitle: {
+    color: azulOscuro + "80",
+    marginBottom: 3,
   },
 });

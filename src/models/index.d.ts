@@ -174,7 +174,9 @@ export declare class Reserva {
   readonly pagado?: boolean | null;
   readonly paymentTime?: string | null;
   readonly tipoPago?: TipoPago | keyof typeof TipoPago | null;
-  readonly pagoID?: string | null;
+  readonly chargeID?: string | null;
+  readonly transactionID?: string | null;
+  readonly feeID?: string | null;
   readonly cashBarcode?: string | null;
   readonly cashReference?: string | null;
   readonly ingreso?: boolean | null;

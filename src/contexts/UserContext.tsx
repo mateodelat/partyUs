@@ -12,6 +12,9 @@ const UserContext: Context<{
 
   loading: boolean;
   setLoading: Dispatch<SetStateAction<boolean>>;
+
+  newNotifications: number;
+  setNewNotifications: Dispatch<SetStateAction<number>>;
 }> = createContext({
   usuario: {
     id: "guest",
@@ -24,6 +27,9 @@ const UserContext: Context<{
   setStatusStyle: (a: any) => null,
   loading: false,
   setLoading: (e: any) => null,
+
+  newNotifications: 0,
+  setNewNotifications: (e: any) => null,
 });
 
 export default UserContext;

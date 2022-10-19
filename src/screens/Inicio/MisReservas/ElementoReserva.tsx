@@ -40,18 +40,16 @@ const claros = "#00000055";
 
 export default function ElementoReserva({
   data,
+  onPress,
 }: {
   data: Reserva & { expirado: boolean };
+  onPress: (e: any) => void;
 }) {
   const imagenFondo = (data.evento as any).imagenPrincipal;
 
   const navigation = useNavigation() as any;
 
   const fecha = new Date(data.evento.fechaInicial);
-
-  function onPress() {
-    navigation.navigate("DetalleEvento", data.evento);
-  }
 
   function navigateDetalleEvento() {
     navigation.popToTop();
@@ -89,41 +87,30 @@ export default function ElementoReserva({
     const dias = redondear(hour / 60, 1, tipoRedondeo.ABAJO);
 
     // Si hay dias poner el dia
-    if (dias) {
+    if (dias > 0) {
       return dias + "d";
     }
 
-    if (hour) {
+    if (hour > 0) {
       return hour + "h";
     }
-    if (min) {
+    if (min > 0) {
       return min + "m";
     }
-    if (sec) {
+    if (sec > 0) {
       return sec + "s";
+    } else {
+      return "";
     }
-
-    return d.toISOString();
   }
 
-  useEffect(() => {
-    if (!data.pagado) {
-      const i = setInterval(() => {
-        setExpireAt(() => calculateTime(data.fechaExpiracionUTC));
-      }, 1000);
-      return () => {
-        clearTimeout(i);
-      };
-    }
-  }, [expireAt]);
-
   const message: "INGRESADO" | "PAGADO" | "CANCELADO" | String | "EXPIRADO" =
-    data.ingreso
+    data.cancelado
+      ? "CANCELADO"
+      : data.ingreso
       ? "INGRESADO"
       : data.pagado
       ? "PAGADO"
-      : data.cancelado
-      ? "CANCELADO"
       : new Date() < new Date(data.fechaExpiracionUTC)
       ? "EXPIRA EN " + expireAt
       : "EXPIRADO";
@@ -143,15 +130,31 @@ export default function ElementoReserva({
               navigateDetalleEvento();
             }
           });
+        } else if (data.cancelado) {
+          Alert.alert(
+            "Reserva cancelada",
+            data.cancelReason === "CANCELADOPORCLIENTE"
+              ? "Cancelaste tu reserva el " +
+                  formatDateShort(data.canceledAt) +
+                  " a las " +
+                  formatAMPM(data.canceledAt)
+              : "El organizador canceló el evento el " +
+                  formatDateShort(data.canceledAt) +
+                  " a las " +
+                  formatAMPM(data.canceledAt)
+          ) +
+            (data.pagado
+              ? ". No te preocupes, el saldo se agrego a tu cuenta"
+              : "");
         } else {
-          onPress();
+          onPress(data);
         }
       }}
       style={styles.container}
     >
       <View
         style={{
-          opacity: data.expirado ? 0.4 : 1,
+          opacity: data.expirado || data.cancelado ? 0.4 : 1,
         }}
       >
         <View
@@ -206,7 +209,7 @@ export default function ElementoReserva({
                   {data.evento.titulo ? data.evento.titulo : "Evento"}
                 </Text>
 
-                {data.ingreso || data.expirado ? null : (
+                {data.ingreso || data.expirado || data.cancelado ? null : (
                   <TouchableOpacity
                     disabled={data.expirado}
                     onPress={handlePressTicket}

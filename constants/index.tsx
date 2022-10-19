@@ -48,7 +48,7 @@ export function formatMoney(num?: number | null, showCents?: boolean) {
   }
 
   return (
-    "$" +
+    "$ " +
     num?.toFixed(!showCents ? 0 : 2)?.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
   );
 }

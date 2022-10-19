@@ -29,6 +29,12 @@ export type AmplifyDependentResourcesAttributes = {
         },
         "partyusgraphqlOperations": {
             "Arn": "string"
+        },
+        "cancelReserva": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
         }
     },
     "auth": {

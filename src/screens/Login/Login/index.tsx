@@ -81,7 +81,7 @@ export default function ({
         setEmail("");
         setButtonLoading(false);
         navigation.pop();
-        onLogin();
+        onLogin ? onLogin() : null;
       })
       .catch(function (error) {
         setButtonLoading(false);

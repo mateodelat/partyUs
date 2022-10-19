@@ -22,14 +22,14 @@ const MyTheme = {
 };
 
 export default function LoginStack({
-  route: {
-    params: { onLogin },
-  },
+  route,
 }: {
   route: {
     params: { onLogin: () => void };
   };
 }) {
+  const onLogin = route?.params?.onLogin;
+
   const Stack = createStackNavigator();
 
   return (
@@ -61,7 +61,7 @@ export default function LoginStack({
         <Stack.Screen
           name="Login"
           component={Login}
-          initialParams={{ onLogin }}
+          initialParams={onLogin ? { onLogin } : null}
         />
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen

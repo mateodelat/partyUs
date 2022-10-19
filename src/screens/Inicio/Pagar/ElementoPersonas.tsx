@@ -1,11 +1,6 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { formatMoney } from "../../../../constants";
 
 export default ({
   cantidad,
@@ -34,7 +29,9 @@ export default ({
       )}
 
       {cantidad ? (
-        <Text style={styles.precio}>$ {Math.round(precio) * cantidad}</Text>
+        <Text style={styles.precio}>
+          {formatMoney(Math.round(precio) * cantidad)}
+        </Text>
       ) : (
         <Text style={styles.precio}>-</Text>
       )}
@@ -70,8 +67,8 @@ const styles = StyleSheet.create({
 
   precio: {
     color: "#444",
-    width: "20%",
-    // textAlign: 'center',
+    flex: 1,
+    textAlign: "right",
     fontSize: 18,
   },
 });
