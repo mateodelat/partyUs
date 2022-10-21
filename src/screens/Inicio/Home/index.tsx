@@ -63,6 +63,7 @@ import { Boleto } from "../../../models";
 import { locationType } from "../../../components/ModalMap";
 import { Notificacion } from "../../../models";
 import { Reserva } from "../../../models";
+import { notificacionesRecordatorio } from "../Notifications/functions";
 
 export type EventoType = Evento & {
   favoritos?: boolean;

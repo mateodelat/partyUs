@@ -61,7 +61,7 @@ export default function () {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        // initialRouteName="MisReservas"
+        // initialRouteName="QRScanner"
         screenOptions={{
           header: ({
             route: { name },

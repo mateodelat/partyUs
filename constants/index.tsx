@@ -5,12 +5,17 @@ import * as Haptics from "expo-haptics";
 
 import { Alert } from "react-native";
 import { API, Auth, DataStore, Storage } from "aws-amplify";
-import { Usuario } from "../src/models";
+import { TipoNotificacion, Usuario } from "../src/models";
 import { MERCHANT_ID, PUBLIC_KEY } from "./keys";
 
 import base64 from "react-native-base64";
 import awsmobile from "../src/aws-exports";
 import { errorOpenPay } from "../types/openpay";
+import { Notificacion } from "../src/models";
+import {
+  AndroidNotificationPriority,
+  scheduleNotificationAsync,
+} from "expo-notifications";
 
 export const rojo = "#f01829";
 export const rojoClaro = "#f34856";
@@ -754,6 +759,81 @@ export const vibrar = (tipo?: VibrationType) => {
       break;
   }
 };
+
+/**
+ * Manda notificacion en aplicacion y al celular
+ *
+ * @returns void
+ */
+
+export async function sendNotifications({
+  titulo,
+  descripcion,
+
+  tipo,
+
+  showAt,
+  triggerTime,
+
+  eventoID,
+  usuarioID,
+  reservaID,
+  organizadorID,
+}: {
+  titulo: string;
+  descripcion: string;
+
+  tipo: TipoNotificacion;
+
+  showAt?: string;
+  triggerTime?: number;
+
+  usuarioID: string;
+  eventoID?: string;
+  reservaID?: string;
+  organizadorID?: string;
+}) {
+  showAt = showAt ? showAt : new Date().toISOString();
+
+  const data = {
+    eventoID,
+    reservaID,
+    organizadorID,
+    tipo,
+  };
+
+  // Notificacion IN-APP
+  return Promise.all([
+    DataStore.save(
+      new Notificacion({
+        titulo,
+        descripcion,
+
+        tipo,
+        showAt,
+
+        usuarioID,
+
+        eventoID,
+        reservaID,
+        organizadorID,
+      })
+    ),
+
+    scheduleNotificationAsync({
+      content: {
+        title: titulo,
+        body: descripcion,
+        priority: AndroidNotificationPriority.HIGH,
+        vibrate: [100],
+        data,
+      },
+      trigger: {
+        seconds: triggerTime,
+      },
+    }),
+  ]);
+}
 
 export enum VibrationType {
   light = "light",

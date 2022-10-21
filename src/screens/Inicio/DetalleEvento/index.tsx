@@ -392,7 +392,13 @@ export default function ({
 
   function navigateTicketEntrada() {
     if (reserva.pagado) {
-      navigation.navigate("QRCode", reserva);
+      navigation.navigate("QRCode", {
+        ...reserva,
+        evento: {
+          ...evento,
+          imagenes: evento.imagenes.map((e: any) => e.uri),
+        },
+      });
     } else {
       navigation.navigate("ReferenciaPagoModal", {
         amount: reserva.total,
@@ -492,11 +498,22 @@ export default function ({
             </View>
 
             {/* Boton de seguir */}
-            <Pressable onPress={handleFollow} style={styles.followUser}>
-              <Text style={styles.seguirTxt}>
+            {reserva && (
+              <TouchableOpacity
+                onPress={navigateTicketEntrada}
+                style={styles.followUser}
+              >
+                {/* <Text style={styles.seguirTxt}>
                 {following ? "Siguiendo" : "+ Seguir"}
-              </Text>
-            </Pressable>
+              </Text> */}
+                <Ionicons
+                  style={styles.seguirTxt}
+                  name="md-qr-code"
+                  size={16}
+                  color="#0009"
+                />
+              </TouchableOpacity>
+            )}
           </Pressable>
 
           <Line
@@ -860,6 +877,9 @@ const styles = StyleSheet.create({
     padding: 5,
     paddingHorizontal: 12,
     borderRadius: 10,
+    aspectRatio: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   tituloTxt: {

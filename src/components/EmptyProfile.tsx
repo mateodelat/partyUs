@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { azulClaro } from "../../constants";
 
 export default function EmptyProfile({ size }: { size?: number }) {
-  size = size ? size : 42;
+  size = size ? size : 45;
   return (
     <View style={{ ...styles.container, width: size }}>
       <Ionicons

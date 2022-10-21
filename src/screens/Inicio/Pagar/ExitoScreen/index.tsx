@@ -1,11 +1,6 @@
 import React, { useEffect } from "react";
 import { Image, StyleSheet, Text, View, TouchableOpacity } from "react-native";
-import {
-  azulClaro,
-  rojoClaro,
-  vibrar,
-  VibrationType,
-} from "../../../../../constants";
+import { azulClaro, vibrar, VibrationType } from "../../../../../constants";
 
 export default ({ navigation, route }) => {
   useEffect(() => {

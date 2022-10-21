@@ -44,7 +44,7 @@ import {
 
 import { BoletoType } from "../Boletos";
 import { EventoType } from "../Home";
-import { Boleto, Cupon } from "../../../models";
+import { Boleto, Cupon, Evento } from "../../../models";
 
 import Header from "../../../navigation/components/Header";
 import uuid from "react-native-uuid";
@@ -56,6 +56,7 @@ import { cardType } from "../../../../types/openpay";
 import { DataStore } from "aws-amplify";
 import { TipoNotificacion } from "../../../models";
 import { Notificacion } from "../../../models";
+import { notificacionesRecordatorio } from "../Notifications/functions";
 
 export default function ({
   route,
@@ -210,21 +211,24 @@ export default function ({
         total,
         device_session_id: sesionId,
       })) as any;
-      setButtonLoading(false);
-      setLoading(false);
 
       if (!result) {
         throw new Error("No se recibio ningun resultado");
       }
 
-      if (result?.error) {
-        throw new Error(result);
+      if (result?.error || (tipoPago === "EFECTIVO" && !result?.voucher)) {
+        throw new Error(
+          result ? result : "No se recibio voucher para pago en efectivo"
+        );
       }
 
+      // Mandar notificaciones de recordatorio
+      notificacionesRecordatorio(route.params as any);
+
+      setButtonLoading(false);
+      setLoading(false);
+
       if (result.tipoPago === "EFECTIVO" && total !== 0) {
-        if (!result.voucher) {
-          throw new Error("No se devolvio voucher de pago en efectivo");
-        }
         const { barcode_url, reference, limitDate: limit } = result.voucher;
         const limitDate = new Date(limit);
         vibrar(VibrationType.sucess);

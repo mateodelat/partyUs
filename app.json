@@ -26,6 +26,10 @@
         "backgroundColor": "#FFFFFF"
       }
     },
+    "androidNavigationBar": {
+      "barStyle": "dark-content"
+    },
+
     "plugins": [
       [
         "expo-media-library",

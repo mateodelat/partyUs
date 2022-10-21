@@ -1,5 +1,6 @@
 import { StatusBarStyle } from "expo-status-bar";
 import { Context, createContext, Dispatch, SetStateAction } from "react";
+import { TextStyle } from "react-native";
 import { tipoDocumento } from "../../constants";
 import { Usuario } from "../models";
 import { TextoAbajoPasaporteType } from "../screens/SolicitudOrganizador/components/functions";
@@ -15,6 +16,12 @@ const UserContext: Context<{
 
   newNotifications: number;
   setNewNotifications: Dispatch<SetStateAction<number>>;
+  setBottomMessage: Dispatch<
+    SetStateAction<{
+      content: string;
+      style?: TextStyle;
+    }>
+  >;
 }> = createContext({
   usuario: {
     id: "guest",
@@ -30,6 +37,7 @@ const UserContext: Context<{
 
   newNotifications: 0,
   setNewNotifications: (e: any) => null,
+  setBottomMessage: (e: any) => null,
 });
 
 export default UserContext;

@@ -1,10 +1,12 @@
 import {
-  Dimensions,
   Image,
   StyleSheet,
   Text,
   View,
   ScrollView,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 
@@ -16,50 +18,51 @@ import {
   formatDateShort,
   getWeekDay,
   rojoClaro,
-  precioConComision,
   formatMoney,
+  azulClaro,
+  timer,
 } from "../../../../constants";
 
 import { Boleto, Reserva } from "../../../models";
 import { Ionicons } from "@expo/vector-icons";
 
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AntDesign } from "@expo/vector-icons";
 import Loading from "../../../components/Loading";
 import useUser from "../../../Hooks/useUser";
 
-import QRCode from "react-native-qrcode-svg";
-import { TouchableOpacity } from "react-native-gesture-handler";
-
 import { Entypo } from "@expo/vector-icons";
-import ModalMap, { locationType } from "../../../components/ModalMap";
 import { DataStore } from "aws-amplify";
 import { ReservasBoletos } from "../../../models";
+import EmptyProfile from "../../../components/EmptyProfile";
 
 export default function ({
-  navigation,
-  route,
+  reserva,
+  setModalVisible,
+  sucessMessage,
 }: {
-  route: { params: Reserva };
-  navigation: any;
+  reserva: Reserva | undefined;
+  setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  sucessMessage: (s: string) => void;
 }) {
-  const reserva = route.params;
+  if (!reserva) {
+    return <Loading indicator />;
+  }
 
   const {
     evento: { titulo, fechaInicial, imagenes, imagenPrincipalIDX },
+    usuario,
   } = reserva;
-
-  const ubicacion: locationType = reserva.evento.ubicacion as any;
 
   const { setStatusStyle } = useUser();
 
   const [imagenFondo, setImagenFondo] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
+  const [userPic, setUserPic] = useState<string>();
   const [boletos, setBoletos] = useState<ReservasBoletos[]>();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getImageUrl(imagenes[imagenPrincipalIDX]).then(setImagenFondo);
-    setStatusStyle("light");
+    getImageUrl(usuario.foto).then(setUserPic);
 
     DataStore.query(ReservasBoletos, (e) => e.reservaID("eq", reserva.id)).then(
       async (r) => {
@@ -75,40 +78,39 @@ export default function ({
         setBoletos(r);
       }
     );
-
-    // Escuchar a actualizaciones en la reserva
-    const sub = DataStore.observe(Reserva, reserva.id).subscribe((e) => {
-      // Si se actualiza la reserva mientras se esta viendo ver si esta ingresado y de ser asi mandar a pantalla de exito
-      console.log(e);
-      if (e.element.ingreso) {
-        navigation.popToTop();
-        navigation.navigate("ExitoScreen", {
-          txtExito: "Disfruta",
-          descripcion: "Ya estas dentro!! Disfruta tu evento.",
-          confetti: true,
-        });
-      }
-    });
-
-    return () => {
-      sub.unsubscribe();
-    };
   }, []);
 
-  const { top: t } = useSafeAreaInsets();
-  const [top, setTop] = useState(t);
+  async function handleIngresarReserva() {
+    setLoading(true);
 
-  const qrString = "res>" + reserva.id;
-
-  const { height } = Dimensions.get("screen");
+    try {
+      await DataStore.query(Reserva, reserva.id).then((res) => {
+        // Actualizar la reserva nueva
+        DataStore.save(
+          Reserva.copyOf(res, (mut) => {
+            mut.ingreso = true;
+            mut.horaIngreso = new Date().toISOString();
+          })
+        );
+      });
+      setLoading(false);
+      setModalVisible(false);
+      sucessMessage("La reserva fue ingresada con exito");
+    } catch (error) {
+      console.log(error);
+      Alert.alert(
+        "Error",
+        "Hubo un error intentando ingresar al usuario\n" + error.message
+      );
+    }
+  }
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView style={styles.container}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View
           style={{
-            paddingTop: top,
             paddingBottom: 10,
             width: "100%",
             zIndex: 1,
@@ -118,17 +120,17 @@ export default function ({
             style={{
               alignItems: "center",
               justifyContent: "center",
-              height: 40,
+              height: 70,
             }}
           >
-            <Text style={styles.ticket}>Ticket</Text>
-            <AntDesign
+            <Text style={styles.ticket}>Reserva</Text>
+            <Entypo
               onPress={() => {
-                navigation.pop();
+                setModalVisible(false);
                 setStatusStyle("dark");
               }}
-              style={styles.backIcon}
-              name="left"
+              style={styles.cross}
+              name="cross"
               size={30}
               color="#fff"
             />
@@ -154,12 +156,42 @@ export default function ({
         </View>
 
         <View style={styles.innerContainer}>
-          <View style={{ padding: 20 }}>
-            <QRCode value={qrString} size={height / 6} />
-          </View>
+          <TouchableOpacity
+            onPress={handleIngresarReserva}
+            style={{
+              aspectRatio: 1.6,
+              alignItems: "center",
+              width: "100%",
+              justifyContent: "center",
+            }}
+          >
+            <AntDesign name="checkcircle" size={100} color={azulClaro} />
+            <Text style={styles.ingresarPersona}>Ingresar al evento</Text>
+          </TouchableOpacity>
 
           <View style={styles.textContainer}>
             <View style={{ flexDirection: "row" }}>
+              {userPic === undefined ? (
+                <Loading indicator />
+              ) : userPic !== "error" ? (
+                <Image
+                  style={styles.profilePicture}
+                  source={{ uri: userPic }}
+                  onError={() => {
+                    setUserPic("error");
+                  }}
+                />
+              ) : (
+                <EmptyProfile />
+              )}
+              <View style={{ flex: 1, marginLeft: 15 }}>
+                <Text style={styles.value}>{usuario.nickname}</Text>
+                <Text style={styles.subtitle}>{usuario.email}</Text>
+              </View>
+            </View>
+            <View style={styles.line} />
+
+            <View style={{ flexDirection: "row", marginTop: 20 }}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.subtitle}>Fecha</Text>
                 <Text style={styles.value}>
@@ -174,37 +206,26 @@ export default function ({
               </View>
             </View>
 
-            {/* Lugar */}
-
-            <TouchableOpacity
-              onPress={() => setModalVisible(true)}
+            {/* Fecha de pago del evento*/}
+            <View
               style={{
                 flexDirection: "row",
-                marginTop: 15,
+                marginTop: 30,
                 alignItems: "center",
               }}
             >
               <View style={{ flex: 1 }}>
-                <Text style={styles.subtitle}>Lugar</Text>
-                <Text style={styles.value}>{ubicacion.ubicacionNombre}</Text>
+                <Text style={styles.subtitle}>Pagado el</Text>
+                <Text style={styles.value}>
+                  {formatDateShort(reserva.paymentTime) +
+                    " a las " +
+                    formatAMPM(reserva.paymentTime)}
+                </Text>
               </View>
-              <Entypo
-                style={styles.icon}
-                name="location-pin"
-                size={30}
-                color={rojoClaro}
-              />
-            </TouchableOpacity>
+            </View>
 
             <View style={{ marginTop: 20 }}>
-              <View
-                style={{
-                  width: "100%",
-                  height: 1,
-                  backgroundColor: "gray",
-                  position: "absolute",
-                }}
-              />
+              <View style={styles.line} />
             </View>
 
             {/* Boletos */}
@@ -220,11 +241,9 @@ export default function ({
                 return (
                   <View style={styles.boletoContainer} key={idx}>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.subtitle}>Precio total</Text>
+                      <Text style={styles.subtitle}>Boleto</Text>
                       <Text style={{ ...styles.value, color: rojoClaro }}>
-                        {formatMoney(
-                          precioConComision(e.boleto.precio) * e.quantity
-                        )}
+                        {formatMoney(e.boleto.precio * e.quantity)}
                       </Text>
                     </View>
                     <View>
@@ -255,17 +274,43 @@ export default function ({
           </View>
         </View>
       </ScrollView>
-      <ModalMap
-        titulo={ubicacion.ubicacionNombre}
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-        selectedPlace={ubicacion}
-      />
+      {loading && (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#000000dd",
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ActivityIndicator size={"large"} color={"#fff"} />
+          <Text
+            style={{
+              marginTop: 20,
+              fontSize: 18,
+              color: "#fff",
+            }}
+          >
+            Cargando...
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  ingresarPersona: {
+    color: rojoClaro,
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+
   boletoContainer: {
     flexDirection: "row",
     marginTop: 20,
@@ -273,6 +318,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#D5DCE5",
+  },
+
+  profilePicture: {
+    width: 45,
+    height: 45,
+    borderRadius: 30,
   },
 
   image: {
@@ -298,6 +349,12 @@ const styles = StyleSheet.create({
     padding: 20,
 
     alignItems: "center",
+  },
+  line: {
+    width: "100%",
+    height: 0.5,
+    backgroundColor: "gray",
+    marginTop: 20,
   },
 
   icon: {
@@ -345,11 +402,11 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 
-  backIcon: {
+  cross: {
     position: "absolute",
     left: 0,
     top: 0,
-    padding: 5,
+    padding: 20,
   },
 
   value: {
@@ -360,5 +417,10 @@ const styles = StyleSheet.create({
   subtitle: {
     color: azulOscuro + "80",
     marginBottom: 3,
+  },
+
+  paymentTypeTxt: {
+    color: rojoClaro,
+    fontWeight: "bold",
   },
 });

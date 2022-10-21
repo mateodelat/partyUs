@@ -1,6 +1,13 @@
 import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
 import UserContext from "./UserContext";
-import { View, ActivityIndicator, Text, Platform } from "react-native";
+import {
+  View,
+  ActivityIndicator,
+  Text,
+  Platform,
+  TextStyle,
+  Dimensions,
+} from "react-native";
 
 import { PropsWithChildren } from "react";
 import { Notificacion, Usuario } from "../models";
@@ -30,6 +37,10 @@ export default function ({
 
   const [loading, setLoading] = useState(false);
   const [newNotifications, setNewNotifications] = useState(0);
+  const [bottomMessage, setBottomMessage] = useState<{
+    style: TextStyle;
+    content: string;
+  }>();
 
   async function fetchUsuario(sub: string, api?: boolean) {
     if (api) {
@@ -157,6 +168,8 @@ export default function ({
     };
   }, []);
 
+  const { width } = Dimensions.get("window");
+
   return (
     <UserContext.Provider
       value={{
@@ -170,9 +183,32 @@ export default function ({
 
         loading,
         setLoading,
+
+        setBottomMessage,
       }}
     >
       {children}
+
+      {bottomMessage && (
+        <Text
+          style={{
+            position: "absolute",
+
+            backgroundColor: "#fff",
+            fontSize: 18,
+
+            color: rojoClaro,
+            bottom: 10,
+            width: width - 40,
+            padding: 15,
+            textAlign: "center",
+            margin: 20,
+            borderRadius: 5,
+          }}
+        >
+          {bottomMessage.content}
+        </Text>
+      )}
       {loading && (
         <View
           style={{
