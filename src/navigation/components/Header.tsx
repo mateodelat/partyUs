@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   TextStyle,
+  TouchableOpacity,
   View,
   ViewStyle,
 } from "react-native";
@@ -40,16 +41,15 @@ export default function ({
         ...style,
       }}
     >
-      <Pressable
-        onPress={() => (handleBack ? handleBack() : navigation?.pop())}
-        style={{ ...styles.backContainer }}
-      >
-        <AntDesign
+      <View style={{ ...styles.backContainer }}>
+        <TouchableOpacity
           style={styles.backIcon}
-          name="left"
-          size={30}
-          color="black"
-        />
+          onPress={() => {
+            handleBack ? handleBack() : navigation?.pop();
+          }}
+        >
+          <AntDesign name="left" size={30} color="black" />
+        </TouchableOpacity>
         <Text
           style={{
             ...styles.backText,
@@ -62,7 +62,7 @@ export default function ({
           {title ? title : "Atras"}
         </Text>
         {RightIcon && <RightIcon />}
-      </Pressable>
+      </View>
     </View>
   );
 }
@@ -87,7 +87,11 @@ const styles = StyleSheet.create({
 
   backIcon: {
     position: "absolute",
-    left: 5,
-    top: 5,
+    left: 0,
+    top: 0,
+    padding: 5,
+    paddingRight: 40,
+    elevation: 1,
+    zIndex: 1,
   },
 });

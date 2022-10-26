@@ -1,4 +1,5 @@
 import {
+  Alert,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -7,7 +8,7 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 
-import { Notificacion } from "../../../models";
+import { Notificacion, TipoNotificacion } from "../../../models";
 import { shadowBaja } from "../../../../constants";
 import Element from "./Element";
 import { DataStore } from "aws-amplify";
@@ -41,6 +42,22 @@ export default function ({ navigation }) {
 
   async function handlePressItem(item: Notificacion, index: number) {
     // console.log(await DataStore.query(Reserva, item.reservaID));
+
+    switch (item.tipo) {
+      // Navegar a ver la reserva todas las siguientes notificaciones
+      case TipoNotificacion.RESERVAEFECTIVOCREADA:
+      case TipoNotificacion.RESERVAEFECTIVOPAGADA:
+      case TipoNotificacion.RESERVATARJETACREADA:
+        if (!item.reservaID) {
+          Alert.alert("Error", "La notificacion no tiene ID de reserva");
+          return;
+        }
+        navigation.navigate("MisReservas", { reservaID: item.reservaID });
+        break;
+
+      default:
+        break;
+    }
   }
 
   return (

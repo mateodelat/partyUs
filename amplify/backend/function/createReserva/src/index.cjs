@@ -704,8 +704,8 @@ exports.handler = async (event
                                         {
                                             customer_id: ownerPaymentID,
                                             amount: enviarACreador,
-                                            description,
-                                            order_id: "transfer>>>" + reservaID,
+                                            description: "cardtransfer>>>" + reservaID + "><" + description,
+                                            order_id: "cardtransfer>>>" + reservaID,
                                         },
                                         (error, r) => {
                                             transactionID = r.id
@@ -757,58 +757,6 @@ exports.handler = async (event
             paymentTime: new Date().toISOString(),
         };
 
-        console.log(`
-        mutation myMutation($reservaInput:CreateReservaInput!) {
-          ${boletosFetched.map((e, idx) => {
-            // Actualizar personas reservadas por boleto
-
-            const boletoCliente = boletos.find((cli) => cli.id === e.id);
-            if (!boletoCliente) {
-                throw new Error(
-                    "Ocurrio un error con los boletos obtenidos de la base de datos no se encotro el que coincida con " +
-                    e.id
-                );
-            }
-
-            const personasReservadas =
-                (e.personasReservadas ? e.personasReservadas : 0) +
-                boletoCliente.quantity;
-
-            return `
-            bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
-                ${updateBoletoReturns}
-            }
-            bol${idx}rel: createReservasBoletos(input:{
-              boletoID:"${e.id}",
-              reservaID:"${reservaID}",
-              quantity:${boletoCliente.quantity},
-            }){
-                ${createReservasBoletosReturns}
-                }
-            `;
-        })}
-  
-                updateEvento(input:{id:"${evento.id}", personasReservadas:${reservadosEvento}, _version:${evento._version}}){
-                ${updateEventoReturns}                    
-            }
-
-          ${
-            // Restar de cupon si existe ID
-            cuponID
-                ? `updateCupon(input: {id: "${cuponID}", restantes: ${cupon.restantes ? cupon.restantes - 1 : 0
-                },_version:${cupon._version}}) {
-                    ${updateCuponReturns}
-              }`
-                : ``
-            }
-  
-
-            
-        createReserva(input: $reservaInput) {
-            ${reservaReturns}
-        }
-        }
-      `)
         const q = `
         mutation myMutation($reservaInput:CreateReservaInput!) {
           ${boletosFetched.map((e, idx) => {
@@ -861,6 +809,7 @@ exports.handler = async (event
         }
         }
       `
+        console.log(q)
 
 
         // Mutacion para actualizar los boletos, el evento, crear reservacion y restar el personas disponibles de cupon

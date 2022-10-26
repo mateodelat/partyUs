@@ -257,7 +257,7 @@ exports.handler = async function cancelReserva(event) {
                                 {
                                     customer_id: clientPaymentID,
                                     amount: pagadoAlOrganizador,
-                                    description: "Cancelacion reserva " + reservaID,
+                                    description: "canceltransfer>>>" + reservaID + "><" + "Cancelacion reserva ",
                                     order_id: "canceltransfer>>>" + reservaID,
                                 },
                                 (error, r) => {
@@ -305,7 +305,7 @@ exports.handler = async function cancelReserva(event) {
                 ///Cancelar la reserva ///
                 //////////////////////////
                 await (
-                    graphqlOperation({
+                    graphqlRequest({
                         query: /* GraphQL */ `
                             mutation UpdateReserva($updateReservaInput:UpdateReservaInput!) {
                                 updateReserva(input: $updateReservaInput) {

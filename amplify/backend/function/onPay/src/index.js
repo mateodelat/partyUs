@@ -22,10 +22,6 @@ const axios = require('axios');
 async function graphqlRequest({ query, variables }) {
   const endpoint = process.env.API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
 
-  console.log("Input graphql operation:")
-  console.log({
-    query, variables
-  })
   let body = {}
 
   try {
@@ -36,8 +32,6 @@ async function graphqlRequest({ query, variables }) {
       },
       endpoint
     )
-    console.log("Resultado de operacion con graphql:")
-    console.log(body)
 
 
 
@@ -81,20 +75,20 @@ function formatResponse({ error, body, statusCode = 200 }) {
 
 exports.handler = async (event) => {
   const getReserva = /* GraphQL */ `
-    query GetReserva($id: ID!) {
-      getReserva(id: $id) {
-        id
-        total
-        comision
-        pagadoAlOrganizador
-        organizadorID
-        usuarioID
-        _version
-        eventoID
-        cancelado
+      query GetReserva($id: ID!) {
+        getReserva(id: $id) {
+          id
+          total
+          comision
+          pagadoAlOrganizador
+          organizadorID
+          usuarioID
+          _version
+          eventoID
+          cancelado
+        }
       }
-    }
-  `;
+    `;
   event.body = JSON.parse(event.body)
   if (!event?.body) {
     return formatResponse({
@@ -109,9 +103,22 @@ exports.handler = async (event) => {
   console.log({ event })
 
 
+
   // Add your code here
   try {
     const { body } = event;
+
+    // Si se manda el codigo de verificacion de openpay devolver codigo 200
+    if (body.verification_code) {
+      console.log(body)
+      return formatResponse({
+        body: {
+          message: "Codigo recibido con exito"
+        },
+      })
+
+    }
+
     const { status, method, order_id, amount } = body.transaction; //status: 'completed', method: store
     const { type } = body; //charge.succeeded
 
@@ -168,26 +175,25 @@ exports.handler = async (event) => {
 
       await graphqlRequest({
         query: /* GraphQL */ `
-          query getUsuarios {
-            client: getUsuario(id: "${usuarioID}") {
-              userPaymentID
-              notificationToken
+            query getUsuarios {
+              client: getUsuario(id: "${usuarioID}") {
+                userPaymentID
+                notificationToken
+              }
+              organizador: getUsuario(id: "${organizadorID}") {
+                userPaymentID
+              }
+              
+              listNotificacions(filter: {reservaID: {eq: "${reservaID}"}, tipo: {eq: RECORDATORIOPAGO}, usuarioID: {eq: "${usuarioID}"}}) {
+                items {
+                  id
+                  _version
+              }
+              }
             }
-            organizador: getUsuario(id: "${organizadorID}") {
-              userPaymentID
-            }
-            
-            listNotificacions(filter: {reservaID: {eq: "${reservaID}"}, tipo: {eq: RECORDATORIOPAGO}, usuarioID: {eq: "${usuarioID}"}}) {
-              items {
-                id
-                _version
-            }
-            }
-          }
-        `,
+          `,
       }).then((r) => {
         r = r.data;
-        console.log(r)
         notificacionABorrar = r.listNotificacions?.items[0]
 
         clientPaymentID = r.client.userPaymentID;
@@ -265,9 +271,9 @@ exports.handler = async (event) => {
             {
               customer_id: ownerPaymentID,
               amount: pagadoAlOrganizador,
-              order_id: "transfer>>>" + reservaID,
+              order_id: "cashtransfer>>>" + reservaID,
               description:
-                "Transferencia: " + reservaID + " pagada en efectivo.",
+                "cashtransfer>>>" + reservaID + "><" + "Pago reserva en tienda autorizada",
             },
             (error, r) => {
               if (error) {
@@ -301,45 +307,51 @@ exports.handler = async (event) => {
       _version,
     };
 
-
-    ///////////////////////////////////////////////////////
-    // Modificar estado de reserva y mandar notificacion //
-    ///////////////////////////////////////////////////////
-    await graphqlRequest({
-      query: `
-        mutation UpdateReserva($input: UpdateReservaInput!) {
-          ${!cancelado ? `updateReserva(input: $input) {
-            ${reservaReturns}
-        }`: ""}
-  
-          ${notificacionABorrar.id ? `deleteNotificacion(input: {id: "${notificacionABorrar.id}" _version:${notificacionABorrar._version}}) {
+    const q = /*GraphQL*/`
+     mutation UpdateReserva($input: UpdateReservaInput!) {
+       ${!cancelado ? `
+       updateReserva(input: $input) {
+         ${reservaReturns}
+     }
+     `: ""}
+ 
+       ${notificacionABorrar?.id ? `
+       deleteNotificacion(input: {id: "${notificacionABorrar.id}" _version:${notificacionABorrar._version}}) {
          id
          _version
          _deleted
          _lastChangedAt
          createdAt
          updatedAt
+     }
+ `: ""}
  
-    }`: ""}
-  
-          createNotificacion(input: {
-          tipo: RESERVAEFECTIVOPAGADA,
-          showAt: "${new Date().toISOString()}",
-          titulo:"Pago exitoso",
-          usuarioID:"${usuarioID}",
-          reservaID:"${reservaID}",
-          organizadorID:"${organizadorID}"
-          descripcion: "Tu pago en efectivo por $${amount} fue procesado con exito. ${(cancelado ? "Como la reserva esta cancelada se agrego al saldo de tu cuenta" : "Haz click aqui para ver tu boleto")},
-      }){
-        ${createNotificacionReturns}
- 
-      }
-      }
-      `,
+       createNotificacion(input: {
+       tipo: RESERVAEFECTIVOPAGADA,
+       showAt: "${new Date().toISOString()}",
+       titulo:"Pago exitoso",
+       usuarioID:"${usuarioID}",
+       reservaID:"${reservaID}",
+       organizadorID:"${organizadorID}",
+       descripcion: "Tu pago en efectivo por $${amount} fue procesado con exito. ${cancelado ? `Como la reserva esta cancelada se agrego al saldo de tu cuenta` : `Haz click aqui para ver tu boleto`}"
+   }){
+     ${createNotificacionReturns}
+   }
+   }
+   `
+
+
+    ///////////////////////////////////////////////////////
+    // Modificar estado de reserva y mandar notificacion //
+    ///////////////////////////////////////////////////////
+    await graphqlRequest({
+      query: q,
       variables: { input: updateReservaInput },
     }).then((r) => {
+      if (r.errors) {
+        throw new Error(r)
+      }
       console.log("Reserva actualizada con exito: ");
-      console.log(r);
     });
 
     // Enviar push notification
@@ -365,17 +377,6 @@ exports.handler = async (event) => {
         delete message.data;
       }
 
-      console.log({
-        url: "https://exp.host/--/api/v2/push/send",
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Accept-encoding": "gzip, deflate",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(message),
-      })
-
       await axios({
         method: "POST",
         url: "https://exp.host/--/api/v2/push/send",
@@ -387,7 +388,6 @@ exports.handler = async (event) => {
         data: JSON.stringify(message),
       }).then((r) => {
         console.log("Push notification send to ", notificationToken);
-        console.log(r)
       });
     }
 

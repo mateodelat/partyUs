@@ -188,9 +188,9 @@ export default function ({
       )
         return;
     }
+    setButtonLoading(true);
+    setLoading(true);
     try {
-      setButtonLoading(true);
-      setLoading(true);
       const result = (await fetchFromAPI("/createReserva", "POST", {
         tipoPago:
           tipoPago === "EFECTIVO"
@@ -223,7 +223,7 @@ export default function ({
       }
 
       // Mandar notificaciones de recordatorio
-      notificacionesRecordatorio(route.params as any);
+      notificacionesRecordatorio({ evento: route.params, usuario });
 
       setButtonLoading(false);
       setLoading(false);
@@ -308,6 +308,8 @@ export default function ({
       } else {
         throw new Error("No se encontro tipo de pago del resultado");
       }
+      console.log("Nueva notificacion insertada al contador");
+
       setNewNotifications((prev) => prev++);
     } catch (error: any) {
       error = error?.error ? error.error : error;

@@ -29,15 +29,9 @@ app.use(function (req, res, next) {
 
 
 
-/**********************
+/******************************
  * GET obtener cuenta cliente *
- **********************/
-
-app.get('/payments', function (req, res) {
-  // Add your code here
-  res.json({ success: 'get call succeed!', url: req.url });
-});
-
+ *****************************/
 app.get('/payments/clientInfo', async function (req, res) {
   try {
     const id = req.query.id
@@ -104,10 +98,85 @@ app.get('/payments/clientInfo', async function (req, res) {
 
 });
 
+/******************************************
+ * GET obtener transferencias del usuario *
+ ******************************************/
+app.get('/payments/getClientTransfers', async function (req, res) {
+  try {
+    const id = req.query.id
+    const limit = req.query.limit
+    const offset = req.query.offset
 
-/**********************
+    var searchParams = {
+      limit,
+      offset
+    };
+
+    openpay.customers.transfers.list(id, searchParams, function (error, body, response) {
+      if (error?.http_code) {
+        res.status(error?.http_code)
+      }
+
+      res.json({
+        error,
+        body
+      })
+    })
+  }
+  catch (e) {
+
+    console.log(e)
+    res.status(500)
+    res.json({
+      error: "Hubo un error",
+      body: JSON.stringify(e)
+    })
+  }
+
+});
+
+/******************************************
+ * GET obtener cargos del usuario *
+ ******************************************/
+app.get('/payments/getClientCharges', async function (req, res) {
+  try {
+    const id = req.query.id
+    const limit = req.query.limit
+    const offset = req.query.offset
+
+    var searchParams = {
+      limit,
+      offset
+    };
+
+    openpay.customers.charges.list(id, searchParams, function (error, body, response) {
+      if (error?.http_code) {
+        res.status(error?.http_code)
+      }
+
+      res.json({
+        error,
+        body
+      })
+    })
+  }
+  catch (e) {
+
+    console.log(e)
+    res.status(500)
+    res.json({
+      error: "Hubo un error",
+      body: JSON.stringify(e)
+    })
+  }
+
+});
+
+
+
+/*******************************
  * GET listar tarjetas cliente *
- **********************/
+ ******************************/
 
 app.get('/payments/card', async function (req, res) {
   try {
@@ -190,79 +259,6 @@ app.post('/payments/card', function (req, res) {
 });
 
 
-/**************************************
-* Escuchar evento tras pago en tienda *
-**************************************/
-app.post('/payments/onPay', function (req, res) {
-  // Add your code here
-  try {
-    const { body } = req
-    const { status, method } = body.transaction //status: 'competed', method: store
-    const { type } = body //charge.succeeded
-
-    if (type !== "charge.succeeded") {
-      console.log("Transaccion no es de tipo charge.succeeded")
-      console.log(body)
-
-      res.json()
-
-    }
-
-
-    if (method !== "store") {
-      console.log("Transaccion no es pago con tarjeta")
-
-      console.log(body)
-      res.json()
-
-    }
-
-
-    if (status !== "completed") {
-      console.log(body)
-      console.log("La transaccion no tiene status.completed")
-      res.json("La transaccion no tiene status.completed")
-    }
-
-
-  }
-  catch (e) {
-    console.log(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: e.message
-    })
-  }
-});
-
-
-/************************************************************
-* Cancelar cargo de pago con tarjeta y transaccion asociada *
-************************************************************/
-app.post('/payments/cancelCharge', function (req, res) {
-  // Add your code here
-  try {
-    const { body } = req
-    const { reservaID } = body.transaction
-
-    // console.log(reservaID)
-
-
-    res.json({ reservaID })
-
-
-
-  }
-  catch (e) {
-    console.log(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: e.message
-    })
-  }
-});
 
 
 
@@ -304,28 +300,7 @@ app.delete('/payments/card/:card_id', function (req, res) {
 
 });
 
-// app.put('/payments/*', function (req, res) {
-//   // Add your code here
-//   res.json({ success: 'put call succeed!', url: req.url, body: req.body })
-// });
 
-/****************************
-* Example delete method *
-****************************/
-
-app.delete('/card', function (req, res) {
-  // Add your code here
-  res.json({ success: 'delete call succeed!', url: req.url });
-});
-
-// app.delete('/payments/*', function (req, res) {
-//   // Add your code here
-//   res.json({ success: 'delete call succeed!', url: req.url });
-// });
 
 app.listen(3000);
-
-// Export the app object. When executing the application local this does nothing. However,
-// to port it to AWS Lambda we will create a wrapper around that will load the app from
-// this file
 module.exports = app

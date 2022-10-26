@@ -48,10 +48,19 @@ export default function ({
     };
   };
 }) {
-  const { amount, codebar, titulo } = route.params;
+  let { amount, codebar, titulo } = route.params;
   let { limitDate } = route.params;
   if (limitDate) {
     limitDate = new Date(limitDate);
+  }
+
+  // Poner uri con width = 2 (solo para openpay) para subir la calidad del codigo de barras
+  let idx = codebar.uri.search("width=");
+  if (idx) {
+    const i = codebar.uri.slice(0, idx);
+
+    const e = codebar.uri.slice(idx + 7, codebar.uri.length);
+    codebar.uri = i + "width=2" + e;
   }
 
   const [showAll, setShowAll] = useState(false);

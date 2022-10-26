@@ -422,7 +422,7 @@ export async function fetchFromOpenpay<T>({
 }: {
   path: string;
   type: "POST" | "CREATE" | "DELETE" | "GET";
-  input: Object;
+  input?: Object;
   production?: boolean;
   secretKey?: string;
 }) {
@@ -1051,7 +1051,9 @@ export function clearDate(date: Date | number) {
  * @param ms milisegundos o fecha
  * @returns fecha en string con el dia y el mes (dd de mmmmmmm)
  */
-export const formatDiaMesCompleto = (ms: Date | undefined | number) => {
+export const formatDiaMesCompleto = (
+  ms: Date | undefined | number | string
+) => {
   if (!ms) return "-";
 
   const fecha = new Date(ms);

@@ -3,21 +3,33 @@ import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AntDesign } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 
 import { TipoNotificacion } from "../../../models";
 import moment from "moment";
-import { azulClaro } from "../../../../constants";
+import { azulClaro, rojoClaro } from "../../../../constants";
 
 const sizeIcon = 30;
 const Icon = ({ tipo }: { tipo: TipoNotificacion }) => {
   switch (tipo) {
     case TipoNotificacion.RESERVAEFECTIVOCREADA:
+    case TipoNotificacion.RESERVATARJETACREADA:
       return (
-        <FontAwesome5 name="calendar-check" size={sizeIcon} color={"black"} />
+        <View style={styles.center}>
+          <FontAwesome5 name="calendar" size={sizeIcon} color={"black"} />
+          <FontAwesome
+            name="check"
+            size={16}
+            style={{
+              position: "absolute",
+              top: 11,
+            }}
+            color={rojoClaro}
+          />
+        </View>
       );
 
     case TipoNotificacion.RESERVAEFECTIVOPAGADA:
@@ -25,9 +37,16 @@ const Icon = ({ tipo }: { tipo: TipoNotificacion }) => {
         <FontAwesome5 name="hand-holding-usd" size={sizeIcon} color={"black"} />
       );
 
-    case TipoNotificacion.RESERVATARJETACREADA:
+    case TipoNotificacion.RECORDATORIOPAGO:
+      return <Feather name="clock" size={sizeIcon} color={"black"} />;
+
+    case TipoNotificacion.RECORDATORIOEVENTO:
       return (
-        <FontAwesome5 name="calendar-check" size={sizeIcon} color={"black"} />
+        <MaterialCommunityIcons
+          name="bell-ring-outline"
+          size={sizeIcon + 5}
+          color="black"
+        />
       );
 
     case TipoNotificacion.RECORDATORIOPAGO:
@@ -118,6 +137,10 @@ export default ({
 };
 
 const styles = StyleSheet.create({
+  center: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
   container: {
     backgroundColor: "#fff",
     padding: 15,

@@ -88,12 +88,12 @@ export async function notificacionesRecordatorio({
 
   //   Mandar notificacion a las 8 del dia siguiente
   sendNotifications({
-    titulo: usuario.nickname + ", aydanos a hacer de Partyus un lugar mejor",
+    titulo: usuario.nickname + ", ayudanos a hacer de Partyus un lugar mejor",
     descripcion:
       "Calfica tu fiesta en " +
       evento.titulo +
       " para mejorar la calidad de esta",
-    tipo: TipoNotificacion.RECORDATORIOEVENTO,
+    tipo: TipoNotificacion.CALIFICAUSUARIO,
     usuarioID: usuario.id,
 
     showAt: finalDate.toISOString(),

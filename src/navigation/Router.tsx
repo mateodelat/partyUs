@@ -30,6 +30,8 @@ import ExitoScreen from "../screens/Inicio//Pagar/ExitoScreen";
 import ReferenciaPago from "../screens/ReferenciaPago";
 import QRScanner from "../screens/Inicio/QRScanner";
 
+import Pagos from "../screens/Perfil/Pagos";
+
 function NombreApellidosOnPress({ navigation }: any) {
   const { setUsuario, usuario } = useUser();
 
@@ -61,7 +63,7 @@ export default function () {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        // initialRouteName="QRScanner"
+        // initialRouteName="PagosCliente"
         screenOptions={{
           header: ({
             route: { name },
@@ -169,6 +171,14 @@ export default function () {
           component={NombreApellidosOnPress}
           options={{
             title: "Modifica nombre",
+          }}
+        />
+        <Stack.Screen
+          name="Pagos"
+          component={Pagos}
+          options={{
+            title: "Saldo",
+            animationEnabled: false,
           }}
         />
         <Stack.Screen

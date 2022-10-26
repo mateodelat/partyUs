@@ -68,7 +68,10 @@ export interface chargeType {
     "currency": currency_type,
     "customer_id": string,
     "description": string,
+
+    "due_date"?: string,
     "error_message"?: string,
+    "error_code"?: number,
     "fee": {
         "amount": number,
         "currency": currency_type,
@@ -87,6 +90,43 @@ export interface chargeType {
         "reference": string,
         "type": "store",
     }
+}
+
+export type customer_type = {
+    id: string
+    /** Identificador único del cliente.*/
+
+    creation_date: string
+    /** Fecha y hora en que se creó el cliente en formato ISO 8601*/
+
+    name: string
+    /** Nombre del cliente.*/
+
+    last_name: string
+    /** Apellidos del cliente.*/
+
+    email: string
+    /** Cuenta de correo electrónico del cliente.*/
+
+    phone_number: number
+    /** Número telefónico del Cliente.*/
+
+    status: string
+    /** Estatus de la cuenta del cliente puede ser active o deleted. Si la cuenta se encuentra en estatus deleted no se permite realizar ninguna transacción.*/
+
+    balance: number
+    /** Saldo en la cuenta con dos decimales.*/
+
+    clabe: number
+    /** Cuenta CLABE asociada con la que puede recibir fondos realizando una transferencia desde cualquier banco en México.*/
+
+    address: object
+    /** Dirección del Cliente. Usada comúnmente como dirección de envío.*/
+
+    store: object
+    /** Contiene la referencia que se puede utilizar para realizar depósitos en tiendas de conveniencia, también se incluye la url para generar el código de barras.*/
+
+
 }
 
 export type fee_type = {
@@ -188,7 +228,7 @@ type currency_type = "MXN"
 export type tipoTransaccion = "charge" | "payout" | "refund" | "transfer" | "fee"
 export type method_type = "card" | "store" | "bank"
 export type operation_type = "in" | "out"
-export type transactionStatus_type = "completed" | "in_progress" | "failed"
+export type transactionStatus_type = "completed" | "failed" | "in_progress" | "cancelled" | "refunded" | "chargeback_pending" | "chargeback_accepted" | "chargeback_adjustement" | "charge_pending" | "expired"
 export type cardBrand_type = "visa" | "mastercard" | "american_express"
 
 

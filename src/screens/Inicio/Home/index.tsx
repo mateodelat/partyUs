@@ -478,11 +478,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   async function handleProfile() {
     // Verificar que este loggeado
     if (!(await getUserSub())) {
-      navigation.navigate("LoginStack", {
-        onLogin: () => {
-          navigation.navigate("Perfil");
-        },
-      });
+      navigation.navigate("LoginStack");
       return;
     } else {
       navigation.navigate("Perfil");

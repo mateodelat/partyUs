@@ -2,6 +2,7 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
+  Alert,
   StyleSheet,
   Text,
   View,
@@ -15,6 +16,7 @@ import {
   azulFondo,
   getImageUrl,
   getUserSub,
+  timer,
 } from "../../../../constants";
 
 import { DataStore } from "aws-amplify";
@@ -23,14 +25,25 @@ import { Usuario } from "../../../models";
 import ElementoReserva from "./ElementoReserva";
 import { listReservas } from "../../../graphql/queries";
 import Loading from "../../../components/Loading";
+import useUser from "../../../Hooks/useUser";
 
 type ReservaType = Reserva & {
   expirado: boolean;
 };
 
-export function MisReservas({ navigation }) {
+export function MisReservas({ navigation, route }) {
+  // Si se pasa un id de reserva entonces manejarlo para pedir inicialmente solo esa reserva
+  const paramsReservaID = route.params?.reservaID;
+  const efectivoCompletado = route.params?.efectivoCompletado;
+  const { setBottomMessage } = useUser();
+
   useEffect(() => {
-    onRefresh();
+    setRefreshing(true);
+    queryReservas(true, true).then(() => setRefreshing(false));
+
+    return () => {
+      setBottomMessage(undefined);
+    };
     // onNextPage();
   }, []);
 
@@ -58,15 +71,38 @@ export function MisReservas({ navigation }) {
     (e) => e.pagado === false && new Date().toISOString() < e.fechaExpiracionUTC
   );
 
-  async function queryReservas(refresh?: boolean) {
+  async function queryReservas(refresh?: boolean, firstRender?: boolean) {
     const sub = await getUserSub();
 
     // Si se esta refrescando, actualizar toodas las rervas ya tenidas
-    const res = await DataStore.query(Reserva, (e) => e.usuarioID("eq", sub), {
-      // page: refresh ? 1 : page + 1,
-      // limit: refresh ? reservas.length : 5,
-      sort: (e) => e.createdAt("DESCENDING"),
-    }).then(async (r) => {
+    const res = await DataStore.query(
+      Reserva,
+      (e) => {
+        if (firstRender && paramsReservaID) {
+          return e.id("eq", paramsReservaID);
+        }
+
+        return e.usuarioID("eq", sub);
+      },
+      {
+        // page: refresh ? 1 : page + 1,
+        // limit: refresh ? reservas.length : 5,
+        sort: (e) => e.createdAt("DESCENDING"),
+      }
+    ).then(async (r) => {
+      if (firstRender && paramsReservaID) {
+        // Si es el primer render y no devuelve reserva dar error
+        if (!r.length) {
+          Alert.alert("Error", "No existe la reserva");
+          // Si la reserva aparece como pagada en seccion de pagos y el estado no se actualiza informar
+        } else if (efectivoCompletado && !r[0].cancelado && !r[0].pagado) {
+          Alert.alert(
+            "Atencion",
+            "Tu pago se recibio correctamente pero puede tardar unos minutos en actualizar tu boleto"
+          );
+        }
+      }
+
       // Si hay reservas en r seguir aumentando
       if (r.length && !refresh) {
         setPage(page + 1);
@@ -81,13 +117,14 @@ export function MisReservas({ navigation }) {
         r
           .filter((e: any) => !e._deleted)
           .map(async (e) => {
+            let r = { ...e };
             const evento = await DataStore.query(Evento, e.eventoID);
             const expirado = e.pagado
               ? false
               : new Date().toISOString() > e.fechaExpiracionUTC;
 
             return {
-              ...e,
+              ...r,
               expirado,
               evento: {
                 ...evento,
@@ -151,12 +188,17 @@ export function MisReservas({ navigation }) {
     if (hayPorPagar) {
       switch (selected) {
         case 2:
-          filtered = reservas.filter((res) => res.pagado) as any;
+          filtered = reservas.filter(
+            (res) =>
+              res.pagado && !res.cancelado && !res.ingreso && !res.expirado
+          ) as any;
 
           break;
 
         case 3:
-          filtered = reservas.filter((res) => !res.pagado) as any;
+          filtered = reservas.filter(
+            (res) => !res.pagado && !res.cancelado && !res.ingreso
+          ) as any;
 
           break;
       }
@@ -166,7 +208,7 @@ export function MisReservas({ navigation }) {
           filtered = reservas.filter((res) => {
             const date = new Date(res.evento.fechaFinal);
 
-            return date > now;
+            return date > now && !res.expirado && !res.cancelado;
           }) as any;
 
           break;
@@ -174,20 +216,13 @@ export function MisReservas({ navigation }) {
         case 3:
           filtered = reservas.filter((res) => {
             const date = new Date(res.evento.fechaFinal);
-            return date < now;
+            return date < now || res.expirado || res.cancelado;
           }) as any;
 
           break;
       }
     }
     if (selected === 1) filtered = reservas.length ? reservas : res;
-
-    // filtered?.sort(
-    //   (a, b) =>
-    //     ((a.expirado && !b.expirado) ||
-    //       a.evento.fechaInicial < b.evento.fechaInicial ||
-    //       a.createdAt < b.createdAt) as any
-    // );
 
     setReservasAMostrar(filtered);
     setSelector(selected);

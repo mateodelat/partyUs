@@ -70,27 +70,9 @@ export default function App() {
       }
     });
 
-    // Escuchar al cierre de sesion
-    const auth = Hub.listen("auth", (data) => {
-      const { event } = data.payload;
-
-      if (event === "signOut") {
-        // Borrar usuario default
-        setUsuario(defaultUSR);
-
-        // Limpiar datastore
-        DataStore.clear();
-        DataStore.start();
-
-        // cancelAllScheduledNotificationsAsync();
-        // Bugsnag.setUser("", "", "");
-      }
-    });
     return () => {
-      auth();
       dstore();
 
-      Hub.remove("auth", () => null);
       Hub.remove("datastore", () => null);
     };
   }, []);

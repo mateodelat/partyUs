@@ -12,11 +12,18 @@ import {
 import { PropsWithChildren } from "react";
 import { Notificacion, Usuario } from "../models";
 import { API, DataStore, Hub } from "aws-amplify";
-import { getUserSub, graphqlRequest, rojoClaro } from "../../constants";
+import {
+  getUserSub,
+  graphqlRequest,
+  rojoClaro,
+  shadowBaja,
+  shadowMedia,
+} from "../../constants";
 
 import * as Notifications from "expo-notifications";
 import { getUsuario } from "../graphql/queries";
 import { StatusBarStyle } from "expo-status-bar";
+import { TipoNotificacion } from "../models";
 
 export default function ({
   children,
@@ -154,8 +161,12 @@ export default function ({
     });
 
     const subscript = DataStore.observe(Notificacion).subscribe((r) => {
-      // Solo agregar si es notificacion nueva
-      if (r.opType === "INSERT") {
+      if (
+        // Solo agregar si es notificacion nueva y no creada por la pestaña de pagos
+        r.opType === "INSERT" &&
+        r.element.tipo !== TipoNotificacion.RESERVATARJETACREADA &&
+        r.element.tipo !== TipoNotificacion.RESERVAEFECTIVOCREADA
+      ) {
         console.log("Nueva notificacion insertada");
         setNewNotifications((prev) => prev++);
       }
@@ -204,6 +215,8 @@ export default function ({
             textAlign: "center",
             margin: 20,
             borderRadius: 5,
+
+            ...shadowBaja,
           }}
         >
           {bottomMessage.content}

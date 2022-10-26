@@ -167,6 +167,10 @@ export default function Perfil({ navigation }: { navigation: any }) {
     }
   }
 
+  function handlePayments() {
+    navigation.navigate("Pagos", { organizador });
+  }
+
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
       {/* Detalles de la foto y nombre del usuario */}
@@ -324,7 +328,10 @@ export default function Perfil({ navigation }: { navigation: any }) {
         <View style={styles.spacing} />
 
         {/* Pagos */}
-        <TouchableOpacity style={styles.optionsTxtContainer}>
+        <TouchableOpacity
+          style={styles.optionsTxtContainer}
+          onPress={handlePayments}
+        >
           <View style={{ width: 30, alignItems: "center" }}>
             <Feather name="credit-card" size={24} color="black" />
           </View>

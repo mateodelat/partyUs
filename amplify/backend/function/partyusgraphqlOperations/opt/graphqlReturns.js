@@ -98,6 +98,7 @@ chargeID
 transactionID
 feeID
 cashBarcode
+cashReference
 ingreso
 horaIngreso
 cancelado

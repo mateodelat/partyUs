@@ -58,9 +58,11 @@ export type saveParams = {
 export default function ({
   onAdd,
   setModalVisible,
+  comprasFuturasEnabled,
 }: {
   onAdd: (params: saveParams) => void;
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  comprasFuturasEnabled?: boolean;
 }) {
   const [innerModal, setInnerModal] = useState(false);
 
@@ -385,36 +387,42 @@ export default function ({
           </Text>
 
           {/* Guardar tarjeta para compras futuras */}
-          <Pressable
-            onPress={() => {
-              setSaveCard(!saveCard);
-            }}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              paddingVertical: 20,
-            }}
-          >
-            <View
+          {!comprasFuturasEnabled ? (
+            <Pressable
+              onPress={() => {
+                setSaveCard(!saveCard);
+              }}
               style={{
-                ...styles.checkContainer,
-                backgroundColor: saveCard ? azulClaro : "#fff",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 20,
               }}
             >
-              {saveCard && <FontAwesome name="check" size={12} color="#fff" />}
-            </View>
-            <Text
-              style={{
-                fontWeight: "500",
-                flex: 1,
-                marginLeft: 10,
-                color: "#000",
-              }}
-            >
-              Guardar para compras futuras
-            </Text>
-          </Pressable>
+              <View
+                style={{
+                  ...styles.checkContainer,
+                  backgroundColor: saveCard ? azulClaro : "#fff",
+                }}
+              >
+                {saveCard && (
+                  <FontAwesome name="check" size={12} color="#fff" />
+                )}
+              </View>
+              <Text
+                style={{
+                  fontWeight: "500",
+                  flex: 1,
+                  marginLeft: 10,
+                  color: "#000",
+                }}
+              >
+                Guardar para compras futuras
+              </Text>
+            </Pressable>
+          ) : (
+            <View style={{ marginTop: 20 }} />
+          )}
 
           <Boton
             style={{

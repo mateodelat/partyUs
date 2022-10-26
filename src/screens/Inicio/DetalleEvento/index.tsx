@@ -73,6 +73,8 @@ export default function ({
 }) {
   const reserva = route.params.reserva;
 
+  const ingresado = route.params.reserva?.ingreso;
+
   if (reserva?.cancelado) {
     Alert.alert("Error", "La reserva ya fue cancelada");
     navigation.pop();
@@ -498,14 +500,11 @@ export default function ({
             </View>
 
             {/* Boton de seguir */}
-            {reserva && (
+            {reserva && !ingresado && (
               <TouchableOpacity
                 onPress={navigateTicketEntrada}
                 style={styles.followUser}
               >
-                {/* <Text style={styles.seguirTxt}>
-                {following ? "Siguiendo" : "+ Seguir"}
-              </Text> */}
                 <Ionicons
                   style={styles.seguirTxt}
                   name="md-qr-code"
@@ -590,7 +589,10 @@ export default function ({
 
           {/* Boletos en caso de venir de detalle de reserva */}
           {reserva ? (
-            <TouchableOpacity onPress={navigateTicketEntrada}>
+            <TouchableOpacity
+              disabled={ingresado}
+              onPress={navigateTicketEntrada}
+            >
               <Line style={{ marginTop: 10 }} />
               <Text style={styles.tipoPago}>{reserva.tipoPago}</Text>
               {boletos === "loading" ? (
@@ -728,11 +730,12 @@ export default function ({
       </Animated.ScrollView>
       {reserva && (
         <TouchableOpacity
+          disabled={ingresado}
           onPress={handleCancelar}
           style={{ alignItems: "center", padding: 20 }}
         >
           <Text style={{ fontSize: 18, color: rojoClaro, fontWeight: "900" }}>
-            Cancelar
+            {ingresado ? "Ya ingresado" : "Cancelar"}
           </Text>
         </TouchableOpacity>
       )}
