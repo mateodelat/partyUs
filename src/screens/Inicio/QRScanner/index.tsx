@@ -42,11 +42,14 @@ export default function ({ navigation, route }) {
   const [scanning, setScanning] = useState(false);
   const [sound, setSound] = useState<Sound>();
 
+  const scanRef = useRef<BarCodeScanner>();
+
   const barPosition = useRef(new Animated.Value(0)).current;
 
   const { usuario, setBottomMessage } = useUser();
 
   const eventoID = route?.params?.eventoID;
+  const tituloEvento = route?.params?.tituloEvento;
 
   async function loadSound() {
     const { sound: s } = await Audio.Sound.createAsync(
@@ -190,8 +193,6 @@ export default function ({ navigation, route }) {
 
   const { top } = useSafeAreaInsets();
 
-  const scanRef = useRef<BarCodeScanner>();
-
   async function handleClose() {
     navigation.pop();
   }
@@ -266,14 +267,28 @@ export default function ({ navigation, route }) {
       )}
       {/* Cruz para cerrar la camara y mensaje de scanner */}
       <View style={{ ...styles.dataContainer, marginTop: top }}>
-        {/* Cancelar */}
-        <Entypo
-          onPress={handleClose}
-          name="cross"
-          size={30}
-          color="white"
-          style={styles.cross}
-        />
+        {/* Cancelar y titulo */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            left: 0,
+            top: 0,
+            position: "absolute",
+            justifyContent: "center",
+            width: "100%",
+            padding: 20,
+          }}
+        >
+          <Entypo
+            onPress={handleClose}
+            name="cross"
+            size={30}
+            color="white"
+            style={styles.cross}
+          />
+          <Text style={styles.tituloEvento}>{tituloEvento}</Text>
+        </View>
 
         {/* View de imagen */}
         {codePosition && scanning && (
@@ -354,6 +369,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+
+  tituloEvento: {
+    fontSize: 18,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+
   cross: {
     left: 0,
     padding: 20,

@@ -454,7 +454,11 @@ export default function ({
 
   return (
     <View style={styles.container}>
-      <Header title={"Pagar"} style={{ paddingHorizontal: 5 }} />
+      <Header
+        title={"Pagar"}
+        style={{ paddingHorizontal: 5 }}
+        showHelp={true}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View

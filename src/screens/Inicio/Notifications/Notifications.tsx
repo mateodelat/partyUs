@@ -85,14 +85,7 @@ export default function ({ navigation }) {
         }
       >
         {notificaciones?.length === 0 ? (
-          <Text
-            style={{
-              fontSize: 16,
-              padding: 40,
-            }}
-          >
-            No hay notificaciones
-          </Text>
+          <Text style={styles.noHay}>No hay notificaciones</Text>
         ) : (
           notificaciones?.map((item, index) => {
             return (
@@ -126,6 +119,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingTop: 0,
+  },
+  noHay: {
+    fontWeight: "bold",
+    margin: 20,
+    fontSize: 16,
   },
 
   notificationContainer: {

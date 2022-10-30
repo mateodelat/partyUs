@@ -1,33 +1,38 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React from "react";
-import { EventoType } from "../screens/Inicio/Home";
 import {
-  azulClaro,
-  colorFondo,
-  formatAMPM,
-  mayusFirstLetter,
-  mesAString,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+} from "react-native";
+import React from "react";
+import {
+  formatDateShort,
+  formatMoney,
+  rojoClaro,
+  shadowBaja,
   shadowMedia,
-} from "../../constants";
-import { Entypo } from "@expo/vector-icons";
-import { Octicons } from "@expo/vector-icons";
+} from "../../../../constants";
+
+import { Ionicons } from "@expo/vector-icons";
+
+import { EventoType } from ".";
 
 const claros = "#00000055";
 
-export default function ElementoEvento({
+export default function ({
   data,
   onPress,
-  handleMore,
+  handleScan,
 }: {
   data: EventoType;
   onPress: (an: any) => void;
-  handleMore?: (an: any) => void;
+  handleScan: (evento: EventoType) => void;
 }) {
   const imagenPrincipal = data.imagenes[
     data.imagenPrincipalIDX ? data.imagenPrincipalIDX : 0
   ] as any;
-
-  const fecha = new Date(data.fechaInicial ? data.fechaInicial : "error");
 
   return (
     <Pressable onPress={onPress} style={styles.container}>
@@ -48,48 +53,45 @@ export default function ElementoEvento({
             <Text style={styles.titulo}>
               {data.titulo ? data.titulo : "Evento"}
             </Text>
-            <Text style={styles.personTxt}>{data.creator?.nickname}</Text>
+            <Text style={styles.statusTxt}>{data.status}</Text>
           </View>
 
-          {/* Botones favoritos y mas opciones */}
+          {/* Boton de escanear codigo */}
           <View>
-            {handleMore ? (
-              <Entypo
+            {data.status === "PASADO" ? null : (
+              <TouchableOpacity
+                onPress={() => handleScan(data)}
                 style={{
-                  padding: 10,
+                  ...styles.iconContainer,
+                  backgroundColor: "#fff",
+                  ...shadowBaja,
+                  padding: 4,
                 }}
-                name="dots-three-vertical"
-                size={20}
-                color={"#000"}
-              />
-            ) : (
-              data.creator?.verified && (
-                <Octicons name="verified" size={24} color={azulClaro} />
-              )
+              >
+                <Ionicons name="md-qr-code" size={16} color="#0009" />
+              </TouchableOpacity>
             )}
           </View>
         </View>
       </View>
       <View style={styles.infoContainer}>
         <View style={styles.infoItem}>
-          <Text style={styles.infoTitle}>{data.personasMax}</Text>
-          <Text style={styles.infoDetails}>CAPACIDAD</Text>
+          <Text style={styles.infoTitle}>
+            {data.personasReservadas}/{data.personasMax}
+          </Text>
+          <Text style={styles.infoDetails}>PERSONAS</Text>
+        </View>
+        <View style={styles.verticalLine} />
+        <View style={styles.infoItem}>
+          <Text style={styles.infoTitle}>{formatMoney(data.recibido)}</Text>
+          <Text style={styles.infoDetails}>RECIBIDO</Text>
         </View>
         <View style={styles.verticalLine} />
         <View style={styles.infoItem}>
           <Text style={styles.infoTitle}>
-            {fecha.getDate() +
-              " " +
-              mayusFirstLetter(mesAString(fecha.getMonth()))}
+            {formatDateShort(data.fechaInicial)}
           </Text>
           <Text style={styles.infoDetails}>DIA</Text>
-        </View>
-        <View style={styles.verticalLine} />
-        <View style={styles.infoItem}>
-          <Text style={styles.infoTitle}>
-            {formatAMPM(fecha).toUpperCase()}
-          </Text>
-          <Text style={styles.infoDetails}>HORA</Text>
         </View>
       </View>
     </Pressable>
@@ -99,9 +101,14 @@ export default function ElementoEvento({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
-    ...shadowMedia,
     margin: 10,
     borderRadius: 10,
+
+    ...shadowMedia,
+  },
+  statusTxt: {
+    color: rojoClaro + "99",
+    fontWeight: "bold",
   },
 
   image: {
@@ -116,10 +123,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 20,
     marginBottom: 5,
-  },
-
-  personTxt: {
-    color: claros,
   },
 
   textContainer: {
@@ -142,10 +145,19 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     backgroundColor: claros,
   },
+  iconContainer: {
+    width: 35,
+    alignItems: "center",
+    height: 35,
+    justifyContent: "center",
+
+    borderRadius: 40,
+  },
 
   infoTitle: {
     fontWeight: "bold",
     fontSize: 20,
+    textAlign: "center",
   },
   infoDetails: {
     fontSize: 14,

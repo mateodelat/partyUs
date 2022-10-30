@@ -23,6 +23,8 @@ export const azulClaro = "#577590";
 export const azulOscuro = "#273440";
 export const azulFondo = "#F4F6F8";
 export const amarillo = "#ffbf5e";
+export const verde = "#43ad89";
+
 ("#ffbf5e");
 ("#000000");
 ("#f01829");

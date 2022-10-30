@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import React from "react";
 import { AntDesign } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { ParamListBase, useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,16 +22,23 @@ export default function ({
   textStyle,
   style,
   RightIcon,
+  showHelp,
 }: {
   title?: string | null;
   handleBack?: undefined | (() => any);
   color?: ColorValue;
   textStyle?: TextStyle;
+  showHelp?: boolean;
   style?: ViewStyle;
   RightIcon?: React.FunctionComponent;
 }) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation() as any;
+
+  function navigateHelp() {
+    navigation.pop();
+    navigation.navigate("Soporte");
+  }
 
   return (
     <View
@@ -61,7 +69,13 @@ export default function ({
         >
           {title ? title : "Atras"}
         </Text>
-        {RightIcon && <RightIcon />}
+        {showHelp ? (
+          <TouchableOpacity onPress={navigateHelp} style={styles.helpIcon}>
+            <Feather name="help-circle" size={30} color="black" />
+          </TouchableOpacity>
+        ) : (
+          RightIcon && <RightIcon />
+        )}
       </View>
     </View>
   );
@@ -81,7 +95,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#fff",
     padding: 5,
-    paddingBottom: 10,
     width: "100%",
   },
 
@@ -91,7 +104,12 @@ const styles = StyleSheet.create({
     top: 0,
     padding: 5,
     paddingRight: 40,
-    elevation: 1,
-    zIndex: 1,
+    zIndex: 12,
+  },
+  helpIcon: {
+    position: "absolute",
+    right: 0,
+    padding: 20,
+    paddingRight: 5,
   },
 });

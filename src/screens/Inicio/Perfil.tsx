@@ -171,8 +171,16 @@ export default function Perfil({ navigation }: { navigation: any }) {
     navigation.navigate("Pagos", { organizador });
   }
 
+  function handleSoporte() {
+    navigation.navigate("Soporte");
+  }
+
+  function handleNavigateAdmin() {
+    navigation.navigate("Admin");
+  }
+
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+    <View style={styles.container}>
       {/* Detalles de la foto y nombre del usuario */}
 
       <View style={{ flexDirection: "row" }}>
@@ -252,14 +260,14 @@ export default function Perfil({ navigation }: { navigation: any }) {
             }}
             textStyle={{ color: azulClaro }}
             titulo="Eventos creados"
-            onPress={handleEditProfile}
+            onPress={() => navigation.navigate("MisEventos")}
           />
         )}
       </View>
 
       <View style={styles.textContainer}>
         {/* Favoritos */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={{ ...styles.optionsTxtContainer, borderBottomWidth: 0 }}
         >
           <View style={{ width: 30, alignItems: "center" }}>
@@ -271,12 +279,12 @@ export default function Perfil({ navigation }: { navigation: any }) {
             size={35}
             color={"#555"}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
-        <View style={styles.spacing} />
+        {/* <View style={styles.spacing} /> */}
 
         {/* Cambiar contraseña */}
-        <TouchableOpacity style={styles.optionsTxtContainer}>
+        {/* <TouchableOpacity style={styles.optionsTxtContainer}>
           <View
             style={{
               padding: 2,
@@ -307,25 +315,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
             size={35}
             color={"#555"}
           />
-        </TouchableOpacity>
-
-        {/* Notificaciones */}
-        <TouchableOpacity
-          style={{ ...styles.optionsTxtContainer, borderBottomWidth: 0 }}
-        >
-          <View style={{ width: 30, alignItems: "center" }}>
-            <FontAwesome5 name="bell" size={24} color="black" />
-          </View>
-
-          <Text style={styles.optionsTxt}>Notificaciones</Text>
-          <MaterialIcons
-            name={"keyboard-arrow-right"}
-            size={35}
-            color={"#555"}
-          />
-        </TouchableOpacity>
-
-        <View style={styles.spacing} />
+        </TouchableOpacity> */}
 
         {/* Pagos */}
         <TouchableOpacity
@@ -346,6 +336,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
 
         {/* Soporte */}
         <TouchableOpacity
+          onPress={handleSoporte}
           style={{ ...styles.optionsTxtContainer, borderBottomWidth: 0 }}
         >
           <View style={{ width: 30, alignItems: "center" }}>
@@ -360,10 +351,38 @@ export default function Perfil({ navigation }: { navigation: any }) {
           />
         </TouchableOpacity>
 
+        {/* Admin UI */}
+        {usuario.admin && (
+          <>
+            <View style={styles.spacing} />
+
+            <TouchableOpacity
+              onPress={handleNavigateAdmin}
+              style={{ ...styles.optionsTxtContainer, borderBottomWidth: 0 }}
+            >
+              <View style={{ width: 30, alignItems: "center" }}>
+                <MaterialIcons
+                  name="admin-panel-settings"
+                  size={30}
+                  color="black"
+                />
+              </View>
+
+              <Text style={styles.optionsTxt}>Admin</Text>
+              <MaterialIcons
+                name={"keyboard-arrow-right"}
+                size={35}
+                color={"#555"}
+              />
+            </TouchableOpacity>
+          </>
+        )}
+
+        <View style={{ flex: 1 }} />
         {/* Cerrar sesion */}
         <TouchableOpacity
           onPress={handleSignOut}
-          style={{ alignItems: "center" }}
+          style={{ alignItems: "center", width: "100%" }}
         >
           <Text style={styles.signOutTxt}>Cerrar sesion</Text>
         </TouchableOpacity>
@@ -493,7 +512,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
           hideAleatorio
         />
       </Modal>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -569,7 +588,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
 
     textAlign: "center",
-    flex: 1,
 
     color: "red",
     padding: 20,
@@ -581,6 +599,7 @@ const styles = StyleSheet.create({
   textContainer: {
     marginTop: 30,
 
+    flex: 1,
     borderRadius: 20,
   },
 });

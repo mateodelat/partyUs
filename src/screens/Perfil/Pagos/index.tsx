@@ -16,6 +16,7 @@ import {
   azulClaro,
   azulFondo,
   clearDate,
+  colorFondo,
   fetchFromAPI,
   fetchFromOpenpay,
   formatDay,
@@ -59,14 +60,14 @@ export default function ({ navigation }) {
   const [charges, setCharges] = useState<chargeType[]>();
 
   const [refreshingCharges, setRefreshingCharges] = useState(true);
-  const [limitChargesReached, setLimitChargesReached] = useState(false);
+  const [limitChargesReached, setLimitChargesReached] = useState(true);
 
   //
   // Manejar transferencias con pagination
   const [transfers, setTransfers] = useState<transaction_type[]>();
 
   const [refreshingTransfers, setRefreshingTransfers] = useState(true);
-  const [limitTransfersReached, setLimitTransfersReached] = useState(false);
+  const [limitTransfersReached, setLimitTransfersReached] = useState(true);
 
   const [sesionId, setSesionId] = useState("");
 
@@ -117,6 +118,7 @@ export default function ({ navigation }) {
   }) {
     // Detectar que tipo de operacion se esta solicitando
     try {
+      console.log(type);
       switch (type) {
         case "charges":
           setRefreshingCharges(true);
@@ -131,6 +133,8 @@ export default function ({ navigation }) {
               // Si se llego al limite ponerlo
               if (r?.length < LIMIT) {
                 setLimitChargesReached(true);
+              } else {
+                setLimitChargesReached(false);
               }
               setRefreshingCharges(false);
 
@@ -154,6 +158,8 @@ export default function ({ navigation }) {
               let r = body;
               if (r?.length < LIMIT) {
                 setLimitTransfersReached(true);
+              } else {
+                setLimitTransfersReached(false);
               }
 
               // Filtrar por transacciones que no sean de cobro en la app o tipo cancelada
@@ -204,7 +210,6 @@ export default function ({ navigation }) {
             }
           ).then(({ body }) => {
             if (body) {
-              console.log(body);
               body = body.map((card) => {
                 return {
                   ...card,
@@ -250,11 +255,10 @@ export default function ({ navigation }) {
 
   async function onNextPage(type: "charges" | "transactions") {
     if (limitChargesReached) return;
-    console.log("Next page");
 
     await fetchData({
       type,
-      offset: charges?.length,
+      offset: type === "charges" ? charges?.length : transfers?.length,
       addToData: true,
     });
   }
@@ -289,11 +293,8 @@ export default function ({ navigation }) {
   }
 
   function handlePressTransaction(reservaID: string) {
-    Alert.alert(
-      "Navegacion",
-      "Ir a mis eventos en donde este la reserva asociada"
-    );
     console.log(reservaID);
+    navigation.navigate("MisEventos", { reservaID });
   }
 
   async function handlePressSelector(type: "transfers" | "charges") {
@@ -415,6 +416,13 @@ export default function ({ navigation }) {
     });
   }
 
+  function handleRetirar() {
+    Alert.alert(
+      "Atencion",
+      "Las transferencias a tu banco se programan cada semana"
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* ///////////////////////////////////////////////////////// */}
@@ -429,7 +437,7 @@ export default function ({ navigation }) {
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={() => (
             <HeaderComponent
-              sesionId={sesionId}
+              handleRetirar={handleRetirar}
               handleRemoveCard={handleRemoveCard}
               tarjetasGuardadas={tarjetasGuardadas}
               addingCard={addingCard}
@@ -561,7 +569,7 @@ export default function ({ navigation }) {
           keyExtractor={(item) => item.id}
           ListHeaderComponent={() => (
             <HeaderComponent
-              sesionId={sesionId}
+              handleRetirar={handleRetirar}
               handleRemoveCard={handleRemoveCard}
               tarjetasGuardadas={tarjetasGuardadas}
               addingCard={addingCard}
@@ -713,7 +721,7 @@ function HeaderComponent({
   tarjetasGuardadas,
 
   handleRemoveCard,
-  sesionId,
+  handleRetirar,
 }: {
   balance?: number;
 
@@ -722,10 +730,10 @@ function HeaderComponent({
   addingCard: boolean;
 
   selector: "charges" | "transfers";
-  sesionId: string;
 
   tarjetasGuardadas: cardType[];
   handleRemoveCard: (idx: number) => void;
+  handleRetirar: () => void;
 }) {
   const {
     usuario: { organizador },
@@ -742,11 +750,16 @@ function HeaderComponent({
         }}
       >
         Disponible en tu cuenta de partyus{"\n"}
-        {balance &&
-          (organizador
-            ? "Puedes retirarlo con las siguientes opciones"
-            : "(usalo para pagar eventos)")}
+        {balance && (organizador ? "" : "(usalo para pagar eventos)")}
       </Text>
+
+      {/* Boton para info de depositos, solo activo para organizadores */}
+
+      {organizador && (
+        <TouchableOpacity onPress={handleRetirar}>
+          <Text style={styles.button}>Retirar</Text>
+        </TouchableOpacity>
+      )}
 
       <View style={styles.tarjetasContainer}>
         {/* Headder de tarjetas guardadas */}
@@ -754,6 +767,7 @@ function HeaderComponent({
           style={{
             flexDirection: "row",
             margin: 20,
+            marginTop: 0,
             marginHorizontal: 0,
             marginBottom: 30,
             alignItems: "center",
@@ -984,6 +998,8 @@ const styles = StyleSheet.create({
   },
   tarjetasContainer: {
     marginVertical: 40,
+    marginTop: 20,
+
     marginHorizontal: 20,
   },
   elementContainer: {
@@ -1054,6 +1070,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginTop: 40,
+  },
+
+  button: {
+    marginTop: 20,
+    borderWidth: 0.4,
+    borderColor: azulClaro,
+
+    padding: 10,
+    borderRadius: 10,
+    margin: 20,
+
+    color: azulClaro,
+    fontWeight: "bold",
+
+    textAlign: "center",
   },
 
   monney: {

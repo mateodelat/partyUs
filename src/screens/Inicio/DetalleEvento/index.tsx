@@ -36,6 +36,10 @@ import {
   azulOscuro,
   AsyncAlert,
   fetchFromAPI,
+  shadowBaja,
+  shadowMuyBaja,
+  formatDateShort,
+  mayusFirstLetter,
 } from "../../../../constants";
 import { API, DataStore, Predicates, Storage } from "aws-amplify";
 import { OpType } from "@aws-amplify/datastore";
@@ -47,6 +51,7 @@ import Descripcion from "./Descripcion";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import ModalMap from "../../../components/ModalMap";
 import ProgressCircle from "../../../components/ProgressCircle";
@@ -60,19 +65,27 @@ import useUser from "../../../Hooks/useUser";
 import { Notificacion } from "../../../models";
 import { TipoNotificacion } from "../../../models";
 
+type ReservaType = Reserva & {
+  status?: reservaStatus;
+};
+
+type reservaStatus = "INGRESADO" | "PAGADO" | "CANCELADO" | "POR PAGAR";
+
 export default function ({
   route,
   navigation,
 }: {
   route: {
-    params: EventoType & {
+    params?: EventoType & {
       reserva?: Reserva & { eventoCancelado: () => void };
+      organizador?: boolean;
     };
   };
   navigation: NavigationProp;
 }) {
-  const reserva = route.params.reserva;
+  const reserva = route.params?.reserva;
 
+  const organizador = route.params?.organizador;
   const ingresado = route.params.reserva?.ingreso;
 
   if (reserva?.cancelado) {
@@ -84,6 +97,17 @@ export default function ({
     ...route.params,
     personasReservadas: 0,
   });
+
+  // Variables para animaciones (Carrousel fotos y header transparencia)
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  const insets = useSafeAreaInsets();
+  const [top, setTop] = useState(insets.top);
+
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const [following, setFollowing] = useState(false);
 
   let {
     titulo,
@@ -116,22 +140,12 @@ export default function ({
       ? (personasReservadas / personasMax) * 100
       : 1;
 
-  // Variables para animaciones (Carrousel fotos y header transparencia)
-  const scrollX = useRef(new Animated.Value(0)).current;
-  const scrollY = useRef(new Animated.Value(0)).current;
-
-  const insets = useSafeAreaInsets();
-  const [top, setTop] = useState(insets.top);
-
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const [following, setFollowing] = useState(false);
-
   const [fotoPerfil, setFotoPerfil] = useState(creator?.foto);
 
   const [usuariosReservados, setUsuariosReservados] = useState<
     Usuario[] | undefined
   >();
+  const [reservas, setReservas] = useState<ReservaType[]>();
 
   function handleBack() {
     navigation.pop();
@@ -154,19 +168,19 @@ export default function ({
             .fechaExpiracionUTC("gt", new Date().toISOString())
             .pagado("eq", true)
         )
-    ).then(async (r) => {
+    ).then(async (r: ReservaType[]) => {
       let usuarios = [];
       let personasReservadas = 0;
 
-      await Promise.all(
-        r.map(async (e, idx) => {
+      const res = await Promise.all(
+        r.map(async (e: ReservaType, idx) => {
           let usr: Promise<Usuario> | Usuario;
           let foto: Promise<string> | string;
 
           personasReservadas += e.cantidad;
 
-          // Por cada reserva, si es de las primeras 5 pedir su foto y usuario asociado
-          if (idx < 6) {
+          // Por cada reserva, si es de las primeras 5 o se abrio desde detalles evento pedir su foto y usuario asociado
+          if (idx < 6 || organizador) {
             usr = await DataStore.query(Usuario, e.usuarioID);
             foto = await getImageUrl(usr.foto);
           }
@@ -178,6 +192,20 @@ export default function ({
               foto,
             },
           ];
+          return {
+            ...e,
+            usuario: {
+              ...(await usr),
+              foto: await foto,
+            },
+            status: e.ingreso
+              ? "INGRESADO"
+              : e.cancelado
+              ? "CANCELADO"
+              : e.pagado
+              ? "PAGADO"
+              : "POR PAGAR",
+          };
         })
       );
 
@@ -188,6 +216,7 @@ export default function ({
       }));
 
       setUsuariosReservados(usuarios);
+      setReservas(res as any);
     });
   }
 
@@ -392,8 +421,16 @@ export default function ({
     }
   }
 
+  function navigateScanner() {
+    navigation.navigate("QRScanner", {
+      eventoID: evento.id,
+      tituloEvento: evento.titulo,
+    });
+  }
+
   function navigateTicketEntrada() {
-    if (reserva.pagado) {
+    if (organizador) {
+    } else if (reserva.pagado) {
       navigation.navigate("QRCode", {
         ...reserva,
         evento: {
@@ -455,274 +492,383 @@ export default function ({
         }}
       >
         <Carrousel scrollX={scrollX} images={imagenes as any} />
-        <View style={styles.innerContainer}>
-          {/* Usuario */}
-          <Pressable onPress={handleIrAPerfil} style={styles.row}>
-            {/* Foto de perfil */}
-            <View style={styles.fotoPerfil}>
-              <Image
-                source={{ uri: fotoPerfil ? fotoPerfil : "" }}
-                style={{ flex: 1, borderRadius: 25 }}
-              />
+        <View
+          style={{
+            ...styles.innerContainer,
+            padding: 0,
+          }}
+        >
+          {organizador && evento.fechaFinal > new Date().getTime() && (
+            <TouchableOpacity
+              onPress={navigateScanner}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                padding: 30,
+                paddingBottom: 10,
+              }}
+            >
+              <Text style={{ flex: 1, fontSize: 20, fontWeight: "bold" }}>
+                Escanear reservas
+              </Text>
 
-              {/* Icono calififcacion */}
-              <View
-                style={{
-                  ...styles.calificacion,
-                  width: showVerified ? 30 : 40,
-                  top: showVerified ? -5 : -10,
-                  right: showVerified ? undefined : -10,
-                  left: showVerified ? -5 : undefined,
-                }}
+              <MaterialCommunityIcons
+                style={styles.qrCode}
+                name="qrcode-scan"
+                size={30}
+                color="black"
+              />
+            </TouchableOpacity>
+          )}
+          <View
+            style={{
+              padding: 30,
+              paddingTop: 0,
+            }}
+          >
+            {/* Usuario */}
+            {(!organizador || evento.fechaFinal < new Date().getTime()) && (
+              <Pressable
+                onPress={handleIrAPerfil}
+                style={{ ...styles.row, paddingTop: 30 }}
               >
-                {showVerified ? (
-                  <FontAwesome name="check" size={18} color={azulClaro} />
-                ) : (
-                  <>
-                    <Text>
-                      {creator?.calificacion === null
-                        ? "n/a"
-                        : creator?.calificacion}
-                    </Text>
-                    <FontAwesome
-                      name={creator?.calificacion === null ? "star-o" : "star"}
-                      size={10}
-                      color="black"
+                {/* Foto de perfil */}
+                <View style={styles.fotoPerfil}>
+                  <Image
+                    source={{ uri: fotoPerfil ? fotoPerfil : "" }}
+                    style={{ flex: 1, borderRadius: 25 }}
+                  />
+
+                  {/* Icono calififcacion */}
+                  <View
+                    style={{
+                      ...styles.calificacion,
+                      width: showVerified ? 30 : 40,
+                      top: showVerified ? -5 : -10,
+                      right: showVerified ? undefined : -10,
+                      left: showVerified ? -5 : undefined,
+                    }}
+                  >
+                    {showVerified ? (
+                      <FontAwesome name="check" size={18} color={azulClaro} />
+                    ) : (
+                      <>
+                        <Text>
+                          {creator?.calificacion === null
+                            ? "n/a"
+                            : creator?.calificacion}
+                        </Text>
+                        <FontAwesome
+                          name={
+                            creator?.calificacion === null ? "star-o" : "star"
+                          }
+                          size={10}
+                          color="black"
+                        />
+                      </>
+                    )}
+                  </View>
+                </View>
+
+                <View style={{ justifyContent: "center", flex: 1 }}>
+                  <Text style={styles.creado}>CREADO POR</Text>
+                  <Text style={styles.nicknameTxt}>{creator?.nickname}</Text>
+                </View>
+
+                {/* Boton de seguir */}
+                {reserva && !ingresado && (
+                  <TouchableOpacity
+                    onPress={navigateTicketEntrada}
+                    style={styles.followUser}
+                  >
+                    <Ionicons
+                      style={styles.qrCode}
+                      name="md-qr-code"
+                      size={16}
+                      color="#0009"
                     />
-                  </>
+                  </TouchableOpacity>
                 )}
+              </Pressable>
+            )}
+
+            <Line
+              style={{ marginHorizontal: 0, marginTop: 20, marginBottom: 20 }}
+            />
+
+            <View style={{ marginBottom: 20 }}>
+              {/* Lista info */}
+              <FlatList
+                data={comodities}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                renderItem={({ item }) => {
+                  return (
+                    <View style={styles.comodities}>
+                      <Text style={{ color: "#555", fontWeight: "bold" }}>
+                        {item}
+                      </Text>
+                    </View>
+                  );
+                }}
+              />
+            </View>
+
+            {/* Titulo del evento */}
+            <Text style={styles.tituloTxt}>{route.params.titulo}</Text>
+
+            {detalles ? (
+              <Descripcion descripcion={detalles} />
+            ) : (
+              <View style={{ marginTop: 30 }} />
+            )}
+
+            {/* Fila de fecha */}
+            <View style={styles.row}>
+              {/* Icono del calendario */}
+              <View style={styles.iconContainer}>
+                <Feather name="calendar" size={30} color={rojoClaro} />
+              </View>
+
+              {/* Texto */}
+              <View style={styles.txtContainer}>
+                <Text style={styles.creado}>
+                  {getWeekDay(
+                    new Date(fechaInicial ? fechaInicial : new Date())
+                  ) +
+                    " " +
+                    formatDay(fechaInicial)}
+                </Text>
+                <Text style={styles.nicknameTxt}>
+                  {formatAMPM(fechaInicial) +
+                    " hasta " +
+                    formatAMPM(fechaFinal)}
+                </Text>
               </View>
             </View>
 
-            <View style={{ justifyContent: "center", flex: 1 }}>
-              <Text style={styles.creado}>CREADO POR</Text>
-              <Text style={styles.nicknameTxt}>{creator?.nickname}</Text>
-            </View>
-
-            {/* Boton de seguir */}
-            {reserva && !ingresado && (
-              <TouchableOpacity
-                onPress={navigateTicketEntrada}
-                style={styles.followUser}
-              >
-                <Ionicons
-                  style={styles.seguirTxt}
-                  name="md-qr-code"
-                  size={16}
-                  color="#0009"
-                />
-              </TouchableOpacity>
-            )}
-          </Pressable>
-
-          <Line
-            style={{ marginHorizontal: 0, marginTop: 20, marginBottom: 20 }}
-          />
-
-          <View style={{ marginBottom: 20 }}>
-            {/* Lista info */}
-            <FlatList
-              data={comodities}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => {
-                return (
-                  <View style={styles.comodities}>
-                    <Text style={{ color: "#555", fontWeight: "bold" }}>
-                      {item}
-                    </Text>
-                  </View>
-                );
-              }}
-            />
-          </View>
-
-          {/* Titulo del evento */}
-          <Text style={styles.tituloTxt}>{route.params.titulo}</Text>
-
-          {detalles ? (
-            <Descripcion descripcion={detalles} />
-          ) : (
-            <View style={{ marginTop: 30 }} />
-          )}
-
-          {/* Fila de fecha */}
-          <View style={styles.row}>
-            {/* Icono del calendario */}
-            <View style={styles.iconContainer}>
-              <Feather name="calendar" size={30} color={rojoClaro} />
-            </View>
-
-            {/* Texto */}
-            <View style={styles.txtContainer}>
-              <Text style={styles.creado}>
-                {getWeekDay(
-                  new Date(fechaInicial ? fechaInicial : new Date())
-                ) +
-                  " " +
-                  formatDay(fechaInicial)}
-              </Text>
-              <Text style={styles.nicknameTxt}>
-                {formatAMPM(fechaInicial) + " hasta " + formatAMPM(fechaFinal)}
-              </Text>
-            </View>
-          </View>
-
-          {/* Fila de ubicacion */}
-          <Pressable
-            onPress={handleViewLocation}
-            style={{ ...styles.row, marginTop: 30, marginBottom: 30 }}
-          >
-            {/* Icono del calendario */}
-            <View style={styles.iconContainer}>
-              <Feather name="map" size={30} color={rojoClaro} />
-            </View>
-
-            {/* Texto */}
-            <View style={styles.txtContainer}>
-              <Text style={styles.creado}>Ver direccion</Text>
-              <Text style={styles.nicknameTxt}>
-                {ubicacion.ubicacionNombre}
-              </Text>
-            </View>
-          </Pressable>
-
-          {/* Boletos en caso de venir de detalle de reserva */}
-          {reserva ? (
-            <TouchableOpacity
-              disabled={ingresado}
-              onPress={navigateTicketEntrada}
+            {/* Fila de ubicacion */}
+            <Pressable
+              onPress={handleViewLocation}
+              style={{ ...styles.row, marginTop: 30, marginBottom: 30 }}
             >
-              <Line style={{ marginTop: 10 }} />
-              <Text style={styles.tipoPago}>{reserva.tipoPago}</Text>
-              {boletos === "loading" ? (
-                <Loading indicator style={{ marginTop: 30 }} />
-              ) : (
-                boletos?.map((e, idx) => {
-                  return (
-                    <View style={styles.boletoContainer} key={idx}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.subtitle}>Precio total</Text>
-                        <Text style={{ ...styles.value, color: rojoClaro }}>
-                          {formatMoney(
-                            precioConComision(e.boleto.precio) * e.quantity
-                          )}
-                        </Text>
-                      </View>
-                      <View>
-                        <Text style={styles.subtitle}>{e.boleto.titulo}</Text>
-                        <View
-                          style={{
-                            justifyContent: "flex-end",
-                            alignItems: "center",
-                            marginRight: 0,
-                            flexDirection: "row",
-                          }}
-                        >
-                          <Text style={styles.value}>{e.quantity}</Text>
-                          <Ionicons
+              {/* Icono del calendario */}
+              <View style={styles.iconContainer}>
+                <Feather name="map" size={30} color={rojoClaro} />
+              </View>
+
+              {/* Texto */}
+              <View style={styles.txtContainer}>
+                <Text style={styles.creado}>Ver direccion</Text>
+                <Text style={styles.nicknameTxt}>
+                  {ubicacion.ubicacionNombre}
+                </Text>
+              </View>
+            </Pressable>
+
+            {/* Boletos en caso de venir de detalle de reserva */}
+            {reserva ? (
+              <TouchableOpacity
+                disabled={ingresado}
+                onPress={navigateTicketEntrada}
+              >
+                <Line style={{ marginTop: 10 }} />
+                <Text style={styles.tipoPago}>{reserva.tipoPago}</Text>
+                {boletos === "loading" ? (
+                  <Loading indicator style={{ marginTop: 30 }} />
+                ) : (
+                  boletos?.map((e, idx) => {
+                    return (
+                      <View style={styles.boletoContainer} key={idx}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.subtitle}>Precio total</Text>
+                          <Text style={{ ...styles.value, color: rojoClaro }}>
+                            {formatMoney(
+                              precioConComision(e.boleto.precio) * e.quantity
+                            )}
+                          </Text>
+                        </View>
+                        <View>
+                          <Text style={styles.subtitle}>{e.boleto.titulo}</Text>
+                          <View
                             style={{
-                              marginLeft: 5,
+                              justifyContent: "flex-end",
+                              alignItems: "center",
+                              marginRight: 0,
+                              flexDirection: "row",
                             }}
-                            name="person"
-                            size={20}
-                            color="black"
-                          />
+                          >
+                            <Text style={styles.value}>{e.quantity}</Text>
+                            <Ionicons
+                              style={{
+                                marginLeft: 5,
+                              }}
+                              name="person"
+                              size={20}
+                              color="black"
+                            />
+                          </View>
                         </View>
                       </View>
-                    </View>
-                  );
-                })
-              )}
-            </TouchableOpacity>
-          ) : (
-            //  Usuarios registrados
+                    );
+                  })
+                )}
+              </TouchableOpacity>
+            ) : (
+              //  Usuarios reservados
 
-            <View style={{ ...styles.row, marginTop: 30 }}>
-              <ProgressCircle
-                percent={personasPercent}
-                radius={40}
-                borderWidth={5}
-                color={rojoClaro}
-                shadowColor={azulFondo}
-                bgColor="#fff"
-              >
-                <Text style={{ fontSize: 16 }} numberOfLines={1}>
-                  <Text style={{ fontWeight: "500", fontSize: 16 }}>
-                    {personasReservadas}
+              <View style={{ ...styles.row, marginTop: 30 }}>
+                <ProgressCircle
+                  percent={personasPercent}
+                  radius={40}
+                  borderWidth={5}
+                  color={rojoClaro}
+                  shadowColor={azulFondo}
+                  bgColor="#fff"
+                >
+                  <Text style={{ fontSize: 16 }} numberOfLines={1}>
+                    <Text style={{ fontWeight: "500", fontSize: 16 }}>
+                      {personasReservadas}
+                    </Text>
+                    /{personasMax}
                   </Text>
-                  /{personasMax}
-                </Text>
-              </ProgressCircle>
+                </ProgressCircle>
 
-              <View style={{ marginRight: 20 }} />
+                <View style={{ marginRight: 20 }} />
 
-              {/* Fotos de perfil */}
-              {(usuariosReservados
-                ? usuariosReservados
-                : [...Array(6).keys()]
-              ).map((e: number | Usuario, i: number) => {
-                const left = -20 * i;
+                {/* Fotos de perfil */}
+                {(usuariosReservados
+                  ? usuariosReservados
+                  : [...Array(6).keys()]
+                ).map((e: number | Usuario, i: number) => {
+                  const left = -20 * i;
 
-                const hayMas = i === 6;
+                  const hayMas = i === 6;
 
-                if (typeof e === "number") {
+                  if (typeof e === "number") {
+                    return (
+                      <View
+                        key={i}
+                        style={{
+                          ...styles.imagenPerfilContainer,
+                          left,
+                        }}
+                      ></View>
+                    );
+                  }
+
+                  // Si es mayor que 6 devolver null
+                  if (i > 6) return <View key={i}></View>;
+
                   return (
                     <View
                       key={i}
                       style={{
                         ...styles.imagenPerfilContainer,
                         left,
+                        backgroundColor: hayMas ? rojoClaro : "transparent",
                       }}
-                    ></View>
-                  );
-                }
-
-                // Si es mayor que 6 devolver null
-                if (i > 6) return <View key={i}></View>;
-
-                return (
-                  <View
-                    key={i}
-                    style={{
-                      ...styles.imagenPerfilContainer,
-                      left,
-                      backgroundColor: hayMas ? rojoClaro : "transparent",
-                    }}
-                  >
-                    {hayMas ? (
-                      <View
-                        style={{
-                          justifyContent: "center",
-                          alignItems: "center",
-                          flex: 1,
-                        }}
-                      >
-                        <Text
+                    >
+                      {hayMas ? (
+                        <View
                           style={{
-                            color: "#fff",
-                            fontWeight: "900",
-                            fontSize: 12,
+                            justifyContent: "center",
+                            alignItems: "center",
+                            flex: 1,
                           }}
                         >
-                          +{usuariosReservados.length - 5}
-                        </Text>
+                          <Text
+                            style={{
+                              color: "#fff",
+                              fontWeight: "900",
+                              fontSize: 12,
+                            }}
+                          >
+                            +{usuariosReservados.length - 5}
+                          </Text>
+                        </View>
+                      ) : e.foto ? (
+                        <Image style={{ flex: 1 }} source={{ uri: e.foto }} />
+                      ) : (
+                        <EmptyProfile size={30} />
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+
+            {/* Si es el organizador, enseñarle todas las reservas */}
+            {organizador && (
+              <View style={{ marginTop: 60 }}>
+                <Text style={{ ...styles.tituloTxt, marginBottom: 20 }}>
+                  Reservas
+                </Text>
+                {!organizador ? null : reservas === undefined ? (
+                  <Loading indicator />
+                ) : !reservas.length ? (
+                  <Text>No hay reservas</Text>
+                ) : (
+                  reservas.map((res, idx) => {
+                    return (
+                      <View key={idx} style={styles.reservaContainer}>
+                        {/* Foto de perfil del usuario */}
+                        <Image
+                          source={{ uri: res.usuario.foto }}
+                          style={styles.imagenPerfilReserva}
+                        />
+
+                        {/* Detalles del evento */}
+                        <View style={{ flex: 1 }}>
+                          {/* Nickname */}
+                          <Text style={{ fontWeight: "bold" }}>
+                            @{res.usuario.nickname}
+                          </Text>
+
+                          {/* Fecha de ultima actualizacion de la reserva */}
+                          <Text style={{ ...styles.lightTxt }}>
+                            {formatDateShort(res.updatedAt) +
+                              " a las " +
+                              formatAMPM(res.updatedAt)}
+                          </Text>
+                          <Text style={styles.statusReserva}>{res.status}</Text>
+                        </View>
+
+                        {/* Precio y personas */}
+                        <View
+                          style={{
+                            paddingVertical: 5,
+                          }}
+                        >
+                          <Text style={{ fontWeight: "bold", flex: 1 }}>
+                            {formatMoney(res.pagadoAlOrganizador)}
+                          </Text>
+                          <Text
+                            style={{
+                              textAlign: "right",
+                            }}
+                          >
+                            <Ionicons
+                              style={{ marginRight: 5 }}
+                              name="person"
+                              size={14}
+                              color="black"
+                            />
+                            {" x" + res.cantidad}
+                          </Text>
+                        </View>
                       </View>
-                    ) : e.foto ? (
-                      <Image style={{ flex: 1 }} source={{ uri: e.foto }} />
-                    ) : (
-                      <EmptyProfile size={30} />
-                    )}
-                  </View>
-                );
-              })}
-            </View>
-          )}
+                    );
+                  })
+                )}
+              </View>
+            )}
+          </View>
         </View>
 
-        {!reserva && (
+        {!reserva && !organizador && (
           <Boton
-            style={{ margin: 20 }}
+            style={{ margin: 20, marginTop: 0 }}
             titulo={"Apuntarse"}
             onPress={handleContinar}
           />
@@ -790,6 +936,21 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
+  imagenPerfilReserva: {
+    width: 40,
+    height: 40,
+
+    borderRadius: 30,
+    marginRight: 10,
+  },
+
+  statusReserva: {
+    color: rojoClaro + "99",
+    fontSize: 12,
+    fontWeight: "bold",
+    marginTop: 3,
+  },
+
   comodities: {
     backgroundColor: azulFondo,
     padding: 10,
@@ -827,6 +988,17 @@ const styles = StyleSheet.create({
     color: rojoClaro,
   },
 
+  reservaContainer: {
+    padding: 10,
+    backgroundColor: "#fff",
+    ...shadowMuyBaja,
+
+    flexDirection: "row",
+
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
   innerContainer: {
     backgroundColor: "#fff",
     width: "100%",
@@ -861,6 +1033,10 @@ const styles = StyleSheet.create({
     color: "#0005",
   },
 
+  lightTxt: {
+    color: "#0005",
+  },
+
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -871,7 +1047,7 @@ const styles = StyleSheet.create({
     marginRight: 30,
   },
 
-  seguirTxt: {
+  qrCode: {
     color: rojo,
   },
 
@@ -908,14 +1084,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginTop: 20,
     paddingHorizontal: 20,
-  },
-
-  titulo: {
-    fontWeight: "900",
-    fontSize: 26,
-    textAlign: "center",
-    color: "#fff",
-    marginVertical: 10,
   },
 
   value: {

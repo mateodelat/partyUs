@@ -31,6 +31,9 @@ import ReferenciaPago from "../screens/ReferenciaPago";
 import QRScanner from "../screens/Inicio/QRScanner";
 
 import Pagos from "../screens/Perfil/Pagos";
+import MisEventos from "../screens/Perfil/MisEventos";
+import Soporte from "../screens/Perfil/Soporte";
+import Admin from "../screens/Perfil/Admin";
 
 function NombreApellidosOnPress({ navigation }: any) {
   const { setUsuario, usuario } = useUser();
@@ -63,15 +66,17 @@ export default function () {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        // initialRouteName="PagosCliente"
+        // initialRouteName="Perfil"
         screenOptions={{
           header: ({
-            route: { name },
+            route: { name, params },
             navigation,
             options: { title: tit },
           }) => {
             const title = tit ? tit : name;
-            return <Header title={title} />;
+            const showHelp = (params as any)?.showHelp;
+
+            return <Header title={title} showHelp={showHelp} />;
           },
         }}
       >
@@ -100,6 +105,7 @@ export default function () {
         <Stack.Screen
           name="MisReservas"
           component={MisReservas}
+          initialParams={{ showHelp: true }}
           options={{
             title: "Mis reservas",
           }}
@@ -142,7 +148,6 @@ export default function () {
           component={Pagar}
           options={{
             animationEnabled: false,
-            headerShown: false,
           }}
         />
         <Stack.Screen
@@ -176,9 +181,18 @@ export default function () {
         <Stack.Screen
           name="Pagos"
           component={Pagos}
+          initialParams={{ showHelp: true }}
           options={{
             title: "Saldo",
             animationEnabled: false,
+          }}
+        />
+        <Stack.Screen
+          name="MisEventos"
+          component={MisEventos}
+          initialParams={{ showHelp: true }}
+          options={{
+            title: "Mis eventos",
           }}
         />
         <Stack.Screen
@@ -197,6 +211,9 @@ export default function () {
             ...TransitionPresets.ModalTransition,
           }}
         />
+
+        <Stack.Screen name="Soporte" component={Soporte} />
+        <Stack.Screen name="Admin" component={Admin} />
 
         <Stack.Screen
           name="ExitoScreen"
