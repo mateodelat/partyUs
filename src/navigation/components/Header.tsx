@@ -43,7 +43,7 @@ export default function ({
   return (
     <View
       style={{
-        paddingTop: insets.top,
+        paddingTop: insets.top + 20,
         backgroundColor: color ? color : "#fff",
         paddingBottom: 10,
         ...style,

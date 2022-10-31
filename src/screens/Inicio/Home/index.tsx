@@ -74,6 +74,14 @@ export type EventoType = Evento & {
   ubicacion: locationType;
 };
 
+export async function queryNewNotifications() {
+  return DataStore.query(Notificacion, (e) =>
+    e.showAt("lt", new Date().toISOString()).leido("ne", true)
+  ).then((r) => {
+    return r.length;
+  });
+}
+
 export default function ({ navigation }: { navigation: NavigationProp }) {
   const { usuario } = useUser();
 
@@ -193,10 +201,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     !events && clearFilters();
     setLoading(false);
   }
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
   // Filtros obtenidos
   const [filters, setFilters]: [
@@ -454,21 +458,11 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     });
   }
 
-  function handleLike(id?: string) {
-    const e = fetchedEvents.find((e: any) => e.id === id);
-    if (!e) return;
-
-    updateEvent({
-      ...e,
-      favoritos: !e.favoritos,
-    });
-  }
-
   async function onRefresh() {
     setRefreshing(true);
 
     // Obtener nuevas notificaciones al usuario
-    queryNewNotifications();
+    queryNewNotifications().then(setNewNotifications);
 
     // Obtener eventos por filtro
     await handleSearch(filters);
@@ -500,17 +494,9 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     }
   }
 
-  function queryNewNotifications() {
-    DataStore.query(Notificacion, (e) =>
-      e.showAt("lt", new Date().toISOString()).leido("ne", true)
-    ).then((r) => {
-      setNewNotifications(r.length);
-    });
-  }
-
   // Pedir notificaciones nuevas
   useEffect(() => {
-    queryNewNotifications();
+    onRefresh();
   }, []);
 
   return (

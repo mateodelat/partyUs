@@ -5,11 +5,12 @@ import { createStackNavigator } from "@react-navigation/stack";
 import Header from "../components/Header";
 import NombreApellidos from "../../screens/SolicitudOrganizador/DatosPersonales/NombreApellidos";
 import FechaNacimiento from "../../screens/SolicitudOrganizador/DatosPersonales/FechaNacimiento";
+import DatosBancarios from "../../screens/SolicitudOrganizador/DatosPersonales/DatosBancarios";
 
 export default function () {
   const Stack = createStackNavigator();
 
-  const pasos = 2;
+  const pasos = 3;
 
   return (
     <Stack.Navigator
@@ -23,7 +24,6 @@ export default function () {
                 fontWeight: "normal",
               }}
               title={title}
-              navigation={navigation}
             />
           );
         },
@@ -41,6 +41,13 @@ export default function () {
         component={FechaNacimiento}
         options={{
           title: "Paso 2 de " + pasos,
+        }}
+      />
+      <Stack.Screen
+        name="Step3"
+        component={DatosBancarios}
+        options={{
+          title: "Paso 3 de " + pasos,
         }}
       />
     </Stack.Navigator>

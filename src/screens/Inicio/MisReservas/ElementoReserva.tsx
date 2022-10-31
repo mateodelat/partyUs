@@ -104,16 +104,27 @@ export default function ElementoReserva({
     }
   }
 
-  const message: "INGRESADO" | "PAGADO" | "CANCELADO" | String | "EXPIRADO" =
-    data.cancelado
-      ? "CANCELADO"
-      : data.ingreso
-      ? "INGRESADO"
-      : data.pagado
-      ? "PAGADO"
-      : new Date() < new Date(data.fechaExpiracionUTC)
-      ? "EXPIRA EN " + expireAt
-      : "EXPIRADO";
+  const message:
+    | "INGRESADO"
+    | "PAGADO"
+    | "CANCELADO"
+    | String
+    | "EXPIRADO"
+    | "PASADO" = data.cancelado
+    ? "CANCELADO"
+    : data.ingreso
+    ? "INGRESADO"
+    : new Date() > new Date(data.fechaExpiracionUTC) &&
+      data.tipoPago === "EFECTIVO" &&
+      !data.pagado
+    ? "EXPIRADO"
+    : new Date() > new Date(data.evento.fechaFinal)
+    ? "PASADO"
+    : new Date() < new Date(data.fechaExpiracionUTC)
+    ? "EXPIRA EN " + expireAt
+    : data.pagado
+    ? "PAGADO"
+    : "NO DEFINIDO";
 
   const showBarcodeIcon =
     data.tipoPago === "TARJETA" ? false : data.pagado ? false : true;
@@ -180,9 +191,11 @@ export default function ElementoReserva({
                 <Text
                   style={{
                     ...styles.message,
-                    color: message.startsWith("EXPIRA EN")
-                      ? "orange"
-                      : azulClaro,
+                    color:
+                      message.startsWith("EXPIRA EN") ||
+                      message.startsWith("PASADO")
+                        ? "orange"
+                        : azulClaro,
                     fontWeight: message === "PAGADO" ? "bold" : "normal",
                   }}
                 >

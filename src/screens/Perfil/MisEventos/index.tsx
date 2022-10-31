@@ -35,6 +35,7 @@ type eventStatus = "LLENO" | "PASADO" | "EN CURSO" | "ABIERTO";
 
 export default function ({ route, navigation }: any) {
   const reservaID = route.params?.reservaID;
+  const eventoID = route.params?.eventoID;
 
   const { usuario } = useUser();
 
@@ -51,7 +52,7 @@ export default function ({ route, navigation }: any) {
 
   // Obtener los eventos del usuario
   async function fetchEvents(refreshing?: boolean) {
-    let eventoANavegar: string;
+    let eventoANavegar: string = eventoID;
 
     // Fetch eventos
     const eve = await DataStore.query(
@@ -148,10 +149,12 @@ export default function ({ route, navigation }: any) {
       );
     });
 
-    // Si hay evento a navegar, hay una reserva que coincide con el evento navegar a la misma
-    if (eventoANavegar) {
-      const e = eve.find((e) => e.id === eventoANavegar);
-      navigation.navigate("DetalleEvento", { ...e, organizador: true });
+    if (!refreshing) {
+      // Si hay evento a navegar, hay una reserva que coincide con el evento navegar a la misma
+      if (eventoANavegar) {
+        const e = eve.find((e) => e.id === eventoANavegar);
+        navigation.navigate("DetalleEvento", { ...e, organizador: true });
+      }
     }
 
     setEventos(eve);

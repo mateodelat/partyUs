@@ -308,37 +308,37 @@ exports.handler = async (event) => {
     };
 
     const q = /*GraphQL*/`
-     mutation UpdateReserva($input: UpdateReservaInput!) {
-       ${!cancelado ? `
-       updateReserva(input: $input) {
-         ${reservaReturns}
-     }
-     `: ""}
- 
-       ${notificacionABorrar?.id ? `
-       deleteNotificacion(input: {id: "${notificacionABorrar.id}" _version:${notificacionABorrar._version}}) {
-         id
-         _version
-         _deleted
-         _lastChangedAt
-         createdAt
-         updatedAt
-     }
- `: ""}
- 
-       createNotificacion(input: {
-       tipo: RESERVAEFECTIVOPAGADA,
-       showAt: "${new Date().toISOString()}",
-       titulo:"Pago exitoso",
-       usuarioID:"${usuarioID}",
-       reservaID:"${reservaID}",
-       organizadorID:"${organizadorID}",
-       descripcion: "Tu pago en efectivo por $${amount} fue procesado con exito. ${cancelado ? `Como la reserva esta cancelada se agrego al saldo de tu cuenta` : `Haz click aqui para ver tu boleto`}"
-   }){
-     ${createNotificacionReturns}
-   }
-   }
-   `
+      mutation UpdateReserva($input: UpdateReservaInput!) {
+        ${!cancelado ? `
+        updateReserva(input: $input) {
+          ${reservaReturns}
+      }
+      `: ""}
+  
+        ${notificacionABorrar?.id ? `
+        deleteNotificacion(input: {id: "${notificacionABorrar.id}" _version:${notificacionABorrar._version}}) {
+          id
+          _version
+          _deleted
+          _lastChangedAt
+          createdAt
+          updatedAt
+      }
+  `: ""}
+  
+        createNotificacion(input: {
+        tipo: RESERVAEFECTIVOPAGADA,
+        showAt: "${new Date().toISOString()}",
+        titulo:"Pago exitoso",
+        usuarioID:"${usuarioID}",
+        reservaID:"${reservaID}",
+        organizadorID:"${organizadorID}",
+        descripcion: "Tu pago en efectivo por $${amount} fue procesado con exito. ${cancelado ? `Como la reserva esta cancelada se agrego al saldo de tu cuenta` : `Haz click aqui para ver tu boleto`}"
+    }){
+      ${createNotificacionReturns}
+    }
+    }
+    `
 
 
     ///////////////////////////////////////////////////////

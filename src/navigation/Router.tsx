@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, Linking } from "react-native";
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import {
@@ -34,6 +34,9 @@ import Pagos from "../screens/Perfil/Pagos";
 import MisEventos from "../screens/Perfil/MisEventos";
 import Soporte from "../screens/Perfil/Soporte";
 import Admin from "../screens/Perfil/Admin";
+import Loading from "../components/Loading";
+
+import ExpoLinking from "expo-linking";
 
 function NombreApellidosOnPress({ navigation }: any) {
   const { setUsuario, usuario } = useUser();
@@ -63,8 +66,23 @@ function NombreApellidosOnPress({ navigation }: any) {
 export default function () {
   const Stack = createStackNavigator();
 
+  const config = {
+    screens: {
+      DetalleEvento: "evento",
+    },
+  };
+
+  const linking = {
+    prefixes: [
+      "partyus://",
+      "exp://192.168.1.77:19000/--",
+      "exp://exp.host/@mateodelat/partyus/--",
+    ],
+    config,
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking} fallback={<Loading indicator />}>
       <Stack.Navigator
         // initialRouteName="Perfil"
         screenOptions={{
@@ -147,6 +165,7 @@ export default function () {
           name="Pagar"
           component={Pagar}
           options={{
+            headerShown: false,
             animationEnabled: false,
           }}
         />

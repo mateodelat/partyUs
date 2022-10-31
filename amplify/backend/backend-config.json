@@ -251,5 +251,12 @@
         }
       ]
     }
+  },
+  "storage": {
+    "partyusStorage": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": []
+    }
   }
 }

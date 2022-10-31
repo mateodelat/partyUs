@@ -2,8 +2,11 @@
 // this is an auto generated file. This will be overwritten
 
 export const onCreateUsuario = /* GraphQL */ `
-  subscription OnCreateUsuario($owner: String) {
-    onCreateUsuario(owner: $owner) {
+  subscription OnCreateUsuario(
+    $filter: ModelSubscriptionUsuarioFilterInput
+    $owner: String
+  ) {
+    onCreateUsuario(filter: $filter, owner: $owner) {
       id
       nickname
       nombre
@@ -11,6 +14,7 @@ export const onCreateUsuario = /* GraphQL */ `
       paterno
       email
       foto
+      cuentaBancaria
       imagenFondo
       direccion
       phoneNumber
@@ -99,8 +103,11 @@ export const onCreateUsuario = /* GraphQL */ `
   }
 `;
 export const onUpdateUsuario = /* GraphQL */ `
-  subscription OnUpdateUsuario($owner: String) {
-    onUpdateUsuario(owner: $owner) {
+  subscription OnUpdateUsuario(
+    $filter: ModelSubscriptionUsuarioFilterInput
+    $owner: String
+  ) {
+    onUpdateUsuario(filter: $filter, owner: $owner) {
       id
       nickname
       nombre
@@ -108,6 +115,7 @@ export const onUpdateUsuario = /* GraphQL */ `
       paterno
       email
       foto
+      cuentaBancaria
       imagenFondo
       direccion
       phoneNumber
@@ -196,8 +204,11 @@ export const onUpdateUsuario = /* GraphQL */ `
   }
 `;
 export const onDeleteUsuario = /* GraphQL */ `
-  subscription OnDeleteUsuario($owner: String) {
-    onDeleteUsuario(owner: $owner) {
+  subscription OnDeleteUsuario(
+    $filter: ModelSubscriptionUsuarioFilterInput
+    $owner: String
+  ) {
+    onDeleteUsuario(filter: $filter, owner: $owner) {
       id
       nickname
       nombre
@@ -205,6 +216,7 @@ export const onDeleteUsuario = /* GraphQL */ `
       paterno
       email
       foto
+      cuentaBancaria
       imagenFondo
       direccion
       phoneNumber
@@ -293,8 +305,11 @@ export const onDeleteUsuario = /* GraphQL */ `
   }
 `;
 export const onCreateEvento = /* GraphQL */ `
-  subscription OnCreateEvento($CreatorID: String) {
-    onCreateEvento(CreatorID: $CreatorID) {
+  subscription OnCreateEvento(
+    $filter: ModelSubscriptionEventoFilterInput
+    $CreatorID: String
+  ) {
+    onCreateEvento(filter: $filter, CreatorID: $CreatorID) {
       id
       imagenes
       imagenPrincipalIDX
@@ -321,6 +336,7 @@ export const onCreateEvento = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -413,8 +429,11 @@ export const onCreateEvento = /* GraphQL */ `
   }
 `;
 export const onUpdateEvento = /* GraphQL */ `
-  subscription OnUpdateEvento($CreatorID: String) {
-    onUpdateEvento(CreatorID: $CreatorID) {
+  subscription OnUpdateEvento(
+    $filter: ModelSubscriptionEventoFilterInput
+    $CreatorID: String
+  ) {
+    onUpdateEvento(filter: $filter, CreatorID: $CreatorID) {
       id
       imagenes
       imagenPrincipalIDX
@@ -441,6 +460,7 @@ export const onUpdateEvento = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -533,8 +553,11 @@ export const onUpdateEvento = /* GraphQL */ `
   }
 `;
 export const onDeleteEvento = /* GraphQL */ `
-  subscription OnDeleteEvento($CreatorID: String) {
-    onDeleteEvento(CreatorID: $CreatorID) {
+  subscription OnDeleteEvento(
+    $filter: ModelSubscriptionEventoFilterInput
+    $CreatorID: String
+  ) {
+    onDeleteEvento(filter: $filter, CreatorID: $CreatorID) {
       id
       imagenes
       imagenPrincipalIDX
@@ -561,6 +584,7 @@ export const onDeleteEvento = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -653,8 +677,11 @@ export const onDeleteEvento = /* GraphQL */ `
   }
 `;
 export const onCreateNotificacion = /* GraphQL */ `
-  subscription OnCreateNotificacion($usuarioID: String) {
-    onCreateNotificacion(usuarioID: $usuarioID) {
+  subscription OnCreateNotificacion(
+    $filter: ModelSubscriptionNotificacionFilterInput
+    $usuarioID: String
+  ) {
+    onCreateNotificacion(filter: $filter, usuarioID: $usuarioID) {
       id
       tipo
       titulo
@@ -674,8 +701,11 @@ export const onCreateNotificacion = /* GraphQL */ `
   }
 `;
 export const onUpdateNotificacion = /* GraphQL */ `
-  subscription OnUpdateNotificacion($usuarioID: String) {
-    onUpdateNotificacion(usuarioID: $usuarioID) {
+  subscription OnUpdateNotificacion(
+    $filter: ModelSubscriptionNotificacionFilterInput
+    $usuarioID: String
+  ) {
+    onUpdateNotificacion(filter: $filter, usuarioID: $usuarioID) {
       id
       tipo
       titulo
@@ -695,8 +725,11 @@ export const onUpdateNotificacion = /* GraphQL */ `
   }
 `;
 export const onDeleteNotificacion = /* GraphQL */ `
-  subscription OnDeleteNotificacion($usuarioID: String) {
-    onDeleteNotificacion(usuarioID: $usuarioID) {
+  subscription OnDeleteNotificacion(
+    $filter: ModelSubscriptionNotificacionFilterInput
+    $usuarioID: String
+  ) {
+    onDeleteNotificacion(filter: $filter, usuarioID: $usuarioID) {
       id
       tipo
       titulo
@@ -716,8 +749,11 @@ export const onDeleteNotificacion = /* GraphQL */ `
   }
 `;
 export const onCreateBoleto = /* GraphQL */ `
-  subscription OnCreateBoleto($owner: String) {
-    onCreateBoleto(owner: $owner) {
+  subscription OnCreateBoleto(
+    $filter: ModelSubscriptionBoletoFilterInput
+    $owner: String
+  ) {
+    onCreateBoleto(filter: $filter, owner: $owner) {
       id
       titulo
       descripcion
@@ -750,8 +786,11 @@ export const onCreateBoleto = /* GraphQL */ `
   }
 `;
 export const onUpdateBoleto = /* GraphQL */ `
-  subscription OnUpdateBoleto($owner: String) {
-    onUpdateBoleto(owner: $owner) {
+  subscription OnUpdateBoleto(
+    $filter: ModelSubscriptionBoletoFilterInput
+    $owner: String
+  ) {
+    onUpdateBoleto(filter: $filter, owner: $owner) {
       id
       titulo
       descripcion
@@ -784,8 +823,11 @@ export const onUpdateBoleto = /* GraphQL */ `
   }
 `;
 export const onDeleteBoleto = /* GraphQL */ `
-  subscription OnDeleteBoleto($owner: String) {
-    onDeleteBoleto(owner: $owner) {
+  subscription OnDeleteBoleto(
+    $filter: ModelSubscriptionBoletoFilterInput
+    $owner: String
+  ) {
+    onDeleteBoleto(filter: $filter, owner: $owner) {
       id
       titulo
       descripcion
@@ -818,8 +860,8 @@ export const onDeleteBoleto = /* GraphQL */ `
   }
 `;
 export const onCreateCupon = /* GraphQL */ `
-  subscription OnCreateCupon {
-    onCreateCupon {
+  subscription OnCreateCupon($filter: ModelSubscriptionCuponFilterInput) {
+    onCreateCupon(filter: $filter) {
       id
       restantes
       vencimiento
@@ -868,8 +910,8 @@ export const onCreateCupon = /* GraphQL */ `
   }
 `;
 export const onUpdateCupon = /* GraphQL */ `
-  subscription OnUpdateCupon {
-    onUpdateCupon {
+  subscription OnUpdateCupon($filter: ModelSubscriptionCuponFilterInput) {
+    onUpdateCupon(filter: $filter) {
       id
       restantes
       vencimiento
@@ -918,8 +960,8 @@ export const onUpdateCupon = /* GraphQL */ `
   }
 `;
 export const onDeleteCupon = /* GraphQL */ `
-  subscription OnDeleteCupon {
-    onDeleteCupon {
+  subscription OnDeleteCupon($filter: ModelSubscriptionCuponFilterInput) {
+    onDeleteCupon(filter: $filter) {
       id
       restantes
       vencimiento
@@ -968,8 +1010,8 @@ export const onDeleteCupon = /* GraphQL */ `
   }
 `;
 export const onCreateReserva = /* GraphQL */ `
-  subscription OnCreateReserva {
-    onCreateReserva {
+  subscription OnCreateReserva($filter: ModelSubscriptionReservaFilterInput) {
+    onCreateReserva(filter: $filter) {
       id
       total
       comision
@@ -1017,6 +1059,7 @@ export const onCreateReserva = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1062,6 +1105,7 @@ export const onCreateReserva = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -1134,8 +1178,8 @@ export const onCreateReserva = /* GraphQL */ `
   }
 `;
 export const onUpdateReserva = /* GraphQL */ `
-  subscription OnUpdateReserva {
-    onUpdateReserva {
+  subscription OnUpdateReserva($filter: ModelSubscriptionReservaFilterInput) {
+    onUpdateReserva(filter: $filter) {
       id
       total
       comision
@@ -1183,6 +1227,7 @@ export const onUpdateReserva = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1228,6 +1273,7 @@ export const onUpdateReserva = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -1300,8 +1346,8 @@ export const onUpdateReserva = /* GraphQL */ `
   }
 `;
 export const onDeleteReserva = /* GraphQL */ `
-  subscription OnDeleteReserva {
-    onDeleteReserva {
+  subscription OnDeleteReserva($filter: ModelSubscriptionReservaFilterInput) {
+    onDeleteReserva(filter: $filter) {
       id
       total
       comision
@@ -1349,6 +1395,7 @@ export const onDeleteReserva = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1394,6 +1441,7 @@ export const onDeleteReserva = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -1466,8 +1514,10 @@ export const onDeleteReserva = /* GraphQL */ `
   }
 `;
 export const onCreateReservasBoletos = /* GraphQL */ `
-  subscription OnCreateReservasBoletos {
-    onCreateReservasBoletos {
+  subscription OnCreateReservasBoletos(
+    $filter: ModelSubscriptionReservasBoletosFilterInput
+  ) {
+    onCreateReservasBoletos(filter: $filter) {
       id
       boletoID
       reservaID
@@ -1526,6 +1576,7 @@ export const onCreateReservasBoletos = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1601,8 +1652,10 @@ export const onCreateReservasBoletos = /* GraphQL */ `
   }
 `;
 export const onUpdateReservasBoletos = /* GraphQL */ `
-  subscription OnUpdateReservasBoletos {
-    onUpdateReservasBoletos {
+  subscription OnUpdateReservasBoletos(
+    $filter: ModelSubscriptionReservasBoletosFilterInput
+  ) {
+    onUpdateReservasBoletos(filter: $filter) {
       id
       boletoID
       reservaID
@@ -1661,6 +1714,7 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1736,8 +1790,10 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
   }
 `;
 export const onDeleteReservasBoletos = /* GraphQL */ `
-  subscription OnDeleteReservasBoletos {
-    onDeleteReservasBoletos {
+  subscription OnDeleteReservasBoletos(
+    $filter: ModelSubscriptionReservasBoletosFilterInput
+  ) {
+    onDeleteReservasBoletos(filter: $filter) {
       id
       boletoID
       reservaID
@@ -1796,6 +1852,7 @@ export const onDeleteReservasBoletos = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber

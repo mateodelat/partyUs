@@ -405,68 +405,63 @@ export default ({
           </View>
         )}
 
-        <View
-          style={{ margin: handleSelectPlace ? 20 : 10, flex: 1, marginTop: 0 }}
-        >
-          <View style={styles.mapContainer}>
-            {locationPermision !== undefined && region ? (
-              <MapView
-                ref={map}
-                provider={"google"}
-                mapType={"standard"}
-                showsUserLocation={locationPermision}
-                loadingEnabled={true}
-                onTouchStart={clearSugested}
-                onPress={
-                  handleSelectPlace
-                    ? ({ nativeEvent }) => {
-                        const { coordinate } = nativeEvent as any;
-                        handlePressPlace(coordinate);
-                      }
-                    : () => null
-                }
-                onLongPress={
-                  handleSelectPlace
-                    ? ({ nativeEvent }) => {
-                        const { coordinate } = nativeEvent as any;
-                        handlePressPlace(coordinate);
-                      }
-                    : () => null
-                }
-                initialRegion={region}
-                onPoiClick={
-                  handleSelectPlace
-                    ? ({ nativeEvent }) => {
-                        const { coordinate, placeId, name } =
-                          nativeEvent as any;
-                        handlePressPlace(coordinate, placeId, name);
-                      }
-                    : () => null
-                }
-                style={{
-                  ...StyleSheet.absoluteFillObject,
-                }}
-                onRegionChangeComplete={(r) => {
-                  setActualRegion(r);
-                }}
-              >
-                {/* Marcador */}
-                {place && <Marker coordinate={place} />}
-              </MapView>
-            ) : (
-              <Loading indicator color={"blue"} />
-            )}
-          </View>
-          {place?.ubicacionNombre && handleSelectPlace && (
-            <View style={styles.locationTxtContainer}>
-              <TouchableOpacity onPress={() => guardarLugar(place)}>
-                <Text numberOfLines={2} style={styles.locationTxt}>
-                  {place?.ubicacionNombre}
-                </Text>
-              </TouchableOpacity>
-            </View>
+        <View style={styles.mapContainer}>
+          {locationPermision !== undefined && region ? (
+            <MapView
+              ref={map}
+              provider={"google"}
+              mapType={"standard"}
+              showsUserLocation={locationPermision}
+              loadingEnabled={true}
+              onTouchStart={clearSugested}
+              onPress={
+                handleSelectPlace
+                  ? ({ nativeEvent }) => {
+                      const { coordinate } = nativeEvent as any;
+                      handlePressPlace(coordinate);
+                    }
+                  : () => null
+              }
+              onLongPress={
+                handleSelectPlace
+                  ? ({ nativeEvent }) => {
+                      const { coordinate } = nativeEvent as any;
+                      handlePressPlace(coordinate);
+                    }
+                  : () => null
+              }
+              initialRegion={region}
+              onPoiClick={
+                handleSelectPlace
+                  ? ({ nativeEvent }) => {
+                      const { coordinate, placeId, name } = nativeEvent as any;
+                      handlePressPlace(coordinate, placeId, name);
+                    }
+                  : () => null
+              }
+              style={{
+                ...StyleSheet.absoluteFillObject,
+              }}
+              onRegionChangeComplete={(r) => {
+                setActualRegion(r);
+              }}
+            >
+              {/* Marcador */}
+              {place && <Marker coordinate={place} />}
+            </MapView>
+          ) : (
+            <Loading indicator color={"blue"} />
           )}
         </View>
+        {place?.ubicacionNombre && handleSelectPlace && (
+          <View style={styles.locationTxtContainer}>
+            <TouchableOpacity onPress={() => guardarLugar(place)}>
+              <Text numberOfLines={2} style={styles.locationTxt}>
+                {place?.ubicacionNombre}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </Pressable>
     </Modal>
   );

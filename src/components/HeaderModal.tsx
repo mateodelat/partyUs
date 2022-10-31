@@ -3,6 +3,7 @@ import React from "react";
 
 import { Feather } from "@expo/vector-icons";
 import { azulClaro } from "../../constants";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function ({
   titulo,
   onPress,
@@ -18,6 +19,8 @@ export default function ({
 }) {
   color = color ? color : azulClaro;
 
+  const { top } = useSafeAreaInsets();
+
   return (
     <View
       style={{
@@ -25,7 +28,7 @@ export default function ({
         alignItems: "center",
         justifyContent: "center",
         marginBottom: 20,
-        paddingTop: 5,
+        paddingTop: top + 20,
       }}
     >
       <Text style={[styles.titleModal, { color }, textStyle]}>{titulo}</Text>

@@ -52,6 +52,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "cuentaBancaria": {
+                    "name": "cuentaBancaria",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "imagenFondo": {
                     "name": "imagenFondo",
                     "isArray": false,
@@ -248,6 +255,15 @@ export const schema = {
                             },
                             {
                                 "allow": "public",
+                                "provider": "apiKey",
+                                "operations": [
+                                    "create",
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "provider": "iam",
                                 "operations": [
                                     "create",
                                     "read"
@@ -487,6 +503,26 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
+                                "allow": "public",
+                                "provider": "apiKey",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "provider": "iam",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
                                 "allow": "private",
                                 "provider": "iam",
                                 "operations": [
@@ -519,18 +555,6 @@ export const schema = {
                                     "create",
                                     "update",
                                     "delete",
-                                    "read"
-                                ]
-                            },
-                            {
-                                "allow": "public",
-                                "operations": [
-                                    "read"
-                                ]
-                            },
-                            {
-                                "allow": "private",
-                                "operations": [
                                     "read"
                                 ]
                             }
@@ -656,6 +680,14 @@ export const schema = {
                             },
                             {
                                 "allow": "public",
+                                "provider": "apiKey",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "provider": "iam",
                                 "operations": [
                                     "read"
                                 ]
@@ -810,6 +842,14 @@ export const schema = {
                             },
                             {
                                 "allow": "public",
+                                "provider": "apiKey",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "provider": "iam",
                                 "operations": [
                                     "read"
                                 ]
@@ -1116,6 +1156,26 @@ export const schema = {
                     "properties": {
                         "rules": [
                             {
+                                "allow": "public",
+                                "provider": "apiKey",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "provider": "iam",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
                                 "allow": "private",
                                 "provider": "iam",
                                 "operations": [
@@ -1133,18 +1193,6 @@ export const schema = {
                                     "update"
                                 ],
                                 "identityClaim": "cognito:username"
-                            },
-                            {
-                                "allow": "public",
-                                "operations": [
-                                    "read"
-                                ]
-                            },
-                            {
-                                "allow": "private",
-                                "operations": [
-                                    "read"
-                                ]
                             },
                             {
                                 "groupClaim": "cognito:groups",
@@ -1261,6 +1309,14 @@ export const schema = {
                             },
                             {
                                 "allow": "public",
+                                "provider": "apiKey",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "provider": "iam",
                                 "operations": [
                                     "read"
                                 ]
@@ -1410,6 +1466,14 @@ export const schema = {
                             },
                             {
                                 "allow": "public",
+                                "provider": "apiKey",
+                                "operations": [
+                                    "create"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "provider": "iam",
                                 "operations": [
                                     "create"
                                 ]
@@ -1501,6 +1565,7 @@ export const schema = {
                 "EVENTOCREADO",
                 "EVENTOACTUALIZACION",
                 "EVENTOCANCELADO",
+                "RESERVAENEVENTO",
                 "RECORDATORIOEVENTO",
                 "RECORDATORIOPAGO",
                 "CALIFICAUSUARIO"
@@ -1508,5 +1573,6 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "version": "16fbb45235966609a70cf3b2082016f3"
+    "codegenVersion": "3.3.1",
+    "version": "6828270b1a717f950a6c58dae0fdae23"
 };

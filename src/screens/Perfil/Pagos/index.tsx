@@ -284,6 +284,7 @@ export default function ({ navigation }) {
         item.order_id.length
       );
 
+      navigation.pop();
       navigation.navigate("MisReservas", {
         reservaID,
         efectivoCompletado:
@@ -293,7 +294,7 @@ export default function ({ navigation }) {
   }
 
   function handlePressTransaction(reservaID: string) {
-    console.log(reservaID);
+    navigation.pop();
     navigation.navigate("MisEventos", { reservaID });
   }
 
@@ -419,7 +420,7 @@ export default function ({ navigation }) {
   function handleRetirar() {
     Alert.alert(
       "Atencion",
-      "Las transferencias a tu banco se programan cada semana"
+      "Los pagos de los eventos se envian al concluir el mismo, cualquier problema contacta con el soporte"
     );
   }
 

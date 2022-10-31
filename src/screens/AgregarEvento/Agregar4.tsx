@@ -4,6 +4,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Linking,
   Text,
   View,
 } from "react-native";
@@ -11,6 +12,7 @@ import React, { useEffect, useState } from "react";
 import Boton from "../../components/Boton";
 
 import {
+  abrirTerminos,
   AsyncAlert,
   azulClaro,
   azulFondo,
@@ -44,6 +46,8 @@ import {
 import { createEvento } from "../../graphql/mutations";
 import { Notificacion } from "../../models";
 import { TipoNotificacion } from "../../models";
+import { notificacionesRecordatorio } from "../Inicio/Notifications/functions";
+import useUser from "../../Hooks/useUser";
 
 const musicList = enumToArray(MusicEnum);
 const comoditiesList = enumToArray(ComoditiesEnum);
@@ -56,6 +60,8 @@ export default function Agregar2({
   navigation: NavigationProp;
 }) {
   const { evento, setEvento } = useEvento();
+
+  const { usuario } = useUser();
 
   // Enums del tipo de evento
   const [musica, setMusica] = useState<MusicEnum | undefined>(
@@ -275,6 +281,14 @@ export default function Agregar2({
 
         CreatorID: sub,
       };
+
+      // Enviar notificaciones de recordatorio evento al organizador
+      notificacionesRecordatorio({
+        evento: eventoAEnviar,
+        usuario,
+        organizador: true,
+      });
+
       await graphqlRequest({
         query: createEvento,
         variables: { input: eventoAEnviar },
@@ -296,10 +310,6 @@ export default function Agregar2({
         Alert.alert("Error", "Sucedio un error creando el evento");
       }
     }
-  }
-
-  function handleAbrirTerminos() {
-    Alert.alert("Info", "Ve nuestros terminos en la pagina oficial de partyUs");
   }
 
   return (
@@ -428,7 +438,7 @@ export default function Agregar2({
         />
         <Text style={styles.textoTerminos}>
           Acepto{" "}
-          <Text style={{ color: azulClaro }} onPress={handleAbrirTerminos}>
+          <Text style={{ color: azulClaro }} onPress={abrirTerminos}>
             terminos y condiciones
           </Text>
         </Text>

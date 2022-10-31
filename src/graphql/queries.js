@@ -11,6 +11,7 @@ export const getUsuario = /* GraphQL */ `
       paterno
       email
       foto
+      cuentaBancaria
       imagenFondo
       direccion
       phoneNumber
@@ -113,6 +114,7 @@ export const listUsuarios = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -169,6 +171,7 @@ export const syncUsuarios = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -233,6 +236,7 @@ export const getEvento = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -358,6 +362,7 @@ export const listEventos = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -439,6 +444,7 @@ export const syncEventos = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -829,6 +835,7 @@ export const getReserva = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -874,6 +881,7 @@ export const getReserva = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -1007,6 +1015,7 @@ export const listReservas = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1126,6 +1135,7 @@ export const syncReservas = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1238,6 +1248,7 @@ export const getReservasBoletos = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber

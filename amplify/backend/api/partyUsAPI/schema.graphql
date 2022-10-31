@@ -4,7 +4,10 @@ type Usuario
     rules: [
       { allow: owner, ownerField: "owner" }
       { allow: groups, groups: ["Admin"] }
-      { allow: public, operations: [create, read] }
+      # Autorizaciones publicas
+      { allow: public, provider: apiKey, operations: [create, read] }
+      { allow: public, provider: iam, operations: [create, read] }
+      # Autenticado
       { allow: private, provider: iam, operations: [read] }
       { allow: private, operations: [read] }
     ]
@@ -16,6 +19,9 @@ type Usuario
   paterno: String
   email: String
   foto: String
+
+  cuentaBancaria: String
+
   imagenFondo: String
   direccion: AWSJSON
     @auth(rules: [{ allow: owner }, { allow: groups, groups: ["Admin"] }])
@@ -66,14 +72,15 @@ type Evento
   @model
   @auth(
     rules: [
+      # Todos los demas solo pueden verlos
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: iam, operations: [read] }
+      { allow: private, operations: [read] }
+      #
       { allow: private, provider: iam }
       # El dueño es el unico que puede moverle a sus eventos
       { allow: owner, ownerField: "CreatorID" }
       { allow: groups, groups: ["Admin"] }
-      #
-      # Todos los demas solo pueden verlos
-      { allow: public, operations: [read] }
-      { allow: private, operations: [read] }
     ]
   ) {
   id: ID
@@ -111,7 +118,8 @@ type Notificacion
       { allow: owner, ownerField: "usuarioID" }
       #
       # Cualquiera con API key puede crear una notificacion
-      { allow: public, operations: [create] }
+      { allow: public, provider: apiKey, operations: [create] }
+      { allow: public, provider: iam, operations: [create] }
       { allow: groups, groups: ["Admin"] }
       #
       # Permitir crear la notificacion desde lambda
@@ -141,7 +149,8 @@ type Boleto
       { allow: owner }
       #
       # Los demas solo pueden leer el boleto
-      { allow: public, operations: [read] }
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: iam, operations: [read] }
       { allow: private, operations: [read] }
       { allow: private, provider: iam }
       { allow: groups, groups: ["Admin"] }
@@ -168,7 +177,10 @@ type Cupon
       { allow: groups, groups: ["Admin"] }
       #
       # Todos los demas pueden query
-      { allow: public, operations: [read] }
+      # Publico
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: iam, operations: [read] }
+      # Privado
       { allow: private, operations: [read] }
       { allow: private, provider: iam, operations: [read, update] }
     ]
@@ -191,15 +203,18 @@ type Reserva
   @model
   @auth(
     rules: [
+      # Todos los demas pueden ver la reserva
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: iam, operations: [read] }
+      # Autenticado
+      { allow: private, operations: [read] }
+      #
       # Solo lambda puede crear reserva
       { allow: private, provider: iam }
       #
       # El dueño del evento puede ingresar la reserva
       { allow: owner, ownerField: "organizadorID", operations: [update] }
       #
-      # Todos los demas pueden ver la reserva
-      { allow: public, operations: [read] }
-      { allow: private, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
   ) {
@@ -255,7 +270,10 @@ type ReservasBoletos
       { allow: private, provider: iam }
       #
       # Todos los demas pueden ver la reserva
-      { allow: public, operations: [read] }
+      # Publico
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: iam, operations: [read] }
+      # Privado
       { allow: private, operations: [read] }
       { allow: groups, groups: ["Admin"] }
     ]
@@ -317,6 +335,8 @@ enum TipoNotificacion {
   EVENTOCREADO
   EVENTOACTUALIZACION
   EVENTOCANCELADO
+
+  RESERVAENEVENTO
 
   RECORDATORIOEVENTO
   RECORDATORIOPAGO

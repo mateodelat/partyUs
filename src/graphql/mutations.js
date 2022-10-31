@@ -14,6 +14,7 @@ export const createUsuario = /* GraphQL */ `
       paterno
       email
       foto
+      cuentaBancaria
       imagenFondo
       direccion
       phoneNumber
@@ -114,6 +115,7 @@ export const updateUsuario = /* GraphQL */ `
       paterno
       email
       foto
+      cuentaBancaria
       imagenFondo
       direccion
       phoneNumber
@@ -214,6 +216,7 @@ export const deleteUsuario = /* GraphQL */ `
       paterno
       email
       foto
+      cuentaBancaria
       imagenFondo
       direccion
       phoneNumber
@@ -333,6 +336,7 @@ export const createEvento = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -456,6 +460,7 @@ export const updateEvento = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -579,6 +584,7 @@ export const deleteEvento = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -1065,6 +1071,7 @@ export const createReserva = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1110,6 +1117,7 @@ export const createReserva = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -1234,6 +1242,7 @@ export const updateReserva = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1279,6 +1288,7 @@ export const updateReserva = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -1403,6 +1413,7 @@ export const deleteReserva = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1448,6 +1459,7 @@ export const deleteReserva = /* GraphQL */ `
         paterno
         email
         foto
+        cuentaBancaria
         imagenFondo
         direccion
         phoneNumber
@@ -1583,6 +1595,7 @@ export const createReservasBoletos = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1721,6 +1734,7 @@ export const updateReservasBoletos = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber
@@ -1859,6 +1873,7 @@ export const deleteReservasBoletos = /* GraphQL */ `
           paterno
           email
           foto
+          cuentaBancaria
           imagenFondo
           direccion
           phoneNumber

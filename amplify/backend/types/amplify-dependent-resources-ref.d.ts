@@ -59,5 +59,11 @@ export type AmplifyDependentResourcesAttributes = {
             "ApiName": "string",
             "ApiId": "string"
         }
+    },
+    "storage": {
+        "partyusStorage": {
+            "BucketName": "string",
+            "Region": "string"
+        }
     }
 }

@@ -3,7 +3,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 
-import { Alert } from "react-native";
+import { Alert, Linking } from "react-native";
 import { API, Auth, DataStore, Storage } from "aws-amplify";
 import { TipoNotificacion, Usuario } from "../src/models";
 import { MERCHANT_ID, PUBLIC_KEY } from "./keys";
@@ -16,6 +16,8 @@ import {
   AndroidNotificationPriority,
   scheduleNotificationAsync,
 } from "expo-notifications";
+
+import { clabe } from "./ClabeValidator";
 
 export const rojo = "#f01829";
 export const rojoClaro = "#f34856";
@@ -231,6 +233,16 @@ export const getBase64FromUrl = async (url: string) => {
   }
   return r;
 };
+
+export function abrirTerminos() {
+  AsyncAlert(
+    "Abrir terminos",
+    "Se te dirigira a un link externo, ¿quieres continuar?"
+  ).then((r) => {
+    if (!r) return;
+    Linking.openURL("https://www.partyusmx.com/privacidad");
+  });
+}
 
 /**
  * Funcion que toma un string y lo devuelve normalizado sin acentos y en mayusculas
@@ -762,6 +774,87 @@ export const vibrar = (tipo?: VibrationType) => {
   }
 };
 
+export function validateClabe(input: string) {
+  // Strip all characters from the input except digits
+  input = input.replace(/\D/g, "");
+  // Trim the remaining input to eighteen characters
+  input = input.substring(0, 18);
+
+  const status = clabe.validate(input);
+  return status.ok;
+}
+
+export function formatCuentaCLABE(input: string) {
+  if (!input) return;
+  // Strip all characters from the input except digits
+  input = input.replace(/\D/g, "");
+
+  // Trim the remaining input to eighteen characters
+  input = input.substring(0, 18);
+
+  // Based upon the length of the string, we add formatting as necessary
+  var size = input.length;
+  if (size == 0) {
+    input = input;
+  } else if (size < 4) {
+    input = input;
+  } else if (size < 7) {
+    input = input.substring(0, 3) + " " + input.substring(3, 6);
+  } else if (size < 18) {
+    input =
+      input.substring(0, 3) +
+      " " +
+      input.substring(3, 6) +
+      " " +
+      input.substring(6, 17);
+  } else {
+    input =
+      input.substring(0, 3) +
+      " " +
+      input.substring(3, 6) +
+      " " +
+      input.substring(6, 17) +
+      " " +
+      input.substring(17, 18);
+  }
+  return input;
+}
+
+export async function sendPushNotification(input: {
+  title: String;
+  descripcion: String;
+  data?: Object;
+  token: String;
+}) {
+  const { token, title, descripcion: body, data } = input;
+
+  let message = {
+    to: token,
+    sound: "default",
+    title,
+    body,
+    badge: 1,
+    priority: "high",
+    data,
+  };
+
+  if (!data) {
+    delete message.data;
+  }
+
+  return await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Accept-encoding": "gzip, deflate",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  }).then((r) => {
+    console.log("Push notification send to ", token);
+  });
+}
+
 /**
  * Manda notificacion en aplicacion y al celular
  *
@@ -781,6 +874,8 @@ export async function sendNotifications({
   usuarioID,
   reservaID,
   organizadorID,
+
+  externalToken,
 }: {
   titulo: string;
   descripcion: string;
@@ -794,6 +889,8 @@ export async function sendNotifications({
   eventoID?: string;
   reservaID?: string;
   organizadorID?: string;
+
+  externalToken?: string;
 }) {
   showAt = showAt ? showAt : new Date().toISOString();
 
@@ -822,18 +919,25 @@ export async function sendNotifications({
       })
     ),
 
-    scheduleNotificationAsync({
-      content: {
-        title: titulo,
-        body: descripcion,
-        priority: AndroidNotificationPriority.HIGH,
-        vibrate: [100],
-        data,
-      },
-      trigger: {
-        seconds: triggerTime,
-      },
-    }),
+    externalToken
+      ? sendPushNotification({
+          title: titulo,
+          data,
+          descripcion,
+          token: externalToken,
+        })
+      : scheduleNotificationAsync({
+          content: {
+            title: titulo,
+            body: descripcion,
+            priority: AndroidNotificationPriority.HIGH,
+            vibrate: [100],
+            data,
+          },
+          trigger: {
+            seconds: triggerTime,
+          },
+        }),
   ]);
 }
 

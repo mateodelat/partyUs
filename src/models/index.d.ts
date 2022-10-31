@@ -1,4 +1,6 @@
 import { ModelInit, MutableModel } from "@aws-amplify/datastore";
+// @ts-ignore
+import { LazyLoading, LazyLoadingDisabled, AsyncCollection, AsyncItem } from "@aws-amplify/datastore";
 
 export enum PlaceEnum {
   EXTERIOR = "EXTERIOR",
@@ -44,6 +46,7 @@ export enum TipoNotificacion {
   EVENTOCREADO = "EVENTOCREADO",
   EVENTOACTUALIZACION = "EVENTOACTUALIZACION",
   EVENTOCANCELADO = "EVENTOCANCELADO",
+  RESERVAENEVENTO = "RESERVAENEVENTO",
   RECORDATORIOEVENTO = "RECORDATORIOEVENTO",
   RECORDATORIOPAGO = "RECORDATORIOPAGO",
   CALIFICAUSUARIO = "CALIFICAUSUARIO"
@@ -77,7 +80,7 @@ type NotificacionMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
-export declare class Usuario {
+type EagerUsuario = {
   readonly id: string;
   readonly nickname?: string | null;
   readonly nombre?: string | null;
@@ -85,6 +88,7 @@ export declare class Usuario {
   readonly paterno?: string | null;
   readonly email?: string | null;
   readonly foto?: string | null;
+  readonly cuentaBancaria?: string | null;
   readonly imagenFondo?: string | null;
   readonly direccion?: string | null;
   readonly phoneNumber?: string | null;
@@ -105,11 +109,46 @@ export declare class Usuario {
   readonly Reservas?: (Reserva | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Usuario, UsuarioMetaData>);
-  static copyOf(source: Usuario, mutator: (draft: MutableModel<Usuario, UsuarioMetaData>) => MutableModel<Usuario, UsuarioMetaData> | void): Usuario;
 }
 
-export declare class Evento {
+type LazyUsuario = {
+  readonly id: string;
+  readonly nickname?: string | null;
+  readonly nombre?: string | null;
+  readonly materno?: string | null;
+  readonly paterno?: string | null;
+  readonly email?: string | null;
+  readonly foto?: string | null;
+  readonly cuentaBancaria?: string | null;
+  readonly imagenFondo?: string | null;
+  readonly direccion?: string | null;
+  readonly phoneNumber?: string | null;
+  readonly phoneCode?: string | null;
+  readonly organizador?: boolean | null;
+  readonly admin?: boolean | null;
+  readonly idUploaded?: boolean | null;
+  readonly idData?: string | null;
+  readonly idKey?: string | null;
+  readonly fechaNacimiento?: string | null;
+  readonly calificacion?: number | null;
+  readonly numResenas?: number | null;
+  readonly notificationToken?: string | null;
+  readonly userPaymentID?: string | null;
+  readonly verified?: boolean | null;
+  readonly owner?: string | null;
+  readonly Eventos: AsyncCollection<Evento>;
+  readonly Reservas: AsyncCollection<Reserva>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Usuario = LazyLoading extends LazyLoadingDisabled ? EagerUsuario : LazyUsuario
+
+export declare const Usuario: (new (init: ModelInit<Usuario, UsuarioMetaData>) => Usuario) & {
+  copyOf(source: Usuario, mutator: (draft: MutableModel<Usuario, UsuarioMetaData>) => MutableModel<Usuario, UsuarioMetaData> | void): Usuario;
+}
+
+type EagerEvento = {
   readonly id: string;
   readonly imagenes?: (string | null)[] | null;
   readonly imagenPrincipalIDX?: number | null;
@@ -133,11 +172,41 @@ export declare class Evento {
   readonly Reservas?: (Reserva | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Evento, EventoMetaData>);
-  static copyOf(source: Evento, mutator: (draft: MutableModel<Evento, EventoMetaData>) => MutableModel<Evento, EventoMetaData> | void): Evento;
 }
 
-export declare class Boleto {
+type LazyEvento = {
+  readonly id: string;
+  readonly imagenes?: (string | null)[] | null;
+  readonly imagenPrincipalIDX?: number | null;
+  readonly titulo?: string | null;
+  readonly detalles?: string | null;
+  readonly ubicacion?: string | null;
+  readonly fechaInicial?: number | null;
+  readonly fechaFinal?: number | null;
+  readonly tosAceptance?: string | null;
+  readonly tipoLugar?: PlaceEnum | keyof typeof PlaceEnum | null;
+  readonly musica?: MusicEnum | keyof typeof MusicEnum | null;
+  readonly comodities?: (ComoditiesEnum | null)[] | keyof typeof ComoditiesEnum | null;
+  readonly musOtra?: string | null;
+  readonly personasReservadas?: number | null;
+  readonly personasMax?: number | null;
+  readonly precioMin?: number | null;
+  readonly precioMax?: number | null;
+  readonly CreatorID?: string | null;
+  readonly creator: AsyncItem<Usuario | undefined>;
+  readonly Boletos: AsyncCollection<Boleto>;
+  readonly Reservas: AsyncCollection<Reserva>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Evento = LazyLoading extends LazyLoadingDisabled ? EagerEvento : LazyEvento
+
+export declare const Evento: (new (init: ModelInit<Evento, EventoMetaData>) => Evento) & {
+  copyOf(source: Evento, mutator: (draft: MutableModel<Evento, EventoMetaData>) => MutableModel<Evento, EventoMetaData> | void): Evento;
+}
+
+type EagerBoleto = {
   readonly id: string;
   readonly titulo?: string | null;
   readonly descripcion?: string | null;
@@ -148,11 +217,28 @@ export declare class Boleto {
   readonly Reservas?: (ReservasBoletos | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Boleto, BoletoMetaData>);
-  static copyOf(source: Boleto, mutator: (draft: MutableModel<Boleto, BoletoMetaData>) => MutableModel<Boleto, BoletoMetaData> | void): Boleto;
 }
 
-export declare class ReservasBoletos {
+type LazyBoleto = {
+  readonly id: string;
+  readonly titulo?: string | null;
+  readonly descripcion?: string | null;
+  readonly cantidad?: number | null;
+  readonly personasReservadas?: number | null;
+  readonly precio?: number | null;
+  readonly eventoID?: string | null;
+  readonly Reservas: AsyncCollection<ReservasBoletos>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Boleto = LazyLoading extends LazyLoadingDisabled ? EagerBoleto : LazyBoleto
+
+export declare const Boleto: (new (init: ModelInit<Boleto, BoletoMetaData>) => Boleto) & {
+  copyOf(source: Boleto, mutator: (draft: MutableModel<Boleto, BoletoMetaData>) => MutableModel<Boleto, BoletoMetaData> | void): Boleto;
+}
+
+type EagerReservasBoletos = {
   readonly id: string;
   readonly boletoID?: string | null;
   readonly reservaID?: string | null;
@@ -161,11 +247,26 @@ export declare class ReservasBoletos {
   readonly quantity?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<ReservasBoletos, ReservasBoletosMetaData>);
-  static copyOf(source: ReservasBoletos, mutator: (draft: MutableModel<ReservasBoletos, ReservasBoletosMetaData>) => MutableModel<ReservasBoletos, ReservasBoletosMetaData> | void): ReservasBoletos;
 }
 
-export declare class Reserva {
+type LazyReservasBoletos = {
+  readonly id: string;
+  readonly boletoID?: string | null;
+  readonly reservaID?: string | null;
+  readonly reserva: AsyncItem<Reserva | undefined>;
+  readonly boleto: AsyncItem<Boleto | undefined>;
+  readonly quantity?: number | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type ReservasBoletos = LazyLoading extends LazyLoadingDisabled ? EagerReservasBoletos : LazyReservasBoletos
+
+export declare const ReservasBoletos: (new (init: ModelInit<ReservasBoletos, ReservasBoletosMetaData>) => ReservasBoletos) & {
+  copyOf(source: ReservasBoletos, mutator: (draft: MutableModel<ReservasBoletos, ReservasBoletosMetaData>) => MutableModel<ReservasBoletos, ReservasBoletosMetaData> | void): ReservasBoletos;
+}
+
+type EagerReserva = {
   readonly id: string;
   readonly total?: number | null;
   readonly comision?: number | null;
@@ -195,11 +296,47 @@ export declare class Reserva {
   readonly organizadorID?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Reserva, ReservaMetaData>);
-  static copyOf(source: Reserva, mutator: (draft: MutableModel<Reserva, ReservaMetaData>) => MutableModel<Reserva, ReservaMetaData> | void): Reserva;
 }
 
-export declare class Cupon {
+type LazyReserva = {
+  readonly id: string;
+  readonly total?: number | null;
+  readonly comision?: number | null;
+  readonly pagadoAlOrganizador?: number | null;
+  readonly cantidad?: number | null;
+  readonly pagado?: boolean | null;
+  readonly paymentTime?: string | null;
+  readonly tipoPago?: TipoPago | keyof typeof TipoPago | null;
+  readonly chargeID?: string | null;
+  readonly transactionID?: string | null;
+  readonly feeID?: string | null;
+  readonly cashBarcode?: string | null;
+  readonly cashReference?: string | null;
+  readonly ingreso?: boolean | null;
+  readonly horaIngreso?: string | null;
+  readonly cancelado?: boolean | null;
+  readonly canceledAt?: string | null;
+  readonly cancelReason?: ReservaCancelReason | keyof typeof ReservaCancelReason | null;
+  readonly fechaExpiracionUTC?: string | null;
+  readonly eventoID?: string | null;
+  readonly evento: AsyncItem<Evento | undefined>;
+  readonly usuarioID?: string | null;
+  readonly usuario: AsyncItem<Usuario | undefined>;
+  readonly cuponID?: string | null;
+  readonly cupon: AsyncItem<Cupon | undefined>;
+  readonly Boletos: AsyncCollection<ReservasBoletos>;
+  readonly organizadorID?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Reserva = LazyLoading extends LazyLoadingDisabled ? EagerReserva : LazyReserva
+
+export declare const Reserva: (new (init: ModelInit<Reserva, ReservaMetaData>) => Reserva) & {
+  copyOf(source: Reserva, mutator: (draft: MutableModel<Reserva, ReservaMetaData>) => MutableModel<Reserva, ReservaMetaData> | void): Reserva;
+}
+
+type EagerCupon = {
   readonly id: string;
   readonly restantes: number;
   readonly vencimiento: number;
@@ -208,11 +345,26 @@ export declare class Cupon {
   readonly Reservas?: Reserva[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Cupon, CuponMetaData>);
-  static copyOf(source: Cupon, mutator: (draft: MutableModel<Cupon, CuponMetaData>) => MutableModel<Cupon, CuponMetaData> | void): Cupon;
 }
 
-export declare class Notificacion {
+type LazyCupon = {
+  readonly id: string;
+  readonly restantes: number;
+  readonly vencimiento: number;
+  readonly porcentajeDescuento?: number | null;
+  readonly cantidadDescuento?: number | null;
+  readonly Reservas: AsyncCollection<Reserva>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Cupon = LazyLoading extends LazyLoadingDisabled ? EagerCupon : LazyCupon
+
+export declare const Cupon: (new (init: ModelInit<Cupon, CuponMetaData>) => Cupon) & {
+  copyOf(source: Cupon, mutator: (draft: MutableModel<Cupon, CuponMetaData>) => MutableModel<Cupon, CuponMetaData> | void): Cupon;
+}
+
+type EagerNotificacion = {
   readonly id: string;
   readonly tipo: TipoNotificacion | keyof typeof TipoNotificacion;
   readonly titulo: string;
@@ -225,6 +377,25 @@ export declare class Notificacion {
   readonly organizadorID?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Notificacion, NotificacionMetaData>);
-  static copyOf(source: Notificacion, mutator: (draft: MutableModel<Notificacion, NotificacionMetaData>) => MutableModel<Notificacion, NotificacionMetaData> | void): Notificacion;
+}
+
+type LazyNotificacion = {
+  readonly id: string;
+  readonly tipo: TipoNotificacion | keyof typeof TipoNotificacion;
+  readonly titulo: string;
+  readonly descripcion?: string | null;
+  readonly usuarioID: string;
+  readonly leido?: boolean | null;
+  readonly showAt?: string | null;
+  readonly reservaID?: string | null;
+  readonly eventoID?: string | null;
+  readonly organizadorID?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Notificacion = LazyLoading extends LazyLoadingDisabled ? EagerNotificacion : LazyNotificacion
+
+export declare const Notificacion: (new (init: ModelInit<Notificacion, NotificacionMetaData>) => Notificacion) & {
+  copyOf(source: Notificacion, mutator: (draft: MutableModel<Notificacion, NotificacionMetaData>) => MutableModel<Notificacion, NotificacionMetaData> | void): Notificacion;
 }

@@ -1,0 +1,16 @@
+{
+  "resourceName": "partyusStorage",
+  "policyUUID": "59747572",
+  "bucketName": "partyus82c6ea2e2f6c45ebad64781aaf5ec02d",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

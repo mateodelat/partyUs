@@ -40,11 +40,13 @@ import {
   vibrar,
   VibrationType,
   msInHour,
+  abrirTerminos,
+  sendNotifications,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
 import { EventoType } from "../Home";
-import { Boleto, Cupon, Evento } from "../../../models";
+import { Boleto, Cupon, Evento, Usuario } from "../../../models";
 
 import Header from "../../../navigation/components/Header";
 import uuid from "react-native-uuid";
@@ -57,6 +59,8 @@ import { DataStore } from "aws-amplify";
 import { TipoNotificacion } from "../../../models";
 import { Notificacion } from "../../../models";
 import { notificacionesRecordatorio } from "../Notifications/functions";
+import RadioButton from "../../../components/RadioButton";
+import { TipoPago } from "../../../models";
 
 export default function ({
   route,
@@ -102,6 +106,8 @@ export default function ({
 
   const [tipoPago, setTipoPago] = useState<"EFECTIVO" | number>();
 
+  const [termsAceptance, setTermsAceptance] = useState(false);
+
   // UI del boton
   const [buttonLoading, setButtonLoading] = useState(false);
 
@@ -124,6 +130,46 @@ export default function ({
   ///////////////////////////////////////////////////////////////
   /////////////////////////FUNCIONES/////////////////////////////
   ///////////////////////////////////////////////////////////////
+
+  async function notificacionesOrganizador(
+    tipoPago: TipoPago,
+    personasTotales: number
+  ) {
+    const organizador = await DataStore.query(Usuario, CreatorID);
+    if (!organizador) {
+      console.log(
+        "Error",
+        "No hay organizador para el evento, no se pudo obtener el token"
+      );
+    }
+
+    sendNotifications({
+      titulo: "Nueva reserva",
+      descripcion:
+        (tipoPago === TipoPago.TARJETA
+          ? "Has recibido un pago de reserva en "
+          : "Tienes una nueva reserva en ") +
+        titulo +
+        " de " +
+        usuario.nickname +
+        " por " +
+        personasTotales +
+        " personas",
+
+      tipo: TipoNotificacion.RESERVAENEVENTO,
+      usuarioID: CreatorID,
+
+      showAt: new Date().toISOString(),
+      triggerTime: 0,
+
+      eventoID: eventoID,
+      organizadorID: CreatorID,
+      reservaID: reservaID,
+
+      externalToken: organizador.notificationToken,
+    });
+  }
+
   function getUserCards() {
     if (usuario.userPaymentID) {
       fetchFromAPI<cardType[]>("/payments/card", "GET", undefined, {
@@ -255,7 +301,7 @@ export default function ({
           })
         );
 
-        // Notificacion de recordatorio de pago 1 hora antes del vencimiento
+        // Mandarle la notificacion al organizador de reserva creada
         DataStore.save(
           new Notificacion({
             tipo: TipoNotificacion.RECORDATORIOPAGO,
@@ -271,6 +317,7 @@ export default function ({
           })
         );
 
+        notificacionesOrganizador(TipoPago.EFECTIVO, personasTotales);
         navigation.popToTop();
         // Si el tipo de pago fue en efectivo, obtener la referencia y navegar a la pestaña pago
         navigation.navigate("ReferenciaPago", {
@@ -302,6 +349,9 @@ export default function ({
             organizadorID: CreatorID,
           })
         );
+
+        // Mandarle la notificacion al organizador de evento pagado
+        notificacionesOrganizador(TipoPago.TARJETA, personasTotales);
 
         navigation.popToTop();
         navigation.navigate("ExitoScreen");
@@ -809,12 +859,12 @@ export default function ({
                   </View>
                 </Pressable>
               </View>
+
               {/* Pago seguro */}
               <View
                 style={{
                   ...styles.row,
                   padding: 20,
-                  marginRight: 20,
                   flex: 1,
                   alignItems: "flex-end",
                 }}
@@ -825,6 +875,11 @@ export default function ({
                 </Text>
                 <AntDesign name="Safety" size={24} color={azulClaro} />
               </View>
+              <Text onPress={abrirTerminos} style={styles.textoTerminos}>
+                Al continuar aceptas los{" "}
+                <Text style={{ color: azulClaro }}>terminos y condiciones</Text>{" "}
+                de partyus
+              </Text>
             </>
           ) : null}
         </View>
@@ -956,5 +1011,11 @@ const styles = StyleSheet.create({
   tarjetahabiente: {
     fontSize: 16,
     fontWeight: "bold",
+  },
+  textoTerminos: {
+    flex: 1,
+    fontSize: 10,
+    textAlign: "center",
+    paddingVertical: 10,
   },
 });

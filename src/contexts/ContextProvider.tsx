@@ -24,6 +24,7 @@ import * as Notifications from "expo-notifications";
 import { getUsuario } from "../graphql/queries";
 import { StatusBarStyle } from "expo-status-bar";
 import { TipoNotificacion } from "../models";
+import { queryNewNotifications } from "../screens/Inicio/Home";
 
 export default function ({
   children,
@@ -114,6 +115,9 @@ export default function ({
       });
     }
   }
+  async function resetDatastore() {
+    return DataStore.clear().then((r) => DataStore.start());
+  }
 
   const [registrado, setRegistrado] = useState(false);
 
@@ -125,13 +129,22 @@ export default function ({
       fetchUsuario(r);
     });
 
-    const r = Hub.listen("auth", (data) => {
+    const r = Hub.listen("auth", async (data) => {
       const { event } = data.payload;
 
       const username = data.payload?.data?.username;
 
       switch (event) {
         case "signIn":
+          setLoading(true);
+          // Esperar a que se limpie y se vuelvan a pedir los datos
+          await resetDatastore();
+
+          // Pedir las notificaciones nuevas del usuario tras 3 segundos para esperar a que carguen los modelos
+          setTimeout(() => {
+            queryNewNotifications().then(setNewNotifications);
+          }, 3000);
+          setLoading(false);
           if (!username) {
             throw new Error(
               "No hay nombre de usuario cuando inicia sesion en context provider"
@@ -142,11 +155,13 @@ export default function ({
           break;
 
         case "signOut":
+          setLoading(true);
           // Borrar usuario default
           setUsuario(defultUSR);
           setNewNotifications(0);
-          DataStore.clear();
+          await resetDatastore();
 
+          setLoading(false);
           // cancelAllScheduledNotificationsAsync();
           // Bugsnag.setUser("", "", "");
           break;

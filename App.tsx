@@ -58,7 +58,7 @@ export default function App() {
   // }
 
   useEffect(() => {
-    DataStore.clear();
+    DataStore.start();
 
     // Crear listener para cuando se acaben de obtener los modelos de datastore en caso de cierre de sesion
     const dstore = Hub.listen("datastore", async (hubData) => {

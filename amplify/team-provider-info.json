@@ -18,7 +18,7 @@
       "function": {
         "paymentsHandler": {
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/paymentsHandler-734d474f6e71442f6f38-build.zip",
+          "s3Key": "amplify-builds/paymentsHandler-347465445862524d7755-build.zip",
           "merchantId": "mcwffetlymvvcqthcdxu",
           "secretKey": "sk_e266853b34704432b3fbac85079350ac"
         },
@@ -39,7 +39,7 @@
         },
         "onPay": {
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/onPay-77426d763877546d6356-build.zip",
+          "s3Key": "amplify-builds/onPay-3049672b413269735031-build.zip",
           "merchantId": "mcwffetlymvvcqthcdxu",
           "secretKey": "sk_e266853b34704432b3fbac85079350ac"
         },
@@ -57,6 +57,9 @@
       "api": {
         "partyUsAPI": {},
         "partyusREST": {}
+      },
+      "storage": {
+        "partyusStorage": {}
       }
     }
   }

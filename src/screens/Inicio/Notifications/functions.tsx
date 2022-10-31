@@ -10,16 +10,18 @@ import { Evento, Notificacion } from "../../../models";
 export async function notificacionesRecordatorio({
   evento,
   usuario,
+  organizador,
 }: {
   evento: Evento;
   usuario: Usuario;
+  organizador?: boolean;
 }) {
   const notificacionesEnEvento = !!(
     await getAllScheduledNotificationsAsync()
   ).find((e) => e.content?.data?.eventoID === evento.id);
 
   // Si ya se programaron notificaciones al evento no hacer nada
-  if (notificacionesEnEvento) {
+  if (notificacionesEnEvento && !organizador) {
     console.log(
       "No se mandan nuevas notificaciones pues ya hay programadas al evento"
     );
@@ -35,6 +37,9 @@ export async function notificacionesRecordatorio({
     finalDate.setHours(8);
   }
 
+  const remainingFor1Week = Math.round(
+    (evento.fechaInicial - msInDay - new Date().getTime()) / 1000
+  );
   const remainingFor1Day = Math.round(
     (evento.fechaInicial - msInDay - new Date().getTime()) / 1000
   );
@@ -46,14 +51,36 @@ export async function notificacionesRecordatorio({
     (finalDate?.getTime() - new Date().getTime()) / 1000
   );
 
+  // Mandar notificaciones de falta una semana y a la hora del evento para escanear solo si es organizador
+  if (organizador) {
+    sendNotifications({
+      titulo: "Evento en 1 semana",
+      descripcion:
+        "Tu evento en " +
+        evento.titulo +
+        " es en una semana. Realiza todos los preparativos necesarios.",
+
+      tipo: TipoNotificacion.RECORDATORIOEVENTO,
+      usuarioID: usuario.id,
+
+      showAt: new Date(evento.fechaInicial - msInDay).toISOString(),
+      triggerTime: remainingFor1Day,
+
+      eventoID: evento.id,
+      organizadorID: evento.CreatorID,
+    });
+  }
+
   // Si falta mas de una dia para la fecha enviar notificacion
   if (remainingFor1Day > 0) {
     sendNotifications({
       titulo: "Solo falta 1 dia!!",
       descripcion:
-        "Tu fiesta en " +
+        "Tu evento en " +
         evento.titulo +
-        " es mañana, revisa la hora de llegada y la ubicacion",
+        (organizador
+          ? " es mañana, asegurate de estar listo para recibir a los invitados."
+          : " es mañana, revisa la hora de llegada y la ubicacion."),
 
       tipo: TipoNotificacion.RECORDATORIOEVENTO,
       usuarioID: usuario.id,
@@ -86,20 +113,39 @@ export async function notificacionesRecordatorio({
     });
   }
 
-  //   Mandar notificacion a las 8 del dia siguiente
+  // Hora del evento mandar codigo QR
   sendNotifications({
-    titulo: usuario.nickname + ", ayudanos a hacer de Partyus un lugar mejor",
+    titulo: organizador ? "Esanea las entradas" : "Prepara tu codigo QR",
     descripcion:
-      "Calfica tu fiesta en " +
-      evento.titulo +
-      " para mejorar la calidad de esta",
-    tipo: TipoNotificacion.CALIFICAUSUARIO,
+      "Tu evento ha comenzado. " + organizador
+        ? "Preparate para escanear las entradas y verifica que sea valida."
+        : "Ten a la mano tu codigo QR pagado para ingresar",
+
+    tipo: TipoNotificacion.RECORDATORIOEVENTO,
     usuarioID: usuario.id,
 
-    showAt: finalDate.toISOString(),
-    triggerTime: remainingForNext2Days,
+    showAt: new Date(evento.fechaInicial - msInDay).toISOString(),
+    triggerTime: remainingFor1Day,
 
     eventoID: evento.id,
     organizadorID: evento.CreatorID,
   });
+
+  //   Mandar notificacion a las 8 del dia siguiente si no son notificaciones de organizador
+  !organizador &&
+    sendNotifications({
+      titulo: usuario.nickname + ", ayudanos a hacer de Partyus un lugar mejor",
+      descripcion:
+        "Calfica tu fiesta en " +
+        evento.titulo +
+        " para mejorar la calidad de esta",
+      tipo: TipoNotificacion.CALIFICAUSUARIO,
+      usuarioID: usuario.id,
+
+      showAt: finalDate.toISOString(),
+      triggerTime: remainingForNext2Days,
+
+      eventoID: evento.id,
+      organizadorID: evento.CreatorID,
+    });
 }

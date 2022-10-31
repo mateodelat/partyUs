@@ -2,7 +2,7 @@
   "version": "1",
   "cognitoConfig": {
     "identityPoolName": "paryus_identitypool",
-    "allowUnauthenticatedIdentities": false,
+    "allowUnauthenticatedIdentities": true,
     "resourceNameTruncated": "partyu8e7529d6",
     "userPoolName": "partyus_userpool",
     "autoVerifiedAttributes": [
@@ -69,4 +69,4 @@
       "Ref": "AWS::StackId"
     }
   }
-} 
+}
