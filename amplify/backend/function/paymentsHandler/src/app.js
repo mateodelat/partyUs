@@ -213,6 +213,45 @@ app.get('/payments/card', async function (req, res) {
 
 });
 
+/****************************************
+ * GET listar cuentas bancarias cliente *
+ ***************************************/
+
+app.get('/payments/bankaccount', async function (req, res) {
+  try {
+    const customer_id = req.query.customer_id
+
+    if (!customer_id) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio customer_id",
+        body: req.body
+      })
+    }
+
+    openpay.customers.bankaccounts.list(customer_id, function (error, body, response) {
+      if (error?.http_code) {
+        res.status(error?.http_code)
+      }
+
+      res.json({
+        error,
+        body
+      })
+    })
+  }
+  catch (e) {
+
+    console.log(e)
+    res.status(500)
+    res.json({
+      error: "Hubo un error",
+      body: JSON.stringify(e)
+    })
+  }
+
+});
+
 
 
 /****************************
@@ -237,6 +276,51 @@ app.post('/payments/card', function (req, res) {
     openpay.customers.cards.create(customer_id, {
       device_session_id,
       token_id
+    }, function (error, body, response) {
+      if (error?.http_code) {
+        res.status(error?.http_code)
+      }
+
+      res.json({
+        error,
+        body
+      })
+    })
+  }
+  catch (e) {
+    console.log(e)
+    res.status(500)
+    res.json({
+      error: "Hubo un error",
+      body: e.message
+    })
+  }
+});
+
+
+/****************************************
+* POST Crear cuenta de banco en usuario *
+****************************************/
+
+app.post('/payments/bankaccount', function (req, res) {
+  // Add your code here
+  try {
+    const holder_name = req.body.holder_name
+    const customer_id = req.body.customer_id
+    const clabe = req.body.clabe
+    const alias = req.body.alias ? req.body.alias : "Cuenta principal"
+
+    if (!customer_id || !holder_name || !clabe) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio customer_id, clabe o holder_name",
+        body: req.body
+      })
+    }
+
+    openpay.customers.bankaccounts.create(customer_id, {
+      holder_name, clabe,
+
     }, function (error, body, response) {
       if (error?.http_code) {
         res.status(error?.http_code)

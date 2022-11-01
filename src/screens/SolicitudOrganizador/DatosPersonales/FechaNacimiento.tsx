@@ -29,7 +29,6 @@ export default function ({
   };
 }) {
   const navigation = useNavigation<any>();
-  const setUsuario = useUser().setUsuario;
   const {
     usuario: { fechaNacimiento: fNac },
     usuario,
@@ -46,9 +45,11 @@ export default function ({
 
   const hours = new Date().getTimezoneOffset() * 60 * 1000;
 
+  const maxDate = new Date(new Date().getTime() - msInDay * 18 * 365);
+
   const dateBorn = fechaNacimiento
     ? new Date(fechaNacimiento.getTime() + hours)
-    : new Date();
+    : maxDate;
 
   async function handleSaveInfo() {
     if (!fechaNacimiento) {
@@ -64,15 +65,13 @@ export default function ({
     if (hace18Años.getTime() >= fechaNacimiento.getTime()) {
       const { materno, paterno, nombre } = route.params;
 
-      setUsuario({
+      navigation.navigate("Step3", {
         ...usuario,
         nombre,
         paterno,
         materno,
-        fechaNacimiento: fechaNacimiento.toString(),
+        fechaNacimiento: fechaNacimiento.toISOString(),
       });
-
-      navigation.navigate("SolicitudOrganizador");
     } else {
       setError("Debes ser mayor de 18 años para poder estar en partyus");
     }
@@ -121,6 +120,7 @@ export default function ({
         isVisible={isDatePickerVisible}
         mode="date"
         date={dateBorn}
+        maximumDate={maxDate}
         onConfirm={handleConfirmDate}
         onCancel={() => setIsDatePickerVisible(false)}
       />

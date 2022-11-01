@@ -34,6 +34,7 @@ import {
 } from "../../../../constants";
 import useUser from "../../../Hooks/useUser";
 import {
+  bankAccount_type,
   cardType,
   chargeType,
   customer_type,
@@ -45,11 +46,18 @@ import Loading from "../../../components/Loading";
 import { Feather } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
 import Logo from "../../../components/Logo";
 import CardInput, { saveParams } from "../../../components/CardInput";
 import OpenPay from "../../../components/OpenPay";
 
-type resource_type = "charges" | "client" | "transactions" | "cards";
+type resource_type =
+  | "charges"
+  | "client"
+  | "transactions"
+  | "cards"
+  | "bankaccount";
 
 export default function ({ navigation }) {
   const { usuario } = useUser();
@@ -81,16 +89,31 @@ export default function ({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [addingCard, setAddingCard] = useState(false);
 
+  // Cuenta del usuario si es organizador
+  const [cuentasBancarias, setCuentasBancarias] = useState<bankAccount_type[]>(
+    []
+  );
+
   const LIMIT = 10;
 
   useEffect(() => {
     if (organizador) {
+      // Pedir cuentas bancarias del cliente
+      fetchData({
+        type: "bankaccount",
+      });
+
       // Si es organizador de pide inicialmente las transacciones
       fetchData({
         offset: 0,
         type: "transactions",
       });
     } else {
+      // Pedir tarjetas guardadas
+      fetchData({
+        type: "cards",
+      });
+
       // Si no es organizador pedir los cargos del cliente
       fetchData({
         offset: 0,
@@ -100,10 +123,6 @@ export default function ({ navigation }) {
     // Pedir el cliente
     fetchData({
       type: "client",
-    });
-    // Pedir tarjetas guardadas
-    fetchData({
-      type: "cards",
     });
   }, []);
 
@@ -219,6 +238,28 @@ export default function ({ navigation }) {
 
               setTarjetasGuardadas(body);
               return body;
+            }
+          });
+
+        case "bankaccount":
+          return await fetchFromAPI<bankAccount_type[]>(
+            "/payments/bankaccount",
+            "GET",
+            undefined,
+            {
+              customer_id: usuario.userPaymentID,
+            }
+          ).then(({ body }) => {
+            console.log(body);
+
+            if (!!body?.length) {
+              setCuentasBancarias(body);
+              return body;
+            } else {
+              Alert.alert(
+                "Error",
+                "Ocurrio un error, no se encuentra tarjeta bancaria asociada a tu cuenta, contactanos para recibir tu dinero."
+              );
             }
           });
 
@@ -438,6 +479,7 @@ export default function ({ navigation }) {
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={() => (
             <HeaderComponent
+              cuentasBancarias={cuentasBancarias}
               handleRetirar={handleRetirar}
               handleRemoveCard={handleRemoveCard}
               tarjetasGuardadas={tarjetasGuardadas}
@@ -570,6 +612,7 @@ export default function ({ navigation }) {
           keyExtractor={(item) => item.id}
           ListHeaderComponent={() => (
             <HeaderComponent
+              cuentasBancarias={cuentasBancarias}
               handleRetirar={handleRetirar}
               handleRemoveCard={handleRemoveCard}
               tarjetasGuardadas={tarjetasGuardadas}
@@ -720,6 +763,7 @@ function HeaderComponent({
 
   addingCard,
   tarjetasGuardadas,
+  cuentasBancarias,
 
   handleRemoveCard,
   handleRetirar,
@@ -733,6 +777,7 @@ function HeaderComponent({
   selector: "charges" | "transfers";
 
   tarjetasGuardadas: cardType[];
+  cuentasBancarias: bankAccount_type[];
   handleRemoveCard: (idx: number) => void;
   handleRetirar: () => void;
 }) {
@@ -776,64 +821,95 @@ function HeaderComponent({
         >
           {/* Texto de info */}
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Tarjetas guardadas</Text>
+            <Text style={styles.title}>
+              {organizador ? "Cuenta bancaria" : "Tarjetas guardadas"}
+            </Text>
             <Text style={{ ...styles.detailsAmount, margin: 0 }}>
-              Lista de tarjetas que guardaste
+              {organizador
+                ? "Cuenta bancaria a enviar el dinero"
+                : "Lista de tarjetas que guardaste"}
             </Text>
           </View>
 
           {/* Agregar nueva tarjeta */}
-          <TouchableOpacity
-            disabled={addingCard}
-            onPress={() => setModalVisible(true)}
-            style={styles.addContainer}
-          >
-            {addingCard ? (
-              <ActivityIndicator size={"small"} color={"black"} />
-            ) : (
-              <Entypo name="plus" size={30} color={"black"} />
-            )}
-          </TouchableOpacity>
+          {!organizador && (
+            <TouchableOpacity
+              disabled={addingCard}
+              onPress={() => setModalVisible(true)}
+              style={styles.addContainer}
+            >
+              {addingCard ? (
+                <ActivityIndicator size={"small"} color={"black"} />
+              ) : (
+                <Entypo name="plus" size={30} color={"black"} />
+              )}
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Lista de tarjetas */}
-        {tarjetasGuardadas?.map((tarjeta, idx) => {
-          const { bank_name, card_number, expiration_month, expiration_year } =
-            tarjeta;
+        {!organizador
+          ? tarjetasGuardadas?.map((tarjeta, idx) => {
+              const {
+                bank_name,
+                card_number,
+                expiration_month,
+                expiration_year,
+              } = tarjeta;
 
-          return (
-            <View style={styles.cardItemContainer} key={idx}>
-              <TouchableOpacity onPress={() => handleRemoveCard(idx)}>
-                <Entypo
-                  style={{ padding: 10 }}
-                  name="minus"
-                  size={30}
-                  color={rojo}
-                />
-              </TouchableOpacity>
+              return (
+                <View style={styles.cardItemContainer} key={idx}>
+                  <TouchableOpacity onPress={() => handleRemoveCard(idx)}>
+                    <Entypo
+                      style={{ padding: 10 }}
+                      name="minus"
+                      size={30}
+                      color={rojo}
+                    />
+                  </TouchableOpacity>
 
-              <Image
-                style={styles.cardIcon}
-                source={
-                  tarjeta.icon
-                    ? tarjeta.icon
-                    : require("../../../../assets/icons/stp_card_undefined.png")
-                }
-              />
+                  <Image
+                    style={styles.cardIcon}
+                    source={
+                      tarjeta.icon
+                        ? tarjeta.icon
+                        : require("../../../../assets/icons/stp_card_undefined.png")
+                    }
+                  />
 
-              {/* Datos de tarjeta */}
-              <View>
-                {/* Nombre del banco y numeros de tarjeta */}
-                <Text style={styles.cardInfoTxt}>
-                  {mayusFirstLetter(bank_name)} {card_number?.toLowerCase()}
-                </Text>
-                <Text style={{ ...styles.detailsAmount, marginTop: 4 }}>
-                  Expira el {expiration_month + "/" + expiration_year}
-                </Text>
-              </View>
-            </View>
-          );
-        })}
+                  {/* Datos de tarjeta */}
+                  <View>
+                    {/* Nombre del banco y numeros de tarjeta */}
+                    <Text style={styles.cardInfoTxt}>
+                      {mayusFirstLetter(bank_name)} {card_number?.toLowerCase()}
+                    </Text>
+                    <Text style={{ ...styles.detailsAmount, marginTop: 4 }}>
+                      Expira el {expiration_month + "/" + expiration_year}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })
+          : cuentasBancarias?.map((cuenta, idx) => {
+              const { bank_name, clabe, holder_name, creation_date } = cuenta;
+
+              return (
+                <View style={styles.cardItemContainer} key={idx}>
+                  <MaterialCommunityIcons name="bank" size={24} color="black" />
+
+                  {/* Datos de tarjeta */}
+                  <View>
+                    {/* Nombre del banco y numeros de tarjeta */}
+                    <Text style={styles.cardInfoTxt}>
+                      {mayusFirstLetter(bank_name)} {clabe?.toLowerCase()}
+                    </Text>
+                    <Text style={{ ...styles.detailsAmount, marginTop: 4 }}>
+                      Agregada el {formatDay(creation_date)}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
       </View>
 
       {/* Botones selectores de tipo de historial */}

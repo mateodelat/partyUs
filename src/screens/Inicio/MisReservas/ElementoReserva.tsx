@@ -120,10 +120,10 @@ export default function ElementoReserva({
     ? "EXPIRADO"
     : new Date() > new Date(data.evento.fechaFinal)
     ? "PASADO"
-    : new Date() < new Date(data.fechaExpiracionUTC)
-    ? "EXPIRA EN " + expireAt
     : data.pagado
     ? "PAGADO"
+    : new Date() < new Date(data.fechaExpiracionUTC)
+    ? "EXPIRA EN " + expireAt
     : "NO DEFINIDO";
 
   const showBarcodeIcon =

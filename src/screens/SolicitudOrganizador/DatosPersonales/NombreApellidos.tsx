@@ -1,11 +1,20 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  TouchableOpacity,
+} from "react-native";
 import React, { useState } from "react";
 import HeaderSolicitud from "../components/HeaderSolicitud";
 import AnimatedInput from "../../../components/AnimatedInput";
 import Boton from "../../../components/Boton";
-import { azulClaro } from "../../../../constants";
+import { azulClaro, formatTelefono } from "../../../../constants";
 import { useNavigation } from "@react-navigation/native";
 import useUser from "../../../Hooks/useUser";
+import { CountryList } from "react-native-country-codes-picker";
+import ModalBottom from "../../../components/ModalBottom";
 
 export default function ({
   onPress,
@@ -18,16 +27,34 @@ export default function ({
 }) {
   const navigation = useNavigation<any>();
   const {
-    usuario: { materno: m, paterno: p, nombre: n },
+    usuario: {
+      materno: m,
+      paterno: p,
+      nombre: n,
+      phoneCode: phc,
+      phoneNumber: phn,
+    },
   } = useUser();
 
+  // Nombre y apellidos
   const [materno, setMaterno] = useState(m ? m : "");
   const [paterno, setPaterno] = useState(p ? p : "");
   const [nombre, setNombre] = useState(n ? n : "");
 
+  // Numero de telefono
+  const [phoneCode, setPhoneCode] = useState(phc ? phc : "+52");
+  const [phoneFlag, setPhoneFlag] = useState("🇲🇽");
+  const [codePickerVisible, setCodePickerVisible] = useState(false);
+
+  const [phoneNumber, setPhoneNumber] = useState(phn ? phn : "");
+
+  // Erorres formato
   const [errorNombre, setErrorNombre] = useState("");
   const [errorPaterno, setErrorPaterno] = useState("");
   const [errorMaterno, setErrorMaterno] = useState("");
+  const [errorPhoneNumber, setErrorPhoneNumber] = useState("");
+
+  const [country, setCountry] = useState("");
 
   function handleSaveInfo() {
     if (!nombre) {
@@ -39,8 +66,10 @@ export default function ({
       setErrorPaterno("Escribe tu apellido paterno");
       return;
     }
-    if (!materno) {
-      setErrorMaterno("Escribe tu apellido materno");
+
+    if (!phoneNumber) {
+      setErrorPhoneNumber("Escribe tu numero telefonico");
+
       return;
     }
 
@@ -48,6 +77,8 @@ export default function ({
       nombre,
       paterno,
       materno,
+      phoneCode,
+      phoneNumber,
     });
   }
 
@@ -95,6 +126,31 @@ export default function ({
           value={materno}
           onChangeText={setMaterno}
         />
+
+        {/* Numeros de telefono */}
+        <View style={styles.phoneNumberContainer}>
+          <TouchableOpacity
+            onPress={() => setCodePickerVisible(true)}
+            style={styles.phoneCodeContainer}
+          >
+            <Text style={styles.phoneCodeTxt}>
+              {phoneFlag + " " + phoneCode}
+            </Text>
+          </TouchableOpacity>
+          <AnimatedInput
+            styleContent={{ flex: 1 }}
+            valid={!errorPhoneNumber}
+            keyboardType={"phone-pad"}
+            errorText={errorPhoneNumber}
+            onFocus={() => setErrorPhoneNumber("")}
+            placeholder=""
+            value={phoneNumber}
+            onChangeText={(tel) => {
+              tel = formatTelefono(tel);
+              setPhoneNumber(tel);
+            }}
+          />
+        </View>
       </ScrollView>
       <Boton
         style={{
@@ -106,6 +162,31 @@ export default function ({
           onPress ? () => onPress({ nombre, paterno, materno }) : handleSaveInfo
         }
       />
+
+      <ModalBottom
+        modalVisible={codePickerVisible}
+        setModalVisible={setCodePickerVisible}
+      >
+        <View style={styles.countriesContainer}>
+          <TextInput
+            placeholder="País"
+            style={styles.searchBar}
+            value={country}
+            onChangeText={setCountry}
+          />
+          <View style={styles.line} />
+          <CountryList
+            searchValue={country}
+            lang={"en"}
+            pickerButtonOnPress={(item) => {
+              setPhoneFlag(item.flag);
+
+              setPhoneCode(item.dial_code);
+              setCodePickerVisible(false);
+            }}
+          />
+        </View>
+      </ModalBottom>
     </View>
   );
 }
@@ -117,8 +198,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  countriesContainer: {
+    height: "50%",
+    backgroundColor: "#fff",
+    padding: 10,
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+  },
+
+  searchBar: {
+    backgroundColor: "#F5F5F5",
+
+    borderRadius: 10,
+    padding: 10,
+  },
+
+  line: {
+    width: "100%",
+    backgroundColor: "lightgray",
+    height: 1,
+
+    marginVertical: 10,
+  },
   inputContainer: {
     marginBottom: 20,
+  },
+
+  phoneCodeContainer: {
+    padding: 10,
+    bottom: 7,
+    paddingRight: 20,
+    justifyContent: "flex-end",
+  },
+  phoneCodeTxt: {
+    color: "#000",
+    fontWeight: "bold",
+    fontSize: 18,
   },
 
   tituloInput: {
@@ -127,4 +242,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
+
+  phoneNumberContainer: { marginTop: 40, flexDirection: "row" },
 });

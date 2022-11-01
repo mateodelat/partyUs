@@ -26,7 +26,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   const paterno = usuario?.paterno;
   const idUploaded = usuario?.idUploaded;
 
-  const allowUpload = nombre && materno && paterno;
+  const allowUpload = nombre && paterno;
 
   const [loading, setLoading] = useState(false);
 
@@ -137,7 +137,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
             </Text>
           </View>
 
-          {!nombre || !paterno || !materno ? (
+          {!nombre || !paterno ? (
             <AntDesign
               style={{
                 marginLeft: 10,

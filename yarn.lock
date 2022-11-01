@@ -8708,6 +8708,11 @@ react-native-codegen@^0.0.17:
     jscodeshift "^0.13.1"
     nullthrows "^1.1.1"
 
+react-native-country-codes-picker@^2.1.8:
+  version "2.1.8"
+  resolved "https://registry.yarnpkg.com/react-native-country-codes-picker/-/react-native-country-codes-picker-2.1.8.tgz#b724f071f8c2dabec93205c38676874bfbecce1d"
+  integrity sha512-ZgULitCTGSU4+Bw50FhFLD3DfFF0yugSR7Qj9ZlHvwfwNH42jgMv+/4rPv8DX2U/X+DuPWEGScjR8x52qXkNJA==
+
 react-native-gesture-handler@~2.2.1:
   version "2.2.1"
   resolved "https://registry.npmjs.org/react-native-gesture-handler/-/react-native-gesture-handler-2.2.1.tgz"

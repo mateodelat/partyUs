@@ -1,5 +1,5 @@
 import React, { ReactChild } from "react";
-import { View, Text, SafeAreaView, StyleSheet } from "react-native";
+import { View, Text, SafeAreaView, StyleSheet, Alert } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 import * as Updates from "expo-updates";
@@ -16,6 +16,7 @@ class ErrorRouter extends React.Component {
 
   componentDidCatch(error: Error) {
     console.log(error);
+    Alert.alert("Ocurrio un error", error.message);
     // Bugsnag.notify(error)
   }
 

@@ -58,7 +58,7 @@ class PlusButton extends React.Component<MyProps> {
     if (!organizador) {
       Alert.alert(
         "Atencion",
-        "¿Quieres registrarte como organizador para agrgar eventos?",
+        "¿Quieres registrarte como organizador para agregar eventos?",
         [
           {
             text: "CANCELAR",

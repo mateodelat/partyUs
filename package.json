@@ -51,6 +51,7 @@
     "react-native-animated-input": "^1.1.0",
     "react-native-animated-nav-tab-bar": "^3.1.8",
     "react-native-base64": "^0.2.1",
+    "react-native-country-codes-picker": "^2.1.8",
     "react-native-gesture-handler": "~2.2.1",
     "react-native-get-random-values": "^1.8.0",
     "react-native-image-zoom-viewer": "^3.0.1",
