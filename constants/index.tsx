@@ -121,7 +121,7 @@ export async function sendAdminNotification({
   });
 }
 
-export const minEventPrice = 50;
+export const minEventPrice = 0;
 export const maxEventPrice = 8000;
 
 export async function fetchWithTimeout(url: string, timeout = 2000) {
@@ -707,14 +707,14 @@ export const shadowMedia = {
   shadowOpacity: 0.29,
   shadowRadius: 4.65,
 
-  elevation: 7,
+  elevation: 4,
 };
 
 export const shadowBaja = {
   shadowColor: "#000",
   shadowOffset: {
     width: 0,
-    height: 2,
+    height: 3,
   },
   shadowOpacity: 0.23,
   shadowRadius: 2.62,
@@ -1342,13 +1342,13 @@ export const AsyncAlert = async (title: string, body: string) =>
   new Promise<boolean>((resolve, reject) => {
     Alert.alert(title, body, [
       {
-        text: "CANCELAR",
+        text: "Cancelar",
         onPress: () => {
           reject(false);
         },
       },
       {
-        text: "OK",
+        text: "Ok",
         onPress: () => {
           resolve(true);
         },

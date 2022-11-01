@@ -17,6 +17,7 @@ import { Entypo } from "@expo/vector-icons";
 
 import ImageViewer from "react-native-image-zoom-viewer";
 import { stringAfecha } from "../screens/SolicitudOrganizador/components/functions";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function App({
   onTakePicture,
@@ -35,6 +36,8 @@ export default function App({
   const cameraRef = useRef<Camera>(null);
 
   const { width, height } = Dimensions.get("window");
+
+  const { top } = useSafeAreaInsets();
 
   useEffect(() => {
     (async () => {
@@ -66,7 +69,7 @@ export default function App({
   async function handleTakePicture() {
     try {
       cameraRef.current
-        ?.takePictureAsync({ base64: true, quality: 1 })
+        ?.takePictureAsync({ base64: true, quality: 0.6 })
         .then(async (r) => {
           setTakenImage(r);
         })
@@ -166,6 +169,7 @@ export default function App({
               justifyContent: "space-between",
               position: "absolute",
               width: "100%",
+              paddingTop: top + 10,
             }}
           >
             <Entypo

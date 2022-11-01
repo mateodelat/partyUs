@@ -501,7 +501,7 @@ export default function ({
           ...styles.container,
         }}
       >
-        <Carrousel scrollX={scrollX} images={imagenes as any} />
+        <Carrousel top={top} scrollX={scrollX} images={imagenes as any} />
         <View
           style={{
             ...styles.innerContainer,
@@ -883,6 +883,11 @@ export default function ({
             onPress={handleContinar}
           />
         )}
+        <View
+          style={{
+            height: insets.bottom,
+          }}
+        />
       </Animated.ScrollView>
       {reserva && (
         <TouchableOpacity

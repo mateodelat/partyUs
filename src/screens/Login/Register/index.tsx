@@ -139,9 +139,9 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
         />
         <AnimatedInput
           placeholder="Email"
+          autoCapitalize={"none"}
           valid={!errorEmail}
           errorText={errorEmail}
-          autoCapitalize={"none"}
           onChangeText={(text) => {
             setEmail(text);
             clearError();

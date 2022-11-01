@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, KeyboardAvoidingView } from "react-native";
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
@@ -13,44 +13,50 @@ export default function () {
   const pasos = 3;
 
   return (
-    <Stack.Navigator
-      screenOptions={{
-        animationEnabled: false,
-        header: ({ route: { name }, navigation, options: { title: tit } }) => {
-          const title = tit ? tit : name;
-          return (
-            <Header
-              textStyle={{
-                fontWeight: "normal",
-              }}
-              title={title}
-            />
-          );
-        },
-      }}
-    >
-      <Stack.Screen
-        name="Step1"
-        component={NombreApellidos}
-        options={{
-          title: "Paso 1 de " + pasos,
+    <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
+      <Stack.Navigator
+        screenOptions={{
+          animationEnabled: false,
+          header: ({
+            route: { name },
+            navigation,
+            options: { title: tit },
+          }) => {
+            const title = tit ? tit : name;
+            return (
+              <Header
+                textStyle={{
+                  fontWeight: "normal",
+                }}
+                title={title}
+              />
+            );
+          },
         }}
-      />
-      <Stack.Screen
-        name="Step2"
-        component={FechaNacimiento}
-        options={{
-          title: "Paso 2 de " + pasos,
-        }}
-      />
-      <Stack.Screen
-        name="Step3"
-        component={DatosBancarios}
-        options={{
-          title: "Paso 3 de " + pasos,
-        }}
-      />
-    </Stack.Navigator>
+      >
+        <Stack.Screen
+          name="Step1"
+          component={NombreApellidos}
+          options={{
+            title: "Paso 1 de " + pasos,
+          }}
+        />
+        <Stack.Screen
+          name="Step2"
+          component={FechaNacimiento}
+          options={{
+            title: "Paso 2 de " + pasos,
+          }}
+        />
+        <Stack.Screen
+          name="Step3"
+          component={DatosBancarios}
+          options={{
+            title: "Paso 3 de " + pasos,
+          }}
+        />
+      </Stack.Navigator>
+    </KeyboardAvoidingView>
   );
 }
 

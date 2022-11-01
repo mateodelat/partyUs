@@ -19,6 +19,8 @@ import {
   minEventPrice,
   redondear,
   shadowMarcada,
+  vibrar,
+  VibrationType,
 } from "../../../../constants";
 import HeaderAgregar from "../Agregar1/HeaderAgregar";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
@@ -36,6 +38,7 @@ import Boton from "../../../components/Boton";
 import Line from "../../../components/Line";
 import { DataStore } from "aws-amplify";
 import { Boleto } from "../../../models";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Agregar2({
   route,
@@ -134,8 +137,14 @@ export default function Agregar2({
     setBoletos((prev) => {
       let cantidad = prev[index].cantidad;
       if (minus) {
-        cantidad - cambio <= 0 ? (cambio = 0) : (cantidad -= cambio);
+        if (cantidad - cambio <= 0) {
+          cambio = 0;
+        } else {
+          vibrar(VibrationType.light);
+          cantidad -= cambio;
+        }
       } else {
+        vibrar(VibrationType.light);
         cantidad += cambio;
       }
 
@@ -164,6 +173,8 @@ export default function Agregar2({
       "Dependiendo del tipo de pago del cliente, el dinero puede tomar hasta 3 dias en llegarte a tu cuenta bancaria"
     );
   }
+
+  const { bottom } = useSafeAreaInsets();
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", minHeight: height }}>
@@ -230,6 +241,7 @@ export default function Agregar2({
                     color={azulClaro}
                     style={{ flex: 1 }}
                     textStyle={{
+                      minHeight: 110,
                       borderTopWidth: 0.5,
                       ...styles.inputStyle,
                       color: azulOscuro + "a0",
@@ -246,12 +258,11 @@ export default function Agregar2({
                     }}
                   />
                 </View>
-                <View>
-                  <PlusMinus
-                    handleOperation={(minus: boolean, quantity: number) =>
-                      handleChangeQuantity(minus, quantity, index)
-                    }
-                  />
+                <View
+                  style={{
+                    alignItems: "center",
+                  }}
+                >
                   <Selector
                     value={boleto.precio}
                     cambio={50}
@@ -264,9 +275,13 @@ export default function Agregar2({
 
                       setBoletos(b);
                     }}
-                    style={{
-                      marginHorizontal: 10,
-                    }}
+                    style={{}}
+                  />
+
+                  <PlusMinus
+                    handleOperation={(minus: boolean, quantity: number) =>
+                      handleChangeQuantity(minus, quantity, index)
+                    }
                   />
                 </View>
               </View>
@@ -352,7 +367,7 @@ export default function Agregar2({
         </View>
 
         <Boton
-          style={{ margin: 20 }}
+          style={{ margin: 20, marginBottom: bottom ? bottom : 20 }}
           titulo="Continuar"
           onPress={handleGuardar}
           color={azulClaro}
@@ -419,7 +434,8 @@ const styles = StyleSheet.create({
     backgroundColor: azulClaro,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 10,
+
+    width: 60,
   },
 
   addTxt: {

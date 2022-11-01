@@ -798,7 +798,7 @@ function HeaderComponent({
         }}
       >
         Disponible en tu cuenta de partyus{"\n"}
-        {balance && (organizador ? "" : "(usalo para pagar eventos)")}
+        {balance && organizador ? "" : "(usalo para pagar eventos)"}
       </Text>
 
       {/* Boton para info de depositos, solo activo para organizadores */}
@@ -900,7 +900,7 @@ function HeaderComponent({
                   <MaterialCommunityIcons name="bank" size={24} color="black" />
 
                   {/* Datos de tarjeta */}
-                  <View>
+                  <View style={{ marginLeft: 20 }}>
                     {/* Nombre del banco y numeros de tarjeta */}
                     <Text style={styles.cardInfoTxt}>
                       {mayusFirstLetter(bank_name)} {clabe?.toLowerCase()}

@@ -117,6 +117,7 @@ export default function ({
       <View style={{ flex: 1 }} />
 
       <DateTimePickerModal
+        textColor={"#000"}
         isVisible={isDatePickerVisible}
         mode="date"
         date={dateBorn}

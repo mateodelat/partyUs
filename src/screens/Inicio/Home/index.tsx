@@ -83,10 +83,12 @@ export async function queryNewNotifications() {
 }
 
 export default function ({ navigation }: { navigation: NavigationProp }) {
-  const { usuario } = useUser();
+  const { usuario, setUsuario } = useUser();
 
   const [minPrice, setMinPrice] = useState<number>();
   const [maxPrice, setMaxPrice] = useState<number>();
+
+  const [profilePicture, setProfilePicture] = useState<string>(" ");
 
   // Texto de busqueda
   const [search, setSearch] = useState("");
@@ -195,8 +197,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     }
 
     setEventosFiltrados(eventos);
-    setFetchedEvents(eventos);
-
     // Borrar filtros
     !events && clearFilters();
     setLoading(false);
@@ -461,6 +461,14 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   async function onRefresh() {
     setRefreshing(true);
 
+    DataStore.query(Usuario, await getUserSub()).then((r) => {
+      setUsuario({
+        ...r,
+      });
+      // Pedir foto de perfil de usuario
+      getImageUrl(r.foto).then(setProfilePicture);
+    });
+
     // Obtener nuevas notificaciones al usuario
     queryNewNotifications().then(setNewNotifications);
 
@@ -517,13 +525,30 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           <View style={styles.header}>
             {/* Imagen de perfil */}
             <TouchableOpacity onPress={handleProfile}>
-              {usuario.foto ? (
-                <Image
-                  style={styles.profilePicture}
-                  source={{
-                    uri: usuario.foto,
+              {profilePicture ? (
+                <View
+                  style={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 45,
+                    height: 45,
                   }}
-                />
+                >
+                  <ActivityIndicator
+                    style={{
+                      position: "absolute",
+                    }}
+                    size={"small"}
+                    color={"black"}
+                  />
+                  {}
+                  <Image
+                    style={styles.profilePicture}
+                    source={{
+                      uri: profilePicture,
+                    }}
+                  />
+                </View>
               ) : (
                 <EmptyProfile />
               )}

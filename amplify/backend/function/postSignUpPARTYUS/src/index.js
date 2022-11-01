@@ -23,7 +23,6 @@ function generateProfilePicture(nombre) {
     "ffbf5e",
     "577590",
     "F4F6F8",
-    "ffffff",
     "cccccc",
   ];
   const randomColor = Math.round(Math.random() * listaColores.length);

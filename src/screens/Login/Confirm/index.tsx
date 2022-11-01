@@ -266,23 +266,6 @@ export default function ({
           <View style={{ marginTop: 20 }} />
         )}
 
-        <AnimatedInput
-          mask={"custom"}
-          maskOptions={{
-            mask: "999 999",
-          }}
-          placeholder="Codigo de verificacion"
-          value={code}
-          onChangeText={(text) => {
-            clearErrors();
-            setCode(text);
-          }}
-          keyboardType="phone-pad"
-          onEndEditing={clearErrors}
-          valid={!errorCode}
-          errorText={error}
-        />
-
         {/* En caso que queramos confirmar un codigo */}
         {!newPassword && (
           <AnimatedInput
@@ -298,12 +281,31 @@ export default function ({
           />
         )}
 
+        <AnimatedInput
+          mask={"custom"}
+          autoCapitalize={"none"}
+          maskOptions={{
+            mask: "999 999",
+          }}
+          placeholder="Ingresar codigo de verificacion"
+          value={code}
+          onChangeText={(text) => {
+            clearErrors();
+            setCode(text);
+          }}
+          keyboardType="phone-pad"
+          onEndEditing={clearErrors}
+          valid={!errorCode}
+          errorText={error}
+        />
+
         {/* En caso que queramos nueva contraseña */}
         {newPassword && (
           <View>
             <AnimatedInput
               placeholder="Nueva contraseña"
               value={new_password}
+              autoCapitalize={"none"}
               onChangeText={(text) => {
                 setNew_pasword(text);
                 clearErrors();
@@ -335,7 +337,14 @@ export default function ({
 
       {message !== "" ? (
         <View style={styles.message}>
-          <Text style={{ fontSize: 18, color: "#fff", textAlign: "center" }}>
+          <Text
+            style={{
+              fontSize: 18,
+              color: "#fff",
+              textAlign: "center",
+              backgroundColor: "red",
+            }}
+          >
             {message}
           </Text>
         </View>

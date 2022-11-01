@@ -944,11 +944,10 @@ const styles = StyleSheet.create({
   innerContainer: {
     backgroundColor: "#fff",
     borderRadius: 10,
-    overflow: "hidden",
-    ...shadowMedia,
     margin: 20,
     marginBottom: 20,
     minHeight: 100,
+    ...shadowMedia,
 
     alignItems: "center",
   },
@@ -960,6 +959,8 @@ const styles = StyleSheet.create({
   imgAventura: {
     flex: 2,
     height: "100%",
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
   },
 
   adventureTextContainer: {
@@ -1007,7 +1008,6 @@ const styles = StyleSheet.create({
 
   paymentContainer: {
     borderRadius: 10,
-    overflow: "hidden",
     marginHorizontal: 20,
     backgroundColor: "#fff",
     marginTop: 20,

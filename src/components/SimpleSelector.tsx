@@ -6,7 +6,7 @@ import React, { useRef } from "react";
 import { rojoClaro } from "../../constants";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
-const BUTTON_SIZE = 25;
+const BUTTON_SIZE = 30;
 
 export default function SimpleSelector({
   quantity,
@@ -110,6 +110,7 @@ export default function SimpleSelector({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
+    alignItems: "center",
   },
 
   minus: {
@@ -139,5 +140,6 @@ const styles = StyleSheet.create({
     width: 30,
     textAlign: "center",
     fontWeight: "bold",
+    textAlignVertical: "center",
   },
 });

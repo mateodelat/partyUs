@@ -134,6 +134,7 @@ export default function ({
         <AnimatedInput
           placeholder="Email"
           valid={!errorEmail}
+          autoCapitalize={"none"}
           errorText={errorEmail}
           onChangeText={(text) => {
             setEmail(text);
@@ -147,6 +148,7 @@ export default function ({
           <AnimatedInput
             placeholder="Contraseña"
             valid={!errorPassword}
+            autoCapitalize={"none"}
             secureTextEntry={hidePassword}
             errorText={errorPassword}
             onChangeText={(text) => {

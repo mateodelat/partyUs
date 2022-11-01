@@ -56,6 +56,7 @@ export default function ({ navigation }) {
     DataStore.query(Notificacion, item.id).then((not) =>
       DataStore.save(
         Notificacion.copyOf(not, (m) => {
+          m.usuarioID = usuario.id;
           m.leido = true;
         })
       )

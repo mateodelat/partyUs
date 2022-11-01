@@ -5,6 +5,7 @@ import {
   Pressable,
   Modal,
   TextInput,
+  KeyboardAvoidingView,
   Image,
   Keyboard,
   Alert,
@@ -184,255 +185,260 @@ export default function ({
         visible={innerModal}
         onRequestClose={handleCloseModal}
       >
-        <Pressable onPress={handleCloseModal} style={{ flex: 1 }} />
+        <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
+          <Pressable onPress={handleCloseModal} style={{ flex: 1 }} />
 
-        <Pressable
-          onPress={() => Keyboard.dismiss()}
-          style={styles.modalContainer}
-        >
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
+          <Pressable
+            onPress={() => Keyboard.dismiss()}
+            style={styles.modalContainer}
           >
-            <Text style={styles.title}>Agregar nueva tarjeta</Text>
-            <AntDesign name="Safety" size={24} color={azulClaro} />
-          </View>
-          <View style={styles.line} />
-
-          {/* Numero de tarjeta */}
-          <InputOnFocusV2
-            onLayout={() => {
-              setTimeout(() => {
-                numberRef.current?._inputElement.focus();
-              }, 50);
-            }}
-            ref={numberRef}
-            style={{
-              marginBottom: 20,
-            }}
-            onSubmitEditing={() => {
-              expiryRef.current?._inputElement.focus();
-            }}
-            returnKeyType={"next"}
-            titulo={"Numero de tarjeta"}
-            onChangeText={(value) => {
-              let validation = valid.number(value);
-              value = value.replace(/ /g, "");
-              const cardLenght = validation.card?.lengths[0];
-
-              // Si es valido y se llego a los caracteres que son, cambiar
-              if (value.length === cardLenght && validation.isValid) {
-                expiryRef.current?._inputElement.focus();
-              }
-              if (value.length === cardLenght && !validation.isValid) {
-                validation.isPotentiallyValid = false;
-              }
-
-              setNumber({
-                value,
-                validation: {
-                  isPotentiallyValid: validation.isPotentiallyValid,
-                  isValid: validation.isValid,
-                  card: {
-                    type: validation.card?.type,
-                    cvv: validation.card?.code.size,
-                  },
-                },
-              });
-            }}
-            type={"credit-card"}
-            options={
-              issuer
-                ? {
-                    issuer: issuer as "visa-or-mastercard" | "amex",
-                  }
-                : undefined
-            }
-            value={number?.value}
-            valid={
-              number?.validation?.isPotentiallyValid ||
-              number?.validation?.isValid
-            }
-            RightIcon={() => (
-              <Image
-                style={styles.icon}
-                source={getCardIcon(number?.validation?.card?.type)}
-              />
-            )}
-          />
-
-          <View style={{ flexDirection: "row" }}>
-            {/* Fecha de expiracion */}
-            <InputOnFocusV2
-              ref={expiryRef}
-              type={"custom"}
-              options={{
-                mask: "99/99",
-              }}
-              style={{ flex: 1, marginRight: 10 }}
-              returnKeyType={"next"}
-              keyboardType={"numeric"}
-              titulo={"Fecha vencimiento"}
-              placeholder={"mm/aa"}
-              onChangeText={(value) => {
-                const validation = valid.expirationDate(value);
-                value =
-                  value.length === 2 ? value + "/" : value.replace(/\//g, "");
-
-                // Auto poner 0
-                if (value.length === 1 && Number(value) > 1) {
-                  value = "0" + value;
-                }
-
-                // Si se llego al final cambiar de input
-                if (value.length === 4 && validation.isValid) {
-                  cvcRef.current?._inputElement.focus();
-                }
-
-                setExpiry({
-                  value,
-                  validation: {
-                    isPotentiallyValid: validation.isPotentiallyValid,
-                    isValid: validation.isValid,
-                  },
-                });
-              }}
-              value={expiry?.value}
-              valid={
-                expiry?.validation?.isPotentiallyValid ||
-                expiry?.validation?.isValid
-              }
-              onSubmitEditing={() => {
-                cvcRef.current?._inputElement.focus();
-              }}
-              RightIcon={({ focused }) => {
-                return (
-                  <Feather
-                    style={{
-                      marginRight: 10,
-                    }}
-                    name="calendar"
-                    size={24}
-                    color={focused ? azulClaro : "black"}
-                  />
-                );
-              }}
-            />
-
-            {/* CVC */}
-            <InputOnFocusV2
-              type={"custom"}
-              options={{
-                mask: number?.validation?.card?.cvv === 4 ? "9999" : "999",
-              }}
-              style={{ flex: 1, marginLeft: 10 }}
-              ref={cvcRef}
-              returnKeyType={"next"}
-              keyboardType={"numeric"}
-              titulo={"CVV"}
-              placeholder={number?.validation?.card?.cvv === 4 ? "●●●●" : "●●●"}
-              onChangeText={(value) => {
-                const validation = valid.cvv(value, [3, 4]);
-
-                if (
-                  validation.isValid &&
-                  value.length === number?.validation?.card?.cvv
-                ) {
-                  nameRef.current?.focus();
-                }
-
-                setCvv({
-                  value,
-                  validation: {
-                    isPotentiallyValid: validation.isPotentiallyValid,
-                    isValid: validation.isValid,
-                  },
-                });
-              }}
-              value={cvv?.value}
-              valid={
-                cvv?.validation?.isPotentiallyValid || cvv?.validation?.isValid
-              }
-              onSubmitEditing={() => {
-                nameRef.current?.focus();
-              }}
-              RightIcon={() => {
-                return (
-                  <Image
-                    source={require("../../../assets/icons/stp_card_cvc_amex.png")}
-                    style={{
-                      width: 30,
-                      height: 20,
-                      marginRight: 10,
-                    }}
-                  />
-                );
-              }}
-            />
-          </View>
-
-          <InputOnFocusV2
-            titulo={"Nombre del tarjetahabiente"}
-            placeholder={"Escribe el nombre completo"}
-            autoCapitalize={"characters"}
-            onChangeText={setName}
-            value={name}
-            style={{ marginTop: 30 }}
-            onSubmitEditing={handleSave}
-            ref={nameRef}
-          />
-
-          <Text style={styles.infoTxt}>
-            Al momento de crear la tarjeta se hara un cargo de 10$ para
-            verificar que es valida y se devolvera al instante
-          </Text>
-
-          {/* Guardar tarjeta para compras futuras */}
-          {!comprasFuturasEnabled ? (
-            <Pressable
-              onPress={() => {
-                setSaveCard(!saveCard);
-              }}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 20,
-              }}
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
             >
-              <View
-                style={{
-                  ...styles.checkContainer,
-                  backgroundColor: saveCard ? azulClaro : "#fff",
-                }}
-              >
-                {saveCard && (
-                  <FontAwesome name="check" size={12} color="#fff" />
-                )}
-              </View>
-              <Text
-                style={{
-                  fontWeight: "500",
-                  flex: 1,
-                  marginLeft: 10,
-                  color: "#000",
-                }}
-              >
-                Guardar para compras futuras
-              </Text>
-            </Pressable>
-          ) : (
-            <View style={{ marginTop: 20 }} />
-          )}
+              <Text style={styles.title}>Agregar nueva tarjeta</Text>
+              <AntDesign name="Safety" size={24} color={azulClaro} />
+            </View>
+            <View style={styles.line} />
 
-          <Boton
-            style={{
-              borderRadius: 10,
-            }}
-            titulo="Continuar"
-            onPress={handleSave}
-            color={azulClaro}
-          />
-        </Pressable>
+            {/* Numero de tarjeta */}
+            <InputOnFocusV2
+              onLayout={() => {
+                setTimeout(() => {
+                  numberRef.current?._inputElement.focus();
+                }, 50);
+              }}
+              ref={numberRef}
+              style={{
+                marginBottom: 20,
+              }}
+              onSubmitEditing={() => {
+                expiryRef.current?._inputElement.focus();
+              }}
+              returnKeyType={"next"}
+              titulo={"Numero de tarjeta"}
+              onChangeText={(value) => {
+                let validation = valid.number(value);
+                value = value.replace(/ /g, "");
+                const cardLenght = validation.card?.lengths[0];
+
+                // Si es valido y se llego a los caracteres que son, cambiar
+                if (value.length === cardLenght && validation.isValid) {
+                  expiryRef.current?._inputElement.focus();
+                }
+                if (value.length === cardLenght && !validation.isValid) {
+                  validation.isPotentiallyValid = false;
+                }
+
+                setNumber({
+                  value,
+                  validation: {
+                    isPotentiallyValid: validation.isPotentiallyValid,
+                    isValid: validation.isValid,
+                    card: {
+                      type: validation.card?.type,
+                      cvv: validation.card?.code.size,
+                    },
+                  },
+                });
+              }}
+              type={"credit-card"}
+              options={
+                issuer
+                  ? {
+                      issuer: issuer as "visa-or-mastercard" | "amex",
+                    }
+                  : undefined
+              }
+              value={number?.value}
+              valid={
+                number?.validation?.isPotentiallyValid ||
+                number?.validation?.isValid
+              }
+              RightIcon={() => (
+                <Image
+                  style={styles.icon}
+                  source={getCardIcon(number?.validation?.card?.type)}
+                />
+              )}
+            />
+
+            <View style={{ flexDirection: "row" }}>
+              {/* Fecha de expiracion */}
+              <InputOnFocusV2
+                ref={expiryRef}
+                type={"custom"}
+                options={{
+                  mask: "99/99",
+                }}
+                style={{ flex: 1, marginRight: 10 }}
+                returnKeyType={"next"}
+                keyboardType={"numeric"}
+                titulo={"Fecha vencimiento"}
+                placeholder={"mm/aa"}
+                onChangeText={(value) => {
+                  const validation = valid.expirationDate(value);
+                  value =
+                    value.length === 2 ? value + "/" : value.replace(/\//g, "");
+
+                  // Auto poner 0
+                  if (value.length === 1 && Number(value) > 1) {
+                    value = "0" + value;
+                  }
+
+                  // Si se llego al final cambiar de input
+                  if (value.length === 4 && validation.isValid) {
+                    cvcRef.current?._inputElement.focus();
+                  }
+
+                  setExpiry({
+                    value,
+                    validation: {
+                      isPotentiallyValid: validation.isPotentiallyValid,
+                      isValid: validation.isValid,
+                    },
+                  });
+                }}
+                value={expiry?.value}
+                valid={
+                  expiry?.validation?.isPotentiallyValid ||
+                  expiry?.validation?.isValid
+                }
+                onSubmitEditing={() => {
+                  cvcRef.current?._inputElement.focus();
+                }}
+                RightIcon={({ focused }) => {
+                  return (
+                    <Feather
+                      style={{
+                        marginRight: 10,
+                      }}
+                      name="calendar"
+                      size={24}
+                      color={focused ? azulClaro : "black"}
+                    />
+                  );
+                }}
+              />
+
+              {/* CVC */}
+              <InputOnFocusV2
+                type={"custom"}
+                options={{
+                  mask: number?.validation?.card?.cvv === 4 ? "9999" : "999",
+                }}
+                style={{ flex: 1, marginLeft: 10 }}
+                ref={cvcRef}
+                returnKeyType={"next"}
+                keyboardType={"numeric"}
+                titulo={"CVV"}
+                placeholder={
+                  number?.validation?.card?.cvv === 4 ? "●●●●" : "●●●"
+                }
+                onChangeText={(value) => {
+                  const validation = valid.cvv(value, [3, 4]);
+
+                  if (
+                    validation.isValid &&
+                    value.length === number?.validation?.card?.cvv
+                  ) {
+                    nameRef.current?.focus();
+                  }
+
+                  setCvv({
+                    value,
+                    validation: {
+                      isPotentiallyValid: validation.isPotentiallyValid,
+                      isValid: validation.isValid,
+                    },
+                  });
+                }}
+                value={cvv?.value}
+                valid={
+                  cvv?.validation?.isPotentiallyValid ||
+                  cvv?.validation?.isValid
+                }
+                onSubmitEditing={() => {
+                  nameRef.current?.focus();
+                }}
+                RightIcon={() => {
+                  return (
+                    <Image
+                      source={require("../../../assets/icons/stp_card_cvc_amex.png")}
+                      style={{
+                        width: 30,
+                        height: 20,
+                        marginRight: 10,
+                      }}
+                    />
+                  );
+                }}
+              />
+            </View>
+
+            <InputOnFocusV2
+              titulo={"Nombre del tarjetahabiente"}
+              placeholder={"Escribe el nombre completo"}
+              autoCapitalize={"characters"}
+              onChangeText={setName}
+              value={name}
+              style={{ marginTop: 30 }}
+              onSubmitEditing={handleSave}
+              ref={nameRef}
+            />
+
+            <Text style={styles.infoTxt}>
+              Al momento de crear la tarjeta se hara un cargo de 10$ para
+              verificar que es valida y se devolvera al instante
+            </Text>
+
+            {/* Guardar tarjeta para compras futuras */}
+            {!comprasFuturasEnabled ? (
+              <Pressable
+                onPress={() => {
+                  setSaveCard(!saveCard);
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingVertical: 20,
+                }}
+              >
+                <View
+                  style={{
+                    ...styles.checkContainer,
+                    backgroundColor: saveCard ? azulClaro : "#fff",
+                  }}
+                >
+                  {saveCard && (
+                    <FontAwesome name="check" size={12} color="#fff" />
+                  )}
+                </View>
+                <Text
+                  style={{
+                    fontWeight: "500",
+                    flex: 1,
+                    marginLeft: 10,
+                    color: "#000",
+                  }}
+                >
+                  Guardar para compras futuras
+                </Text>
+              </Pressable>
+            ) : (
+              <View style={{ marginTop: 20 }} />
+            )}
+
+            <Boton
+              style={{
+                borderRadius: 10,
+              }}
+              titulo="Continuar"
+              onPress={handleSave}
+              color={azulClaro}
+            />
+          </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );

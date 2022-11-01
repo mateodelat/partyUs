@@ -14,6 +14,7 @@ import { Entypo } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import ImageFullScreen from "../../../components/ImageFullScreen";
 import { StatusBar } from "expo-status-bar";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 //Los 3 puntitos creados mediante views con color negro y radius para que sean circulos
 const Indicator = ({
@@ -75,9 +76,11 @@ const Indicator = ({
 export default ({
   scrollX,
   images,
+  top,
 }: {
   scrollX: Animated.Value;
   images: { uri: string }[];
+  top: number;
 }) => {
   const data = images;
   let { width, height } = Dimensions.get("screen");
@@ -108,9 +111,6 @@ export default ({
 
   const [errorImagenes, setErrorImagenes] = useState(
     [...Array(data?.length ? data.length - 1 : 0).keys()].map(() => false)
-  );
-  const [imagesLoading, setImagesLoading] = useState(
-    [...Array(data?.length ? data.length - 1 : 0).keys()].map(() => true)
   );
 
   /////////////VIDEO//////////////////
@@ -192,20 +192,12 @@ export default ({
                       justifyContent: "center",
                     }}
                   >
-                    {imagesLoading[index] && (
-                      <ActivityIndicator
-                        size={"large"}
-                        color={"black"}
-                        style={{ position: "absolute" }}
-                      />
-                    )}
+                    <ActivityIndicator
+                      style={{ position: "absolute" }}
+                      size={"large"}
+                      color={"black"}
+                    />
                     <Image
-                      onLoad={() => {
-                        let newImagesLoading = [...imagesLoading];
-                        newImagesLoading[index] = false;
-
-                        setImagesLoading([...newImagesLoading]);
-                      }}
                       onError={({ nativeEvent: { error } }) => {
                         console.log(item);
                         console.log(error);
@@ -248,6 +240,7 @@ export default ({
           initialImageIdx={initialImageIdx}
           setModalVisible={setModalVisible}
           images={images.map((e) => e.uri)}
+          top={top}
           titulo={"Fotos"}
         />
       </Modal>

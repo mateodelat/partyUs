@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useRef } from "react";
-import { azulClaro, vibrar, VibrationType } from "../../../../constants";
+import { azulClaro } from "../../../../constants";
 
 import { Entypo } from "@expo/vector-icons";
 
@@ -56,24 +56,24 @@ export default function ({
     <View style={styles.container}>
       <TouchableOpacity
         onPressIn={() => {
-          handlePressIn(true);
-          vibrar(VibrationType.light);
-        }}
-        onPressOut={() => handlePressOut(true)}
-        style={styles.button}
-      >
-        <Entypo name="minus" size={20} color="#fff" />
-      </TouchableOpacity>
-      <View style={styles.line} />
-      <TouchableOpacity
-        onPressIn={() => {
           handlePressIn(false);
-          vibrar(VibrationType.light);
         }}
         onPressOut={() => handlePressOut(false)}
         style={styles.button}
       >
         <Entypo name="plus" size={20} color="#fff" />
+      </TouchableOpacity>
+
+      <View style={styles.line} />
+
+      <TouchableOpacity
+        onPressIn={() => {
+          handlePressIn(true);
+        }}
+        onPressOut={() => handlePressOut(true)}
+        style={styles.button}
+      >
+        <Entypo name="minus" size={20} color="#fff" />
       </TouchableOpacity>
     </View>
   );
@@ -82,21 +82,20 @@ export default function ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: azulClaro,
-    borderRadius: 5,
-    flex: 1,
-    margin: 10,
-    marginTop: 0,
-    flexDirection: "row",
-  },
-  button: {
     flex: 1,
     alignItems: "center",
+    width: "100%",
+  },
+  button: {
+    alignItems: "center",
     justifyContent: "center",
+    flex: 1,
   },
 
   line: {
-    width: 1,
+    height: 1,
     backgroundColor: "#fff",
     marginVertical: 5,
+    width: "100%",
   },
 });

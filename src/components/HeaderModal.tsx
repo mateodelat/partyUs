@@ -33,7 +33,7 @@ export default function ({
     >
       <Text style={[styles.titleModal, { color }, textStyle]}>{titulo}</Text>
       <Feather
-        style={styles.backIcon}
+        style={{ ...styles.backIcon, top: top + 20 }}
         name="x"
         size={30}
         color={color}

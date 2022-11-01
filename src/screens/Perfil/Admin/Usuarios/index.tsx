@@ -8,13 +8,14 @@ import {
   View,
   Pressable,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import Header from "../../../../navigation/components/Header";
 
 import { Feather } from "@expo/vector-icons";
 import { Usuario } from "../../../../models";
-import { DataStore } from "aws-amplify";
+import { Auth, DataStore, Predicates } from "aws-amplify";
 import { getImageUrl, rojoClaro, shadowBaja } from "../../../../../constants";
 import Line from "../../../../components/Line";
 import Switch from "../../../../components/Switch";
@@ -50,7 +51,15 @@ export default function ({ navigation }) {
   }, []);
 
   async function fetchUsersWithFilter() {
-    return DataStore.query(Usuario);
+    return DataStore.query(Usuario, Predicates.ALL, {
+      sort: (a) => a.organizador("DESCENDING"),
+    }).then((r) => {
+      return Promise.all(
+        r.map(async (usr) => {
+          return { ...usr, foto: await getImageUrl(usr.foto) };
+        })
+      );
+    });
   }
 
   async function onRefresh() {
@@ -119,6 +128,25 @@ export default function ({ navigation }) {
             });
           }
 
+          function handleSetOrganizador() {
+            setUsuarios((prev) => {
+              prev[index] = {
+                ...item,
+                organizador: !item.organizador,
+              };
+              return [...prev];
+            });
+
+            // Cambiar el usuario para que sea admin
+            DataStore.query(Usuario, item.id).then((usr) => {
+              DataStore.save(
+                Usuario.copyOf(usr, (ne) => {
+                  ne.organizador = !usr.organizador;
+                })
+              );
+            });
+          }
+
           function handleVerSaldo() {
             navigation.navigate("Saldo", {
               usuario: item,
@@ -146,7 +174,18 @@ export default function ({ navigation }) {
               style={styles.userContainer}
             >
               <View style={{ flexDirection: "row" }}>
-                <Image source={{ uri: item.foto }} style={styles.userProfile} />
+                <View style={styles.userProfile}>
+                  <ActivityIndicator
+                    style={{ position: "absolute" }}
+                    size={"small"}
+                    color={"black"}
+                  />
+
+                  <Image
+                    source={{ uri: item.foto }}
+                    style={{ width: "100%", height: "100%", borderRadius: 50 }}
+                  />
+                </View>
 
                 {/* Texto del usuario */}
                 <View style={{ justifyContent: "center", flex: 1 }}>
@@ -185,9 +224,15 @@ export default function ({ navigation }) {
 
                   <Switch
                     style={{ padding: 0, paddingVertical: 5 }}
+                    text="Organizador"
+                    enabled={item.organizador}
+                    setEnabled={() => handleSetOrganizador()}
+                  />
+                  <Switch
+                    style={{ padding: 0, paddingVertical: 5 }}
                     text="Administrador"
                     enabled={item.admin}
-                    setEnabled={handleSetAdmin}
+                    setEnabled={() => handleSetAdmin()}
                   />
 
                   {item.admin && (
@@ -195,7 +240,7 @@ export default function ({ navigation }) {
                       style={{ padding: 0, paddingVertical: 5 }}
                       text="Notificacion de nuevas reservas"
                       enabled={item.receiveNewReservations}
-                      setEnabled={handleSetNotificacionReserva}
+                      setEnabled={() => handleSetNotificacionReserva()}
                     />
                   )}
                 </>
@@ -250,8 +295,12 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
 
     borderRadius: 50,
+
     borderWidth: 1,
     marginRight: 15,
+
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   userContainer: {

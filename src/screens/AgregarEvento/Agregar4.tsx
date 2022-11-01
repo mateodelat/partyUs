@@ -49,6 +49,7 @@ import { Notificacion } from "../../models";
 import { TipoNotificacion } from "../../models";
 import { notificacionesRecordatorio } from "../Inicio/Notifications/functions";
 import useUser from "../../Hooks/useUser";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const musicList = enumToArray(MusicEnum);
 const comoditiesList = enumToArray(ComoditiesEnum);
@@ -328,6 +329,8 @@ export default function Agregar2({
     }
   }
 
+  const { bottom } = useSafeAreaInsets();
+
   return (
     <Pressable
       style={{
@@ -347,7 +350,7 @@ export default function Agregar2({
         }}
       >
         {/* Tipo de lugar */}
-        <View style={{ ...styles.filterContainer, marginTop: 0 }}>
+        <View style={{ ...styles.filterContainer, marginTop: 0, zIndex: 2 }}>
           {/* Titulo */}
           <Text style={styles.tituloFiltro}>TIPO DE LUGAR</Text>
           <DropDownSelector
@@ -358,7 +361,7 @@ export default function Agregar2({
         </View>
 
         {/* Tipo de musica */}
-        <View style={styles.filterContainer}>
+        <View style={{ ...styles.filterContainer, zIndex: 1 }}>
           {/* Titulo */}
           <Text style={styles.tituloFiltro}>TIPO DE MUSICA</Text>
           <DropDownSelector
@@ -463,7 +466,7 @@ export default function Agregar2({
 
       <Boton
         loading={loading}
-        style={{ margin: 20 }}
+        style={{ margin: 20, marginBottom: bottom ? bottom : 20 }}
         titulo="Continuar"
         onPress={handleGuardar}
         color={azulClaro}

@@ -1,5 +1,12 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import React, { useState } from "react";
 import { EventoType } from "../screens/Inicio/Home";
 import {
   azulClaro,
@@ -29,19 +36,36 @@ export default function ElementoEvento({
 
   const fecha = new Date(data.fechaInicial ? data.fechaInicial : "error");
 
+  const [imageLoading, setImageLoading] = useState(false);
+
   return (
     <Pressable onPress={onPress} style={styles.container}>
       <View style={{ padding: 20, paddingBottom: 0 }}>
         <View style={{ flexDirection: "row", flex: 1 }}>
           {/* Imagen principal */}
-          <Image
-            style={styles.image}
-            source={{
-              uri: imagenPrincipal
-                ? imagenPrincipal.uri
-                : "https://static3.mujerhoy.com/www/multimedia/202203/17/media/cortadas/apertura-party-kjgF-U1601347275536ie-624x624@MujerHoy.jpeg",
+          <View
+            style={{
+              ...styles.image,
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
             }}
-          />
+          >
+            <ActivityIndicator
+              style={{ position: "absolute" }}
+              size={"small"}
+              color={"black"}
+            />
+
+            <Image
+              style={{ width: "100%", height: "100%" }}
+              source={{
+                uri: imagenPrincipal
+                  ? imagenPrincipal.uri
+                  : "https://static3.mujerhoy.com/www/multimedia/202203/17/media/cortadas/apertura-party-kjgF-U1601347275536ie-624x624@MujerHoy.jpeg",
+              }}
+            />
+          </View>
 
           {/* Textos de titulo y creador */}
           <View style={styles.textContainer}>

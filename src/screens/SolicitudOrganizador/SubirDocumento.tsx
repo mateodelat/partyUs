@@ -16,7 +16,6 @@ import {
   callGoogleVisionAsync,
   tipoDocumento,
   matchWholeWord,
-  getBlob,
 } from "../../../constants";
 import HeaderSolicitud from "./components/HeaderSolicitud";
 

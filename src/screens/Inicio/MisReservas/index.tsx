@@ -79,7 +79,7 @@ export function MisReservas({ navigation, route }) {
     const sub = usuario.id;
 
     // Si se esta refrescando, actualizar toodas las rervas ya tenidas
-    const res = await DataStore.query(
+    let res = await DataStore.query(
       Reserva,
       (e) => {
         if (firstRender && paramsReservaID) {
@@ -117,30 +117,53 @@ export function MisReservas({ navigation, route }) {
         setLimitReached(true);
       }
 
-      const res = await Promise.all(
-        r
-          .filter((e: any) => !e._deleted)
-          .map(async (e) => {
-            let r = { ...e };
-            const evento = await DataStore.query(Evento, e.eventoID);
-            const expirado = e.pagado
-              ? false
-              : new Date().toISOString() > e.fechaExpiracionUTC;
+      let res = await Promise.all(
+        r.map(async (e) => {
+          let r = { ...e };
+          const evento = await DataStore.query(Evento, e.eventoID);
+          const expirado = e.pagado
+            ? false
+            : e.tipoPago === "EFECTIVO" &&
+              !e.cancelado &&
+              new Date().toISOString() > e.fechaExpiracionUTC;
 
-            return {
-              ...r,
-              expirado,
-              evento: {
-                ...evento,
+          return {
+            ...r,
+            expirado,
+            evento: {
+              ...evento,
 
-                imagenPrincipal: await getImageUrl(
-                  evento.imagenes[evento.imagenPrincipalIDX]
-                ),
-                creator: await DataStore.query(Usuario, evento.CreatorID),
-              },
-            };
-          })
+              imagenPrincipal: await getImageUrl(
+                evento.imagenes[evento.imagenPrincipalIDX]
+              ),
+              creator: await DataStore.query(Usuario, evento.CreatorID),
+            },
+          };
+        })
       );
+
+      // Ordenar reservas de la siguiente manera:
+      // 1) Primero por expiradas al final
+      // 2) Despues por canceladas
+      // 3) Luego por fecha del evento
+      // 4) Si hay varias en un evento por fecha creadas
+      console.log("\n");
+
+      res = res.sort((a, b) => {
+        // Si expiro, mandarla al final
+        if (a.expirado && !b.expirado) {
+          return 1;
+        }
+        if (a.cancelado && !b.expirado) {
+          return 1;
+        }
+        if (a.evento.fechaInicial > b.evento.fechaInicial) {
+          return -1;
+        }
+        if (a.createdAt > b.createdAt) {
+          return -1;
+        }
+      });
 
       // Si no se esta actualizando es porque fue una pagination
       if (!refresh) {

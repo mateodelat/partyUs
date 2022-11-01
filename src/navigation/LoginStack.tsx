@@ -7,7 +7,7 @@ import Register from "../screens/Login/Register";
 import Header from "./components/Header";
 import PasswordForget from "../screens/Login/PasswordForget";
 import Confirm from "../screens/Login/Confirm";
-import { View } from "react-native";
+import { View, KeyboardAvoidingView } from "react-native";
 
 // import Register from '../screens/Login/Register';
 // import Landing from '../screens/Login/Landing';
@@ -33,52 +33,54 @@ export default function LoginStack({
   const Stack = createStackNavigator();
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#00000088",
-      }}
-    >
-      <Stack.Navigator
-        screenOptions={{
-          header: ({
-            route: { name },
-            navigation,
-            options: { title: tit },
-          }) => {
-            const title = tit ? tit : null;
-            return <Header title={title} />;
-          },
+    <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#00000088",
         }}
       >
-        {/* <Stack.Screen
+        <Stack.Navigator
+          screenOptions={{
+            header: ({
+              route: { name },
+              navigation,
+              options: { title: tit },
+            }) => {
+              const title = tit ? tit : null;
+              return <Header title={title} />;
+            },
+          }}
+        >
+          {/* <Stack.Screen
           name="Landing"
           component={Landing}
           options={{
             headerShown: false,
           }}
         /> */}
-        <Stack.Screen
-          name="Login"
-          component={Login}
-          initialParams={onLogin ? { onLogin } : null}
-        />
-        <Stack.Screen name="Register" component={Register} />
-        <Stack.Screen
-          name="PasswordForget"
-          component={PasswordForget}
-          options={{
-            title: "Contraseña olvidada",
-          }}
-        />
-        <Stack.Screen
-          name="Confirm"
-          component={Confirm}
-          options={{
-            title: "Confirmar codigo",
-          }}
-        />
-      </Stack.Navigator>
-    </View>
+          <Stack.Screen
+            name="Login"
+            component={Login}
+            initialParams={onLogin ? { onLogin } : null}
+          />
+          <Stack.Screen name="Register" component={Register} />
+          <Stack.Screen
+            name="PasswordForget"
+            component={PasswordForget}
+            options={{
+              title: "Contraseña olvidada",
+            }}
+          />
+          <Stack.Screen
+            name="Confirm"
+            component={Confirm}
+            options={{
+              title: "Confirmar codigo",
+            }}
+          />
+        </Stack.Navigator>
+      </View>
+    </KeyboardAvoidingView>
   );
 }

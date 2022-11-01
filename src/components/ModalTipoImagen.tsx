@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  ViewStyle,
   View,
 } from "react-native";
 import {
@@ -22,10 +23,13 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ({
   setModalVisible,
   setImage,
+
+  style,
 
   // Parametros opcionales
   video,
@@ -42,6 +46,7 @@ export default function ({
 
   // Parametros opcionales
   video?: boolean;
+  style?: ViewStyle;
 
   hideAleatorio?: boolean;
 
@@ -68,7 +73,7 @@ export default function ({
   async function handleDeviceImage() {
     let image = await openImagePickerAsync(
       !!video ? false : true,
-      0.9,
+      (quality = quality ? quality : 0.9),
       aspectRatio
     );
     if (!image) return;
@@ -104,7 +109,10 @@ export default function ({
 
   async function handleRandomImage() {
     setRandomLoading(true);
-    await fetchWithTimeout("https://source.unsplash.com/random/1100x800/?party")
+    await fetchWithTimeout(
+      "https://source.unsplash.com/random/1100x800/?party",
+      3000
+    )
       .then((r) => {
         setImage({
           uri: r.url,
@@ -125,7 +133,7 @@ export default function ({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={{ ...styles.container, ...style }}>
       <Modal
         animationType="slide"
         transparent={true}
@@ -138,7 +146,7 @@ export default function ({
         {modalType === "pick" ? (
           <>
             <Pressable onPress={handleCloseModal} style={{ flex: 1 }} />
-            <View style={styles.innerContainer}>
+            <View style={{ ...styles.innerContainer, paddingTop: 20 }}>
               <View style={styles.header}>
                 <Text style={styles.title}>Tipo de la imagen</Text>
                 <Feather

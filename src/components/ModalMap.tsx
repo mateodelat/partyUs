@@ -38,6 +38,7 @@ import Header from "../navigation/components/Header";
 import HeaderModal from "./HeaderModal";
 import useUser from "../Hooks/useUser";
 import { StatusBar } from "expo-status-bar";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { height } = Dimensions.get("window");
 export type locationType = Region & {
@@ -70,6 +71,7 @@ export default ({
   const { setStatusStyle } = useUser();
 
   const [region, setRegion] = useState(selectedPlace as Region);
+
   const [actualRegion, setActualRegion] = useState(selectedPlace as Region);
 
   // Variables del buscador
@@ -100,7 +102,6 @@ export default ({
         longitude = coords?.longitude;
         if (!latitude || !longitude) {
           console.log("No hay latitud o longitud");
-          return;
         }
 
         if (selectedPlace) {
@@ -128,7 +129,6 @@ export default ({
         };
         const region = coords || latitude ? location : defaultLocation;
 
-        setRegion(region);
         setActualRegion(region);
       });
   }, [modalVisible]);
@@ -276,6 +276,8 @@ export default ({
     setModalVisible(false);
   }
 
+  const { bottom } = useSafeAreaInsets();
+
   return (
     <Modal
       transparent={false}
@@ -302,6 +304,7 @@ export default ({
             style={{
               padding: 20,
               paddingVertical: 0,
+              zIndex: 1,
             }}
           >
             <View
@@ -406,62 +409,66 @@ export default ({
         )}
 
         <View style={styles.mapContainer}>
-          {locationPermision !== undefined && region ? (
-            <MapView
-              ref={map}
-              provider={"google"}
-              mapType={"standard"}
-              showsUserLocation={locationPermision}
-              loadingEnabled={true}
-              onTouchStart={clearSugested}
-              onPress={
-                handleSelectPlace
-                  ? ({ nativeEvent }) => {
-                      const { coordinate } = nativeEvent as any;
-                      handlePressPlace(coordinate);
-                    }
-                  : () => null
-              }
-              onLongPress={
-                handleSelectPlace
-                  ? ({ nativeEvent }) => {
-                      const { coordinate } = nativeEvent as any;
-                      handlePressPlace(coordinate);
-                    }
-                  : () => null
-              }
-              initialRegion={region}
-              onPoiClick={
-                handleSelectPlace
-                  ? ({ nativeEvent }) => {
-                      const { coordinate, placeId, name } = nativeEvent as any;
-                      handlePressPlace(coordinate, placeId, name);
-                    }
-                  : () => null
-              }
+          <MapView
+            ref={map}
+            provider={"google"}
+            mapType={"standard"}
+            showsUserLocation={locationPermision}
+            loadingEnabled={true}
+            onTouchStart={clearSugested}
+            onPress={
+              handleSelectPlace
+                ? ({ nativeEvent }) => {
+                    const { coordinate } = nativeEvent as any;
+                    handlePressPlace(coordinate);
+                  }
+                : () => null
+            }
+            onLongPress={
+              handleSelectPlace
+                ? ({ nativeEvent }) => {
+                    const { coordinate } = nativeEvent as any;
+                    handlePressPlace(coordinate);
+                  }
+                : () => null
+            }
+            initialRegion={region ? region : defaultLocation}
+            onPoiClick={
+              handleSelectPlace
+                ? ({ nativeEvent }) => {
+                    const { coordinate, placeId, name } = nativeEvent as any;
+                    handlePressPlace(coordinate, placeId, name);
+                  }
+                : () => null
+            }
+            style={{
+              ...StyleSheet.absoluteFillObject,
+            }}
+            onRegionChangeComplete={(r) => {
+              setActualRegion(r);
+            }}
+          >
+            {/* Marcador */}
+            {place && <Marker coordinate={place} />}
+          </MapView>
+
+          {place?.ubicacionNombre && handleSelectPlace && (
+            <View
               style={{
-                ...StyleSheet.absoluteFillObject,
-              }}
-              onRegionChangeComplete={(r) => {
-                setActualRegion(r);
+                ...styles.locationTxtContainer,
               }}
             >
-              {/* Marcador */}
-              {place && <Marker coordinate={place} />}
-            </MapView>
-          ) : (
-            <Loading indicator color={"blue"} />
+              <TouchableOpacity onPress={() => guardarLugar(place)}>
+                <Text
+                  numberOfLines={2}
+                  style={{ ...styles.locationTxt, paddingBottom: bottom + 10 }}
+                >
+                  {place?.ubicacionNombre}
+                </Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
-        {place?.ubicacionNombre && handleSelectPlace && (
-          <View style={styles.locationTxtContainer}>
-            <TouchableOpacity onPress={() => guardarLugar(place)}>
-              <Text numberOfLines={2} style={styles.locationTxt}>
-                {place?.ubicacionNombre}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </Pressable>
     </Modal>
   );
@@ -522,13 +529,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     backgroundColor: "#f4f6f6",
     left: 20,
-    top: 48,
-    zIndex: 1,
+    top: 40,
     width: "100%",
     maxHeight: height * 0.45,
     borderBottomRightRadius: 7,
     borderBottomLeftRadius: 7,
     paddingBottom: 10,
+    zIndex: 2,
+    elevation: 1,
   },
 
   suggestedPlace: {
@@ -536,6 +544,8 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     flexDirection: "row",
     alignItems: "center",
+    zIndex: 2,
+    elevation: 1,
   },
 
   tituloSugested: {
@@ -554,6 +564,8 @@ const styles = StyleSheet.create({
   locationTxtContainer: {
     position: "absolute",
     width: "100%",
+    elevation: 2,
+    zIndex: 2,
     bottom: 0,
     backgroundColor: azulFondo,
   },
@@ -565,5 +577,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#fff",
     fontSize: 16,
+
+    paddingHorizontal: 20,
   },
 });

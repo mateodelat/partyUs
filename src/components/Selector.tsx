@@ -47,9 +47,9 @@ export default function ({
   return (
     <View style={{ ...styles.container, ...style }}>
       {/* Agregar */}
-      <TouchableOpacity onPress={handleAdd} style={styles.addButton}>
+      {/* <TouchableOpacity onPress={handleAdd} style={styles.addButton}>
         <Entypo name="plus" size={20} color="#1E5A20" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       {/* Restar */}
       <TextInput
         keyboardType="decimal-pad"
@@ -57,9 +57,9 @@ export default function ({
         value={formatMoney(value)}
         onChangeText={handleChangeText}
       />
-      <TouchableOpacity onPress={handleMinus} style={styles.minusButton}>
+      {/* <TouchableOpacity onPress={handleMinus} style={styles.minusButton}>
         <Entypo name="minus" size={20} color="#700B0A" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }
@@ -69,18 +69,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 5,
-    backgroundColor: azulFondo,
   },
   txt: {
-    borderWidth: 0.5,
-    borderColor: "#444",
-    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "lightgray",
+    borderLeftWidth: 0,
+    borderTopRightRadius: 5,
 
-    padding: 7,
-    paddingVertical: 2,
-    margin: 4,
+    padding: 10,
+    paddingHorizontal: 0,
+    paddingVertical: 5,
 
-    width: 60,
+    fontSize: 16,
+
+    width: 80,
     textAlign: "center",
     backgroundColor: "#fff",
   },
@@ -89,6 +91,7 @@ const styles = StyleSheet.create({
     // backgroundColor: "#E0F5DF",
 
     borderRadius: 5,
+    overflow: "hidden",
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
 

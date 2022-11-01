@@ -250,322 +250,323 @@ export default function ({
           onRequestClose={handleCloseModal}
         >
           <Pressable onPress={handleCloseModal} style={{ flex: 1 }} />
-          {/* Linea de cerrar el modal */}
-          <Pressable
-            onPress={handleCloseModal}
-            style={{
-              width: "100%",
-              paddingBottom: 15,
-              alignItems: "center",
-              ...styles.innerContainer,
-            }}
-          >
-            <View style={styles.line} />
-          </Pressable>
 
           <View style={{ backgroundColor: "#fff " }}>
             <ScrollView
               scrollToOverflowEnabled={true}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                backgroundColor: "#fff",
-                paddingTop: 0,
-                padding: 15,
-              }}
             >
-              {/* Lista de filtros */}
-
-              {/* Por precio */}
-              <View style={styles.filterContainer}>
-                {/* Titulo */}
-                <Text style={styles.tituloFiltro}>Precio</Text>
-                <Text style={styles.valorFiltro}>
-                  {"$" + precio[0] + " - $" + precio[1]}
-                </Text>
-
-                <View style={{ marginTop: 7 }} />
-
-                {/* Control */}
-                <SelectorDeslizable
-                  style={{ marginTop: 5 }}
-                  setValue={setPrecio}
-                  value={precio}
-                  maximumValue={maximumValue}
-                  minimumValue={minimumValue}
-                  prefix={"$"}
-                  step={50}
-                />
-              </View>
-
-              {/* Por distancia a mi ubicacion (manejar permisos de ubicacion) */}
-              <View>
-                {/* Titulo */}
-                <Text style={styles.tituloFiltro}>Radio de distancia</Text>
-                <Text style={styles.valorFiltro}>
-                  {distancia && distancia[0]
-                    ? distancia[0] + " km"
-                    : "Cualquiera"}
-                </Text>
-
-                <View style={{ marginTop: 7 }} />
-
-                {/* Control */}
-                <SelectorDeslizable
-                  style={{ marginTop: 5 }}
-                  setValue={setDistancia}
-                  value={distancia ? distancia : [0]}
-                  maximumValue={maxDistance}
-                  minimumValue={0}
-                  step={1}
-                  sufix={" km"}
-                  placeholderStyle={{ width: 55, left: -17 }}
-                />
-              </View>
-
-              <Switch
-                style={styles.filterContainer}
-                text="Solo eventos verificados"
-                enabled={verified}
-                setEnabled={setVerified}
-              />
-
-              {/* Por fecha (Rango de fechas)*/}
-              <View style={styles.filterContainer}>
-                <View style={{ ...styles.row }}>
-                  <Pressable
-                    onPress={() => openDatePicker(dateType.INICIAL)}
-                    style={styles.dateButton}
-                  >
-                    <FontAwesome5
-                      name="calendar-alt"
-                      size={24}
-                      color={rojoClaro + "aa"}
-                    />
-                    <View style={styles.textDateContaienr}>
-                      <Text style={{ color: "#888" }}>Desde</Text>
-                      <Text>{formatDay(dateRange ? dateRange[0] : null)}</Text>
-                    </View>
-                  </Pressable>
-
-                  {/* Linea divisora */}
-                  <View style={styles.verticalLine} />
-
-                  <Pressable
-                    onPress={() => openDatePicker(dateType.FINAL)}
-                    style={styles.dateButton}
-                  >
-                    <FontAwesome5
-                      name="calendar-alt"
-                      size={24}
-                      color={rojoClaro + "aa"}
-                    />
-                    <View style={styles.textDateContaienr}>
-                      <Text style={{ color: "#888" }}>Hasta</Text>
-                      <Text>{formatDay(dateRange ? dateRange[1] : null)}</Text>
-                    </View>
-                  </Pressable>
-                </View>
-              </View>
-
-              {/* Tipo de musica */}
-              <Pressable
-                onPress={() => setShowAmbiente(!showAmbiente)}
-                style={styles.filterContainer}
+              <View
+                style={{
+                  backgroundColor: "#fff",
+                  top: 30,
+                  padding: 15,
+                }}
               >
-                {/* Titulo */}
-                <View
-                  style={{
-                    paddingVertical: 10,
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={styles.tituloFiltro}>Ambiente</Text>
-                  <AntDesign
-                    name={showAmbiente ? "up" : "down"}
-                    size={24}
-                    color="black"
+                {/* Lista de filtros */}
+
+                {/* Por precio */}
+                <View style={styles.filterContainer}>
+                  {/* Titulo */}
+                  <Text style={styles.tituloFiltro}>Precio</Text>
+                  <Text style={styles.valorFiltro}>
+                    {"$" + precio[0] + " - $" + precio[1]}
+                  </Text>
+
+                  <View style={{ marginTop: 7 }} />
+
+                  {/* Control */}
+                  <SelectorDeslizable
+                    style={{ marginTop: 5 }}
+                    setValue={setPrecio}
+                    value={precio}
+                    maximumValue={maximumValue}
+                    minimumValue={minimumValue}
+                    prefix={"$"}
+                    step={50}
                   />
                 </View>
 
-                {showAmbiente && (
-                  <View style={styles.enumsContainer}>
-                    {musicList.map((e, idx) => {
-                      const selected = musica.find((r) => r === e);
-                      function onPress() {
-                        const idx = musica.findIndex((r) => r === e);
+                {/* Por distancia a mi ubicacion (manejar permisos de ubicacion) */}
+                <View>
+                  {/* Titulo */}
+                  <Text style={styles.tituloFiltro}>Radio de distancia</Text>
+                  <Text style={styles.valorFiltro}>
+                    {distancia && distancia[0]
+                      ? distancia[0] + " km"
+                      : "Cualquiera"}
+                  </Text>
 
-                        let nMusic = [...musica];
-                        // Si no existe el elemento agregarlo
-                        if (idx < 0) {
-                          nMusic.push(e);
-                        } else {
-                          // Verificar que no sea el ultimo elemento
-                          if (musica.length !== 1) {
-                            nMusic.splice(idx, 1);
+                  <View style={{ marginTop: 7 }} />
+
+                  {/* Control */}
+                  <SelectorDeslizable
+                    style={{ marginTop: 5 }}
+                    setValue={setDistancia}
+                    value={distancia ? distancia : [0]}
+                    maximumValue={maxDistance}
+                    minimumValue={0}
+                    step={1}
+                    sufix={" km"}
+                    placeholderStyle={{ width: 60, left: -17 }}
+                  />
+                </View>
+
+                <Switch
+                  style={styles.filterContainer}
+                  text="Solo eventos verificados"
+                  enabled={verified}
+                  setEnabled={setVerified}
+                />
+
+                {/* Por fecha (Rango de fechas)*/}
+                <View style={styles.filterContainer}>
+                  <View style={{ ...styles.row }}>
+                    <Pressable
+                      onPress={() => openDatePicker(dateType.INICIAL)}
+                      style={styles.dateButton}
+                    >
+                      <FontAwesome5
+                        name="calendar-alt"
+                        size={24}
+                        color={rojoClaro + "aa"}
+                      />
+                      <View style={styles.textDateContaienr}>
+                        <Text style={{ color: "#888" }}>Desde</Text>
+                        <Text>
+                          {formatDay(dateRange ? dateRange[0] : null)}
+                        </Text>
+                      </View>
+                    </Pressable>
+
+                    {/* Linea divisora */}
+                    <View style={styles.verticalLine} />
+
+                    <Pressable
+                      onPress={() => openDatePicker(dateType.FINAL)}
+                      style={styles.dateButton}
+                    >
+                      <FontAwesome5
+                        name="calendar-alt"
+                        size={24}
+                        color={rojoClaro + "aa"}
+                      />
+                      <View style={styles.textDateContaienr}>
+                        <Text style={{ color: "#888" }}>Hasta</Text>
+                        <Text>
+                          {formatDay(dateRange ? dateRange[1] : null)}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  </View>
+                </View>
+
+                {/* Tipo de musica */}
+                <Pressable
+                  onPress={() => setShowAmbiente(!showAmbiente)}
+                  style={styles.filterContainer}
+                >
+                  {/* Titulo */}
+                  <View
+                    style={{
+                      paddingVertical: 10,
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={styles.tituloFiltro}>Ambiente</Text>
+                    <AntDesign
+                      name={showAmbiente ? "up" : "down"}
+                      size={24}
+                      color="black"
+                    />
+                  </View>
+
+                  {showAmbiente && (
+                    <View style={styles.enumsContainer}>
+                      {musicList.map((e, idx) => {
+                        const selected = musica.find((r) => r === e);
+                        function onPress() {
+                          const idx = musica.findIndex((r) => r === e);
+
+                          let nMusic = [...musica];
+                          // Si no existe el elemento agregarlo
+                          if (idx < 0) {
+                            nMusic.push(e);
+                          } else {
+                            // Verificar que no sea el ultimo elemento
+                            if (musica.length !== 1) {
+                              nMusic.splice(idx, 1);
+                            }
                           }
+
+                          setMusica(nMusic);
                         }
 
-                        setMusica(nMusic);
-                      }
-
-                      return (
-                        <Pressable
-                          key={e}
-                          onPress={onPress}
-                          style={{
-                            ...styles.botonEnum,
-                            backgroundColor: selected ? rojoClaro : "#f0f0f0",
-                          }}
-                        >
-                          <Text
+                        return (
+                          <Pressable
+                            key={e}
+                            onPress={onPress}
                             style={{
-                              ...styles.enumTxt,
-                              color: selected ? "#fff" : "#888",
+                              ...styles.botonEnum,
+                              backgroundColor: selected ? rojoClaro : "#f0f0f0",
                             }}
                           >
-                            {mayusFirstLetter(e)}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                )}
-              </Pressable>
+                            <Text
+                              style={{
+                                ...styles.enumTxt,
+                                color: selected ? "#fff" : "#888",
+                              }}
+                            >
+                              {mayusFirstLetter(e)}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  )}
+                </Pressable>
 
-              {/* Comodities */}
-              <Pressable
-                onPress={() => setShowComodities(!showComodities)}
-                style={styles.filterContainer}
-              >
-                {/* Titulo */}
-                <View
-                  style={{
-                    paddingVertical: 10,
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
+                {/* Comodities */}
+                <Pressable
+                  onPress={() => setShowComodities(!showComodities)}
+                  style={styles.filterContainer}
                 >
-                  <Text style={styles.tituloFiltro}>Comodities</Text>
-                  <AntDesign
-                    name={showComodities ? "up" : "down"}
-                    size={24}
-                    color="black"
-                  />
-                </View>
-
-                {showComodities && (
-                  <View style={styles.enumsContainer}>
-                    {comoditiesList.map((e, idx) => {
-                      const selected = comodities.find((r) => r === e);
-                      function onPress() {
-                        const idx = comodities.findIndex((r) => r === e);
-
-                        let ne = [...comodities];
-                        // Si no existe el elemento agregarlo
-                        if (idx < 0) {
-                          ne.push(e);
-                        } else {
-                          ne.splice(idx, 1);
-                        }
-
-                        setComodities(ne);
-                      }
-
-                      return (
-                        <Pressable
-                          key={e}
-                          onPress={onPress}
-                          style={{
-                            ...styles.botonEnum,
-                            backgroundColor: selected ? rojoClaro : "#f0f0f0",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              ...styles.enumTxt,
-                              color: selected ? "#fff" : "#888",
-                            }}
-                          >
-                            {mayusFirstLetter(e)}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
+                  {/* Titulo */}
+                  <View
+                    style={{
+                      paddingVertical: 10,
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={styles.tituloFiltro}>Comodities</Text>
+                    <AntDesign
+                      name={showComodities ? "up" : "down"}
+                      size={24}
+                      color="black"
+                    />
                   </View>
-                )}
-              </Pressable>
 
-              {/* Comodities */}
-              <Pressable
-                onPress={() => setShowLugar(!showLugar)}
-                style={styles.filterContainer}
-              >
-                {/* Titulo */}
-                <View
-                  style={{
-                    paddingVertical: 10,
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text style={styles.tituloFiltro}>Lugar</Text>
-                  <AntDesign
-                    name={showLugar ? "up" : "down"}
-                    size={24}
-                    color="black"
-                  />
-                </View>
+                  {showComodities && (
+                    <View style={styles.enumsContainer}>
+                      {comoditiesList.map((e, idx) => {
+                        const selected = comodities.find((r) => r === e);
+                        function onPress() {
+                          const idx = comodities.findIndex((r) => r === e);
 
-                {showLugar && (
-                  <View style={styles.enumsContainer}>
-                    {lugarList.map((e, idx) => {
-                      const selected = lugar.find((r) => r === e);
-                      function onPress() {
-                        const idx = lugar.findIndex((r) => r === e);
-
-                        let ne = [...lugar];
-                        // Si no existe el elemento agregarlo
-                        if (idx < 0) {
-                          ne.push(e);
-                        } else {
-                          if (lugar.length !== 1) {
+                          let ne = [...comodities];
+                          // Si no existe el elemento agregarlo
+                          if (idx < 0) {
+                            ne.push(e);
+                          } else {
                             ne.splice(idx, 1);
                           }
+
+                          setComodities(ne);
                         }
 
-                        setLugar(ne);
-                      }
-
-                      return (
-                        <Pressable
-                          key={e}
-                          onPress={onPress}
-                          style={{
-                            ...styles.botonEnum,
-                            backgroundColor: selected ? rojoClaro : "#f0f0f0",
-                          }}
-                        >
-                          <Text
+                        return (
+                          <Pressable
+                            key={e}
+                            onPress={onPress}
                             style={{
-                              ...styles.enumTxt,
-                              color: selected ? "#fff" : "#888",
+                              ...styles.botonEnum,
+                              backgroundColor: selected ? rojoClaro : "#f0f0f0",
                             }}
                           >
-                            {mayusFirstLetter(e)}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                )}
-              </Pressable>
+                            <Text
+                              style={{
+                                ...styles.enumTxt,
+                                color: selected ? "#fff" : "#888",
+                              }}
+                            >
+                              {mayusFirstLetter(e)}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  )}
+                </Pressable>
 
-              {/* Por comodities (botones)*/}
-              <View style={{ height: 120 }} />
+                {/* Comodities */}
+                <Pressable
+                  onPress={() => setShowLugar(!showLugar)}
+                  style={styles.filterContainer}
+                >
+                  {/* Titulo */}
+                  <View
+                    style={{
+                      paddingVertical: 10,
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={styles.tituloFiltro}>Lugar</Text>
+                    <AntDesign
+                      name={showLugar ? "up" : "down"}
+                      size={24}
+                      color="black"
+                    />
+                  </View>
+
+                  {showLugar && (
+                    <View style={styles.enumsContainer}>
+                      {lugarList.map((e, idx) => {
+                        const selected = lugar.find((r) => r === e);
+                        function onPress() {
+                          const idx = lugar.findIndex((r) => r === e);
+
+                          let ne = [...lugar];
+                          // Si no existe el elemento agregarlo
+                          if (idx < 0) {
+                            ne.push(e);
+                          } else {
+                            if (lugar.length !== 1) {
+                              ne.splice(idx, 1);
+                            }
+                          }
+
+                          setLugar(ne);
+                        }
+
+                        return (
+                          <Pressable
+                            key={e}
+                            onPress={onPress}
+                            style={{
+                              ...styles.botonEnum,
+                              backgroundColor: selected ? rojoClaro : "#f0f0f0",
+                            }}
+                          >
+                            <Text
+                              style={{
+                                ...styles.enumTxt,
+                                color: selected ? "#fff" : "#888",
+                              }}
+                            >
+                              {mayusFirstLetter(e)}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  )}
+                </Pressable>
+
+                {/* Por comodities (botones)*/}
+                <View style={{ height: 120 }} />
+              </View>
+              <Pressable
+                onPress={handleCloseModal}
+                style={styles.topLineContainer}
+              >
+                <View style={styles.line} />
+              </Pressable>
             </ScrollView>
           </View>
           <View style={styles.buttonContainer}>
@@ -606,10 +607,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#0000007a",
   },
 
-  innerContainer: {
+  topLineContainer: {
     backgroundColor: "#fff",
+    width: "100%",
+    paddingBottom: 15,
+    alignItems: "center",
+
     borderTopRightRadius: 25,
     borderTopLeftRadius: 25,
+
+    position: "absolute",
   },
 
   row: {

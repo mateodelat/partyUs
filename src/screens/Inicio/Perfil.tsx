@@ -1,6 +1,6 @@
 import {
   ActivityIndicator,
-  ScrollView,
+  Keyboard,
   Image,
   Modal,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   Pressable,
   Alert,
   View,
+  KeyboardAvoidingView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import useUser from "../../Hooks/useUser";
@@ -18,6 +19,7 @@ import {
   azulFondo,
   getBlob,
   getImageUrl,
+  getUserSub,
   isUrl,
   mayusFirstLetter,
   shadowBaja,
@@ -37,6 +39,8 @@ import { Auth, DataStore, Storage } from "aws-amplify";
 import ModalTipoImagen from "../../components/ModalTipoImagen";
 import InputOnFocusV2 from "../../components/InputOnFocusV2";
 import { Usuario } from "../../models";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import EmptyProfile from "../../components/EmptyProfile";
 
 export default function Perfil({ navigation }: { navigation: any }) {
   const usuario = useUser().usuario;
@@ -56,6 +60,11 @@ export default function Perfil({ navigation }: { navigation: any }) {
 
   useEffect(() => {
     getProfilePic();
+
+    (async () => {
+      const sub = await getUserSub();
+      DataStore.query(Usuario, sub).then(console.log);
+    })();
   }, []);
 
   async function getProfilePic() {
@@ -92,7 +101,11 @@ export default function Perfil({ navigation }: { navigation: any }) {
         })
       )
         .then(async (r) => {
-          setFotoPerfil(foto);
+          setFotoPerfil(
+            await getImageUrl(foto).then((r) => {
+              return r;
+            })
+          );
           setUsuario({
             ...r,
             foto: await getImageUrl(r.foto),
@@ -175,6 +188,8 @@ export default function Perfil({ navigation }: { navigation: any }) {
     navigation.navigate("Soporte");
   }
 
+  const { top } = useSafeAreaInsets();
+
   function handleNavigateAdmin() {
     navigation.navigate("AdminStack");
   }
@@ -188,14 +203,23 @@ export default function Perfil({ navigation }: { navigation: any }) {
 
         <View style={styles.fotoPerfil}>
           {!fotoPerfil ? (
-            <ActivityIndicator size={"small"} color={"#000"} />
+            <EmptyProfile />
           ) : (
-            <Image
-              style={{ height: "100%", width: "100%" }}
-              source={{
-                uri: fotoPerfil,
-              }}
-            />
+            <>
+              <ActivityIndicator
+                style={{
+                  position: "absolute",
+                }}
+                size={"small"}
+                color={"black"}
+              />
+              <Image
+                style={{ height: "100%", width: "100%" }}
+                source={{
+                  uri: fotoPerfil,
+                }}
+              />
+            </>
           )}
         </View>
 
@@ -394,7 +418,12 @@ export default function Perfil({ navigation }: { navigation: any }) {
         visible={modalVisible}
         onRequestClose={handleCancel}
       >
-        <View style={styles.editarPerfil}>
+        <Pressable
+          onPress={() => {
+            Keyboard.dismiss();
+          }}
+          style={styles.editarPerfil}
+        >
           {/* Header */}
           <HeaderModal
             onPress={handleCancel}
@@ -403,6 +432,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
               color: "#000",
               fontWeight: "bold",
               fontSize: 18,
+              paddingTop: 0,
             }}
             RightIcon={() => (
               <Pressable
@@ -410,7 +440,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
                 style={{
                   position: "absolute",
                   right: 0,
-                  top: 0,
+                  top: top + 10,
                   padding: 10,
                 }}
               >
@@ -425,31 +455,44 @@ export default function Perfil({ navigation }: { navigation: any }) {
           >
             {/* Foto de perfil */}
             <Pressable
-              onPress={() => setImageModalVisible(true)}
-              style={{ ...styles.fotoPerfil, width: 110, overflow: "visible" }}
+              onPress={() => {
+                setImageModalVisible(true);
+              }}
+              style={{
+                ...styles.fotoPerfil,
+                width: 110,
+                overflow: "visible",
+              }}
             >
+              <ActivityIndicator
+                style={{
+                  position: "absolute",
+                }}
+                size={"small"}
+                color={"black"}
+              />
               <Image
                 style={{ width: "100%", height: "100%", borderRadius: 100 }}
                 source={{
                   uri: editedUser.localUri ? editedUser.localUri : fotoPerfil,
                 }}
               />
-              <Feather
+
+              <View
                 style={{
                   position: "absolute",
                   bottom: 0,
                   right: 0,
                   backgroundColor: "#fff",
-                  borderRadius: 200,
+                  borderRadius: 30,
                   width: 40,
                   height: 40,
-                  textAlign: "center",
-                  textAlignVertical: "center",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
-                name="camera"
-                size={24}
-                color="black"
-              />
+              >
+                <Feather style={{}} name="camera" size={24} color="black" />
+              </View>
             </Pressable>
           </View>
 
@@ -500,17 +543,24 @@ export default function Perfil({ navigation }: { navigation: any }) {
               });
             }}
           />
-        </View>
-      </Modal>
-
-      <Modal animationType="none" visible={imageModalVisible} transparent>
-        <ModalTipoImagen
-          aspectRatio={[1, 1]}
-          setImage={handleChangePicture}
-          setModalVisible={setImageModalVisible}
-          cameraEnabled
-          hideAleatorio
-        />
+        </Pressable>
+        <Modal
+          animationType="none"
+          visible={imageModalVisible}
+          transparent
+          style={{
+            zIndex: 2,
+          }}
+        >
+          <ModalTipoImagen
+            aspectRatio={[1, 1]}
+            quality={0.3}
+            setImage={handleChangePicture}
+            setModalVisible={setImageModalVisible}
+            cameraEnabled
+            hideAleatorio
+          />
+        </Modal>
       </Modal>
     </View>
   );

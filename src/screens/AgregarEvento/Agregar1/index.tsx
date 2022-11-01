@@ -26,6 +26,7 @@ import ImageFullScreen from "../../../components/ImageFullScreen";
 import ModalTipoImagen from "../../../components/ModalTipoImagen";
 import uuid from "react-native-uuid";
 import useEvento from "../../../Hooks/useEvento";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type ImagenesType = {
   uri: string;
@@ -231,6 +232,8 @@ export default function () {
   }
 
   const { height } = Dimensions.get("window");
+
+  const { top, bottom } = useSafeAreaInsets();
 
   return (
     <View style={{ backgroundColor: "#fff", flex: 1, minHeight: height }}>
@@ -445,7 +448,7 @@ export default function () {
         </View>
       </ScrollView>
 
-      <View style={{ margin: 20 }}>
+      <View style={{ margin: 20, marginBottom: bottom ? bottom : 20 }}>
         <Boton titulo="Continuar" onPress={handleContinuar} color={azulClaro} />
       </View>
 
@@ -463,9 +466,12 @@ export default function () {
             images={imagenes.map((e) => e.uri)}
             setModalVisible={setModalVisible}
             initialImageIdx={imageSelected}
+            top={top}
           />
         ) : (
           <ModalTipoImagen
+            aspectRatio={[3, 2]}
+            quality={0.5}
             setImage={handleAddImage}
             setModalVisible={setModalVisible}
           />

@@ -19,11 +19,15 @@ const ImageFullScreen = ({
   images,
   titulo,
   initialImageIdx,
+
+  top,
 }: {
   setModalVisible: Dispatch<SetStateAction<boolean>>;
   images: string[];
   titulo?: string;
   initialImageIdx?: number;
+
+  top: number;
 }) => {
   const imgs = images.map((e) => ({
     url: e,
@@ -32,6 +36,9 @@ const ImageFullScreen = ({
   initialImageIdx !== undefined ? initialImageIdx : 0;
   let { height, width } = Dimensions.get("screen");
   height = height > width ? height : width;
+
+  const { top: t } = useSafeAreaInsets();
+  top = top ? top : t;
 
   return (
     <View
@@ -56,9 +63,9 @@ const ImageFullScreen = ({
           alignItems: "center",
           position: "absolute",
           width: "100%",
+          paddingTop: top,
         }}
       >
-        <Text style={styles.titulo}>{titulo}</Text>
         <Pressable onPress={() => setModalVisible(false)} style={styles.button}>
           <Entypo name="cross" size={24} color="white" />
         </Pressable>

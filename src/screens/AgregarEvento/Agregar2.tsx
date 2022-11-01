@@ -33,6 +33,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import ModalMap, { locationType } from "../../components/ModalMap";
 import { useEffect } from "react";
 import useEvento from "../../Hooks/useEvento";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 enum dateType {
   "inicial" = "inicial",
@@ -162,7 +163,7 @@ export default function Agregar2({
       // Si no hay fecha final se inicia el proceso para ponerla
       else {
         setIsInitialDate(false);
-        setIsDatePickerVisible(true);
+        setIsDatePickerVisible(false);
       }
     } else {
       // Validar fecha final
@@ -186,6 +187,8 @@ export default function Agregar2({
     return s;
   }
 
+  const { bottom } = useSafeAreaInsets();
+
   return (
     <View
       style={{
@@ -203,6 +206,9 @@ export default function Agregar2({
           <Text style={styles.tituloFiltro}>UBICACION</Text>
           <View style={styles.mapContainer}>
             <MapView
+              onTouchStart={() => {
+                setModalVisible(true);
+              }}
               onPress={() => {
                 setModalVisible(true);
               }}
@@ -285,12 +291,15 @@ export default function Agregar2({
       </View>
 
       <Boton
-        style={{ margin: 20 }}
+        style={{ margin: 20, marginBottom: bottom ? bottom : 20 }}
         titulo="Continuar"
         onPress={handleContinuar}
         color={azulClaro}
       />
       <DateTimePickerModal
+        locale="es"
+        is24Hour={false}
+        textColor={"#000"}
         isVisible={isDatePickerVisible}
         mode="datetime"
         date={

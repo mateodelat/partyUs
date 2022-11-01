@@ -7,6 +7,7 @@ import {
   TextStyle,
   View,
   ViewStyle,
+  Platform,
 } from "react-native";
 import React, { useRef, useState } from "react";
 import {
@@ -106,6 +107,7 @@ export default React.forwardRef(
     );
   }
 );
+const ios = Platform.OS === "ios";
 
 const styles = StyleSheet.create({
   texto: {
@@ -122,8 +124,10 @@ const styles = StyleSheet.create({
 
   input: {
     flex: 1,
-    padding: 5,
-    paddingTop: 10,
+
+    padding: ios ? 10 : 5,
+    paddingTop: ios ? 15 : 10,
+
     paddingLeft: 15,
   },
 });
