@@ -97,6 +97,9 @@ export default function ({ navigation }) {
       case TipoNotificacion.EVENTOCREADO:
         navigation.navigate("MisEventos", { eventoID: item.eventoID });
         break;
+      case TipoNotificacion.ADMIN:
+        navigation.navigate("AdminStack");
+        break;
 
       default:
         Alert.alert("Error", "Tipo de notificacion no programado");

@@ -1,6 +1,11 @@
 import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
-import { azulClaro, getBlob, shadowBaja } from "../../../constants";
+import {
+  azulClaro,
+  getBlob,
+  sendAdminNotification,
+  shadowBaja,
+} from "../../../constants";
 
 import { AntDesign } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -60,6 +65,15 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       // Subir imagen de id
       getBlob(uri).then((image) => {
         Storage.put(key, image);
+      });
+
+      // Notificar al los administradores que el usuario se verfico como organizador
+      sendAdminNotification({
+        titulo: "Usuario es organizador",
+        sender: usuario,
+        organizadorID: usuario.id,
+
+        descripcion: " es ahora organizador de partyus",
       });
 
       // Subir datos a datastore

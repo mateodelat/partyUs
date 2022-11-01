@@ -184,7 +184,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       })
     );
 
-    if (precioMin && precioMax && !events) {
+    if (precioMin && precioMax) {
       setMinPrice(redondear(precioMin, 50, tipoRedondeo.ABAJO));
       setMaxPrice(redondear(precioMax, 50, tipoRedondeo.ARRIBA));
     }

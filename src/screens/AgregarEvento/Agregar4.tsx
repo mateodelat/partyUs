@@ -23,6 +23,7 @@ import {
   graphqlRequest,
   isUrl,
   mayusFirstLetter,
+  sendAdminNotification,
   vibrar,
   VibrationType,
 } from "../../../constants";
@@ -295,6 +296,21 @@ export default function Agregar2({
       });
 
       setLoading(false);
+
+      // Notificar a los administradores de la app de nuevo evento
+      sendAdminNotification({
+        titulo: "Nuevo evento creado",
+        eventoID: evento.id,
+        sender: usuario,
+        organizadorID: usuario.id,
+
+        descripcion:
+          " creo un nuevo evento " +
+          evento.titulo +
+          " para " +
+          personasMax +
+          " personas",
+      });
 
       navigation.popToTop();
       navigation.navigate("ExitoScreen", {

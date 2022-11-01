@@ -61,6 +61,65 @@ export function formatMoney(num?: number | null, showCents?: boolean) {
     num?.toFixed(!showCents ? 0 : 2)?.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
   );
 }
+export const partyusPhone = "+5213324963705";
+
+export async function sendAdminNotification({
+  titulo,
+  descripcion,
+  sender,
+  organizadorID,
+  eventoID,
+  reservaID,
+}: {
+  titulo: string;
+  descripcion: string;
+  sender: Usuario;
+
+  organizadorID?: string;
+  eventoID?: string;
+  reservaID?: string;
+}) {
+  const admins = await DataStore.query(Usuario, (usr) =>
+    !reservaID
+      ? usr.admin("eq", true)
+      : usr.receiveNewReservations("eq", true).admin("eq", true)
+  );
+
+  descripcion = "@" + sender.nickname + ": " + descripcion;
+
+  // Mandarle notificaciones a todos los admins
+  admins.map((usr) => {
+    const { notificationToken, owner, id } = usr;
+
+    DataStore.save(
+      new Notificacion({
+        tipo: TipoNotificacion.ADMIN,
+
+        titulo,
+        descripcion,
+
+        showAt: new Date().toISOString(),
+
+        usuarioID: id,
+        eventoID: eventoID,
+        organizadorID: organizadorID,
+        reservaID: reservaID,
+      })
+    );
+
+    sendPushNotification({
+      title: titulo,
+      descripcion,
+      token: notificationToken,
+
+      data: {
+        eventoID: eventoID,
+        organizadorID: organizadorID,
+        reservaID: reservaID,
+      },
+    });
+  });
+}
 
 export const minEventPrice = 50;
 export const maxEventPrice = 8000;

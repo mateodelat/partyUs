@@ -39,11 +39,11 @@ export default function ({
         vibrar(VibrationType.medium);
       }}
       style={{
-        ...style,
         padding: 10,
         paddingHorizontal: 0,
         flexDirection: "row",
         alignItems: "center",
+        ...style,
       }}
     >
       <Text style={textStyle ? textStyle : styles.text}>{text}</Text>

@@ -15,7 +15,6 @@ import {
   azulClaro,
   azulFondo,
   getImageUrl,
-  getUserSub,
   timer,
 } from "../../../../constants";
 
@@ -36,6 +35,11 @@ export function MisReservas({ navigation, route }) {
   const paramsReservaID = route.params?.reservaID;
   const efectivoCompletado = route.params?.efectivoCompletado;
   const { setBottomMessage } = useUser();
+  let usuario = useUser().usuario;
+
+  if (route.params?.usuario) {
+    usuario = route.params.usuario;
+  }
 
   useEffect(() => {
     setRefreshing(true);
@@ -72,7 +76,7 @@ export function MisReservas({ navigation, route }) {
   );
 
   async function queryReservas(refresh?: boolean, firstRender?: boolean) {
-    const sub = await getUserSub();
+    const sub = usuario.id;
 
     // Si se esta refrescando, actualizar toodas las rervas ya tenidas
     const res = await DataStore.query(
@@ -157,6 +161,7 @@ export function MisReservas({ navigation, route }) {
       ...data.evento,
       reserva: {
         ...data,
+        usuario: route.params?.usuario ? usuario : undefined,
         evento: null,
         eventoCancelado: () => setLocalCancelado(data.id),
       },

@@ -59,6 +59,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "receiveNewReservations": {
+                    "name": "receiveNewReservations",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "imagenFondo": {
                     "name": "imagenFondo",
                     "isArray": false,
@@ -1574,5 +1581,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.3.1",
-    "version": "6828270b1a717f950a6c58dae0fdae23"
+    "version": "1a708aaeb96765a702cb4e3a67b17b69"
 };

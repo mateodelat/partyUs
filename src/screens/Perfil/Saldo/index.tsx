@@ -59,8 +59,12 @@ type resource_type =
   | "cards"
   | "bankaccount";
 
-export default function ({ navigation }) {
-  const { usuario } = useUser();
+export default function ({ navigation, route }) {
+  let { usuario } = useUser();
+
+  // Si se paso un usuario, verlo
+  usuario = route.params?.usuario ? route.params?.usuario : usuario;
+
   const { organizador } = usuario;
   const [customer, setCustomer] = useState<customer_type>();
 
@@ -250,8 +254,6 @@ export default function ({ navigation }) {
               customer_id: usuario.userPaymentID,
             }
           ).then(({ body }) => {
-            console.log(body);
-
             if (!!body?.length) {
               setCuentasBancarias(body);
               return body;

@@ -18,7 +18,7 @@
       "function": {
         "paymentsHandler": {
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/paymentsHandler-347465445862524d7755-build.zip",
+          "s3Key": "amplify-builds/paymentsHandler-6a38707073414c486b59-build.zip",
           "merchantId": "mcwffetlymvvcqthcdxu",
           "secretKey": "sk_e266853b34704432b3fbac85079350ac"
         },

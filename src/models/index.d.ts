@@ -89,6 +89,7 @@ type EagerUsuario = {
   readonly email?: string | null;
   readonly foto?: string | null;
   readonly cuentaBancaria?: string | null;
+  readonly receiveNewReservations?: boolean | null;
   readonly imagenFondo?: string | null;
   readonly direccion?: string | null;
   readonly phoneNumber?: string | null;
@@ -120,6 +121,7 @@ type LazyUsuario = {
   readonly email?: string | null;
   readonly foto?: string | null;
   readonly cuentaBancaria?: string | null;
+  readonly receiveNewReservations?: boolean | null;
   readonly imagenFondo?: string | null;
   readonly direccion?: string | null;
   readonly phoneNumber?: string | null;

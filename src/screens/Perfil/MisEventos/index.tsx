@@ -37,7 +37,10 @@ export default function ({ route, navigation }: any) {
   const reservaID = route.params?.reservaID;
   const eventoID = route.params?.eventoID;
 
-  const { usuario } = useUser();
+  let { usuario } = useUser();
+  if (route.params.usuario) {
+    usuario = route.params.usuario;
+  }
 
   const [eventos, setEventos] = useState<EventoType[]>();
   const [refreshing, setRefreshing] = useState(false);
@@ -176,6 +179,7 @@ export default function ({ route, navigation }: any) {
   return (
     <View style={styles.container}>
       <FlatList
+        showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           eventos !== undefined && (
             <Text style={styles.noHay}>No hay eventos</Text>

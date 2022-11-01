@@ -42,6 +42,7 @@ import {
   msInHour,
   abrirTerminos,
   sendNotifications,
+  sendAdminNotification,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
@@ -142,6 +143,23 @@ export default function ({
         "No hay organizador para el evento, no se pudo obtener el token"
       );
     }
+
+    // Mandarle las notificaciones a los administradores que tengan habilitadas las notificaciones de reservacion
+    sendAdminNotification({
+      titulo: "Nueva reserva",
+      eventoID,
+      sender: usuario,
+      organizadorID: usuario.id,
+
+      descripcion:
+        " creo una nueva reserva en " +
+        tipoPago.toLowerCase() +
+        " del evento:" +
+        titulo +
+        " para " +
+        personasTotales +
+        " personas",
+    });
 
     sendNotifications({
       titulo: "Nueva reserva",
@@ -318,6 +336,7 @@ export default function ({
         );
 
         notificacionesOrganizador(TipoPago.EFECTIVO, personasTotales);
+
         navigation.popToTop();
         // Si el tipo de pago fue en efectivo, obtener la referencia y navegar a la pestaña pago
         navigation.navigate("ReferenciaPago", {

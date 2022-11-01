@@ -22,6 +22,8 @@ type Usuario
 
   cuentaBancaria: String
 
+  receiveNewReservations: Boolean
+
   imagenFondo: String
   direccion: AWSJSON
     @auth(rules: [{ allow: owner }, { allow: groups, groups: ["Admin"] }])

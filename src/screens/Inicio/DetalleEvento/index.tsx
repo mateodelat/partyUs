@@ -77,6 +77,7 @@ export default function ({
 }: {
   route: {
     params?: EventoType & {
+      usuario?: Usuario;
       reserva?: Reserva & { eventoCancelado: () => void };
       organizador?: boolean;
     };
@@ -153,7 +154,10 @@ export default function ({
 
   const [refreshing, setRefreshing] = useState(false);
 
-  const { setLoading, usuario, setNewNotifications } = useUser();
+  let { setLoading, usuario, setNewNotifications } = useUser();
+  if (route.params.usuario) {
+    usuario = route.params.usuario;
+  }
 
   async function fetchReservas(boletos: Boleto[]) {
     // Pedir todas las reservas validas

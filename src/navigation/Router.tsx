@@ -5,7 +5,6 @@ import {
   createStackNavigator,
   TransitionPresets,
 } from "@react-navigation/stack";
-import NavBar from "./NavBar";
 
 import Header from "./components/Header";
 import AgregarEventoStack from "./AgregarEventoStack";
@@ -30,13 +29,12 @@ import ExitoScreen from "../screens/Inicio//Pagar/ExitoScreen";
 import ReferenciaPago from "../screens/ReferenciaPago";
 import QRScanner from "../screens/Inicio/QRScanner";
 
-import Pagos from "../screens/Perfil/Pagos";
+import Saldo from "../screens/Perfil/Saldo";
 import MisEventos from "../screens/Perfil/MisEventos";
 import Soporte from "../screens/Perfil/Soporte";
-import Admin from "../screens/Perfil/Admin";
 import Loading from "../components/Loading";
 
-import ExpoLinking from "expo-linking";
+import AdminStack from "./AdminStack";
 
 function NombreApellidosOnPress({ navigation }: any) {
   const { setUsuario, usuario } = useUser();
@@ -197,8 +195,8 @@ export default function () {
           }}
         />
         <Stack.Screen
-          name="Pagos"
-          component={Pagos}
+          name="Saldo"
+          component={Saldo}
           initialParams={{ showHelp: true }}
           options={{
             title: "Saldo",
@@ -231,7 +229,13 @@ export default function () {
         />
 
         <Stack.Screen name="Soporte" component={Soporte} />
-        <Stack.Screen name="Admin" component={Admin} />
+        <Stack.Screen
+          name="AdminStack"
+          component={AdminStack}
+          options={{
+            headerShown: false,
+          }}
+        />
 
         <Stack.Screen
           name="ExitoScreen"

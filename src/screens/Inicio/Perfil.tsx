@@ -168,7 +168,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
   }
 
   function handlePayments() {
-    navigation.navigate("Pagos", { organizador });
+    navigation.navigate("Saldo", { organizador });
   }
 
   function handleSoporte() {
@@ -176,7 +176,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
   }
 
   function handleNavigateAdmin() {
-    navigation.navigate("Admin");
+    navigation.navigate("AdminStack");
   }
 
   return (
