@@ -6,7 +6,9 @@ import * as Haptics from "expo-haptics";
 import { Alert, Linking } from "react-native";
 import { API, Auth, DataStore, Storage } from "aws-amplify";
 import { TipoNotificacion, Usuario } from "../src/models";
-import { MERCHANT_ID, PUBLIC_KEY } from "./keys";
+
+const MERCHANT_ID = "mcwffetlymvvcqthcdxu";
+const PUBLIC_KEY = "pk_69d96c0ed3bd4ea8a6956d8e51867876";
 
 import base64 from "react-native-base64";
 import awsmobile from "../src/aws-exports";

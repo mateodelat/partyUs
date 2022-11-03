@@ -20,6 +20,8 @@ import Loading from "./src/components/Loading";
 import { StatusBar, StatusBarStyle } from "expo-status-bar";
 import moment from "moment";
 
+import Bugsnag from "@bugsnag/expo";
+
 LogBox.ignoreLogs([/\[WARN\] .* DataStore/g]);
 // LogBox.ignoreAllLogs();
 moment.locale("es");
@@ -42,23 +44,9 @@ export default function App() {
   const [usuario, setUsuario] = useState(defaultUSR);
   const [statusStyle, setStatusStyle] = useState<StatusBarStyle>("dark");
 
-  // async function start() {
-  //   const info = await Auth.currentUserInfo().then((r) => {
-  //     setCurrentUser({
-  //       ...r.attributes,
-  //     });
-  //   });
-  // if (info) {
-  //   const { email,
-  //     nickname,
-  //     sub
-  //   } = info.attributes
-  //   Bugsnag.setUser(sub, email, nickname)
-  // }
-  // }
-
   useEffect(() => {
     DataStore.start();
+    Bugsnag.start();
 
     // Crear listener para cuando se acaben de obtener los modelos de datastore en caso de cierre de sesion
     const dstore = Hub.listen("datastore", async (hubData) => {

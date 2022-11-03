@@ -25,6 +25,7 @@ import { getUsuario } from "../graphql/queries";
 import { StatusBarStyle } from "expo-status-bar";
 import { TipoNotificacion } from "../models";
 import { queryNewNotifications } from "../screens/Inicio/Home";
+import Bugsnag from "@bugsnag/expo";
 
 export default function ({
   children,
@@ -76,6 +77,8 @@ export default function ({
             );
           }
         }
+
+        Bugsnag.setUser(sub, r.email, r.nickname);
 
         setUsuario(r);
       });
@@ -163,7 +166,7 @@ export default function ({
 
           setLoading(false);
           // cancelAllScheduledNotificationsAsync();
-          // Bugsnag.setUser("", "", "");
+          Bugsnag.setUser("", "", "");
           break;
 
         case "signUp":

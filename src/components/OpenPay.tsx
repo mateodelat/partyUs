@@ -8,7 +8,8 @@ import sprintfJs from "sprintf-js";
 import * as Application from "expo-application";
 
 import uuid from "react-native-uuid";
-import { MERCHANT_ID } from "../../constants/keys";
+
+const MERCHANT_ID = "mcwffetlymvvcqthcdxu";
 
 const vsprintf = sprintfJs.vsprintf;
 let sessionId = uuid.v4() as string;
