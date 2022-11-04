@@ -25,7 +25,7 @@
         "postSignUpPARTYUS": {
           "secretKey": "sk_e266853b34704432b3fbac85079350ac",
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/postSignUpPARTYUS-6564506173776c504f37-build.zip"
+          "s3Key": "amplify-builds/postSignUpPARTYUS-57523541767968773064-build.zip"
         },
         "partyuslayer": {
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",

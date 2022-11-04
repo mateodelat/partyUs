@@ -3,7 +3,7 @@
     "name": "Partyus",
     "slug": "Partyus",
     "scheme": "partyus",
-    "version": "1.0.0",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,9 +16,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
@@ -47,7 +45,7 @@
         "android.permission.WRITE_EXTERNAL_STORAGE"
       ],
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/adaptive-icon.svg",
         "backgroundColor": "#fff"
       },
       "config": {
@@ -56,7 +54,7 @@
         }
       },
       "package": "com.party.us",
-      "versionCode": 1
+      "versionCode": 4
     },
     "androidNavigationBar": {
       "barStyle": "dark-content"

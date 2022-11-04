@@ -39,7 +39,10 @@ type Usuario
         { allow: groups, groups: ["Admin"] }
         #
         # Todos los demas pueden leerlo
-        { allow: public, operations: [read] }
+        { allow: public, provider: apiKey, operations: [read] }
+        { allow: public, provider: iam, operations: [read] }
+        # Privado
+        { allow: private, provider: iam, operations: [read] }
         { allow: private, operations: [read] }
       ]
     )
@@ -59,7 +62,10 @@ type Usuario
         { allow: groups, groups: ["Admin"] }
         #
         # Todos los demas pueden leerlo
-        { allow: public, operations: [read] }
+        { allow: public, provider: apiKey, operations: [read] }
+        { allow: public, provider: iam, operations: [read] }
+        # Privado
+        { allow: private, provider: iam, operations: [read] }
         { allow: private, operations: [read] }
       ]
     )

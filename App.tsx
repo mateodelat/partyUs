@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import ContextProvider from "./src/contexts/ContextProvider";
 import Router from "./src/navigation/Router";
 
-import { LogBox } from "react-native";
+import { Alert, LogBox } from "react-native";
 import ErrorWrapper from "./src/components/ErrorWrapper";
 import Loading from "./src/components/Loading";
 import { StatusBar, StatusBarStyle } from "expo-status-bar";
@@ -51,12 +51,16 @@ export default function App() {
     // Crear listener para cuando se acaben de obtener los modelos de datastore en caso de cierre de sesion
     const dstore = Hub.listen("datastore", async (hubData) => {
       const { event, data } = hubData.payload;
-      console.log(event);
 
-      if (event === "ready") {
+      if (event === "syncQueriesReady") {
         setLoading(false);
       }
     });
+
+    // // Iniciar una cuenta regresiva de 7 segundos para mostrarlo despues de ese tiempo
+    // setTimeout(() => {
+    //   setLoading(false);
+    // }, 7000);
 
     return () => {
       dstore();

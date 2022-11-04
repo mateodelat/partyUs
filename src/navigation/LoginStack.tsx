@@ -7,7 +7,7 @@ import Register from "../screens/Login/Register";
 import Header from "./components/Header";
 import PasswordForget from "../screens/Login/PasswordForget";
 import Confirm from "../screens/Login/Confirm";
-import { View, KeyboardAvoidingView } from "react-native";
+import { View, KeyboardAvoidingView, Platform } from "react-native";
 
 // import Register from '../screens/Login/Register';
 // import Landing from '../screens/Login/Landing';
@@ -33,7 +33,10 @@ export default function LoginStack({
   const Stack = createStackNavigator();
 
   return (
-    <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
       <View
         style={{
           flex: 1,

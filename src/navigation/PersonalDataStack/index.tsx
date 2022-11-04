@@ -1,4 +1,4 @@
-import { StyleSheet, Text, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, Text, KeyboardAvoidingView, Platform } from "react-native";
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
@@ -13,7 +13,10 @@ export default function () {
   const pasos = 3;
 
   return (
-    <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
       <Stack.Navigator
         screenOptions={{
           animationEnabled: false,

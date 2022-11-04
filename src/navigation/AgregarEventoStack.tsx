@@ -19,7 +19,10 @@ export default function () {
   const [evento, setEvento] = useState<EventoType>({});
 
   return (
-    <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
       <EventContext.Provider
         value={{
           evento,

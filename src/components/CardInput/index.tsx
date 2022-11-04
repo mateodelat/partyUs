@@ -9,6 +9,7 @@ import {
   Image,
   Keyboard,
   Alert,
+  Platform,
 } from "react-native";
 import React, { useState, useEffect, useRef } from "react";
 
@@ -185,7 +186,10 @@ export default function ({
         visible={innerModal}
         onRequestClose={handleCloseModal}
       >
-        <KeyboardAvoidingView behavior={"padding"} style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
           <Pressable onPress={handleCloseModal} style={{ flex: 1 }} />
 
           <Pressable

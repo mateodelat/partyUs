@@ -75,8 +75,12 @@ export type EventoType = Evento & {
 };
 
 export async function queryNewNotifications() {
+  const sub = await getUserSub();
   return DataStore.query(Notificacion, (e) =>
-    e.showAt("lt", new Date().toISOString()).leido("ne", true)
+    e
+      .showAt("lt", new Date().toISOString())
+      .leido("ne", true)
+      .usuarioID("eq", sub)
   ).then((r) => {
     return r.length;
   });

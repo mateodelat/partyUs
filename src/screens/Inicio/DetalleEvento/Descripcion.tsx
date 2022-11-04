@@ -30,6 +30,7 @@ const Descripcion = ({
   return (
     <View style={{ ...styles.container, ...style }}>
       <Text
+        onPress={handleMas}
         numberOfLines={detallesAbierto ? undefined : NUM_OF_LINES}
         style={styles.descripcion}
         onTextLayout={onTextLayout}

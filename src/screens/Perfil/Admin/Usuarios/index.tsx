@@ -107,6 +107,7 @@ export default function ({ navigation }) {
                 })
               );
             });
+            Alert.alert("Admin", "Usuario se hizo admin con exito");
           }
 
           function handleSetNotificacionReserva() {
@@ -126,9 +127,22 @@ export default function ({ navigation }) {
                 })
               );
             });
+            Alert.alert(
+              "Notificaciones",
+              "Notificaciones de reserva actualizadas con exito"
+            );
           }
 
           function handleSetOrganizador() {
+            if (!item.organizador) {
+              Alert.alert(
+                "Organizador",
+                "No se puede hacer al usuario organizador, el debe iniciar el proceso."
+              );
+
+              return;
+            }
+
             setUsuarios((prev) => {
               prev[index] = {
                 ...item,

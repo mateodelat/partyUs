@@ -114,6 +114,10 @@ export default function ({ navigation, route }) {
 
   const handleBarCodeScanned = async (d: BarCodeEvent) => {
     const { data } = d;
+    console.log({
+      data,
+    });
+
     if (error) return;
 
     try {

@@ -34,7 +34,8 @@ export default function ({ navigation }) {
   async function handleFetch() {
     return DataStore.query(
       Notificacion,
-      (e) => e.showAt("lt", new Date().toISOString()),
+      (e) =>
+        e.showAt("lt", new Date().toISOString()).usuarioID("eq", usuario.id),
 
       {
         sort: (e) => e.showAt("DESCENDING").createdAt("DESCENDING"),
