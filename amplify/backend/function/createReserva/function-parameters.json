@@ -3,16 +3,16 @@
     {
       "type": "ProjectLayer",
       "resourceName": "partyusgraphqlOperations",
-      "env": "staging",
       "version": "Always choose latest version",
-      "isLatestVersionSelected": true
+      "isLatestVersionSelected": true,
+      "env": "staging"
     },
     {
       "type": "ProjectLayer",
       "resourceName": "partyuslayer",
-      "env": "staging",
       "version": "Always choose latest version",
-      "isLatestVersionSelected": true
+      "isLatestVersionSelected": true,
+      "env": "staging"
     }
   ],
   "environmentVariableList": [

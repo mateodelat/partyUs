@@ -106,7 +106,7 @@ export async function notificacionesRecordatorio({
       usuarioID: usuario.id,
 
       showAt: new Date(evento.fechaInicial - msInDay).toISOString(),
-      triggerTime: remainingFor1Day,
+      triggerTime: remainingFor1Hour,
 
       eventoID: evento.id,
       organizadorID: evento.CreatorID,
@@ -125,7 +125,7 @@ export async function notificacionesRecordatorio({
     usuarioID: usuario.id,
 
     showAt: new Date(evento.fechaInicial - msInDay).toISOString(),
-    triggerTime: remainingFor1Day,
+    triggerTime: remainingForNext2Days,
 
     eventoID: evento.id,
     organizadorID: evento.CreatorID,

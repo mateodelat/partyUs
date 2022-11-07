@@ -10,9 +10,9 @@
     {
       "type": "ProjectLayer",
       "resourceName": "partyuslayer",
-      "env": "staging",
       "version": "Always choose latest version",
-      "isLatestVersionSelected": true
+      "isLatestVersionSelected": true,
+      "env": "staging"
     }
   ],
   "environmentVariableList": [
