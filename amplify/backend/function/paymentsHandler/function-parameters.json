@@ -5,7 +5,7 @@
       "resourceName": "partyuslayer",
       "version": "Always choose latest version",
       "isLatestVersionSelected": true,
-      "env": "staging"
+      "env": "production"
     }
   ],
   "environmentVariableList": [
