@@ -63,7 +63,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
 
     (async () => {
       const sub = await getUserSub();
-      DataStore.query(Usuario, sub).then(console.log);
+      DataStore.query(Usuario, sub);
     })();
   }, []);
 
@@ -269,7 +269,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
             borderColor: azulClaro,
           }}
           textStyle={{ color: azulClaro }}
-          titulo="Reservas"
+          titulo="Mis eventos"
           onPress={() => navigation.navigate("MisReservas")}
         />
         {organizador && (

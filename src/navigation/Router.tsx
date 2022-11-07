@@ -82,6 +82,7 @@ export default function () {
   return (
     <NavigationContainer linking={linking} fallback={<Loading indicator />}>
       <Stack.Navigator
+        initialRouteName="Notificaciones"
         screenOptions={{
           header: ({
             route: { name, params },

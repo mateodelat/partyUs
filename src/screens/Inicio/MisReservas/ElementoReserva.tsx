@@ -201,54 +201,40 @@ export default function ElementoReserva({
                 >
                   {message}
                 </Text>
-
-                <View style={styles.iconContainer}>
-                  {data.tipoPago === TipoPago.EFECTIVO ? (
-                    <FontAwesome5
-                      name="money-bill-wave-alt"
-                      size={18}
-                      color={
-                        message.startsWith("EXPIRA EN") ? "#0009" : azulClaro
-                      }
-                    />
-                  ) : (
-                    <Feather name="credit-card" size={22} color={azulClaro} />
-                  )}
-                </View>
               </View>
 
               <View style={styles.row}>
                 <Text style={styles.titulo} numberOfLines={1}>
                   {data.evento.titulo ? data.evento.titulo : "Evento"}
                 </Text>
-
-                {data.ingreso || data.expirado || data.cancelado ? null : (
-                  <TouchableOpacity
-                    disabled={data.expirado}
-                    onPress={handlePressTicket}
-                    style={{
-                      ...styles.iconContainer,
-                      backgroundColor: "#fff",
-                      ...shadowBaja,
-                      padding: 4,
-                    }}
-                  >
-                    {showBarcodeIcon ? (
-                      <MaterialCommunityIcons
-                        name="barcode"
-                        size={20}
-                        color="black"
-                      />
-                    ) : (
-                      <Ionicons name="md-qr-code" size={16} color="#0009" />
-                    )}
-                  </TouchableOpacity>
-                )}
               </View>
 
               <Text style={styles.personTxt}>
                 {formatDay(fecha, true) + " a las " + formatAMPM(fecha)}
               </Text>
+            </View>
+            <View
+              style={{
+                justifyContent: "center",
+              }}
+            >
+              {data.ingreso || data.expirado || data.cancelado ? null : (
+                <TouchableOpacity
+                  disabled={data.expirado}
+                  onPress={handlePressTicket}
+                  style={styles.iconContainer}
+                >
+                  {showBarcodeIcon ? (
+                    <MaterialCommunityIcons
+                      name="barcode"
+                      size={30}
+                      color="black"
+                    />
+                  ) : (
+                    <Ionicons name="md-qr-code" size={24} color="#0009" />
+                  )}
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
@@ -280,12 +266,15 @@ const styles = StyleSheet.create({
   },
 
   iconContainer: {
-    width: 35,
+    width: 55,
     alignItems: "center",
-    height: 35,
+    height: 55,
     justifyContent: "center",
 
     borderRadius: 40,
+
+    backgroundColor: "#fff",
+    ...shadowBaja,
   },
 
   message: {

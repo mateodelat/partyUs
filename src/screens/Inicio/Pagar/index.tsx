@@ -227,6 +227,9 @@ export default function ({
       }
       if (tipoPago !== "EFECTIVO") {
         // Si el tipo de pago es un numero seleccionar la tarjeta de la lista
+        setButtonLoading(true);
+        setLoading(true);
+
         const tarjeta = tarjetasGuardadas[tipoPago];
         tarjetaID = await tarjeta.id;
 

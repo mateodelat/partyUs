@@ -61,6 +61,14 @@
     },
     "plugins": [
       [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#ffffff"
+        }
+      ],
+
+      [
         "expo-media-library",
         {
           "savePhotosPermission": "Permitir $(PRODUCT_NAME) a guardar imagenes."

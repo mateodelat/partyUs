@@ -22,7 +22,6 @@ import moment from "moment";
 
 import Bugsnag from "@bugsnag/expo";
 
-LogBox.ignoreLogs([/\[WARN\] .* DataStore/g]);
 // LogBox.ignoreAllLogs();
 moment.locale("es");
 
@@ -46,7 +45,7 @@ export default function App() {
 
   useEffect(() => {
     DataStore.start();
-    Bugsnag.start();
+    // Bugsnag.start();
 
     // Crear listener para cuando se acaben de obtener los modelos de datastore en caso de cierre de sesion
     const dstore = Hub.listen("datastore", async (hubData) => {

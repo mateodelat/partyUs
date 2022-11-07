@@ -119,7 +119,7 @@ export default function ({
     }
   }
   async function resetDatastore() {
-    return DataStore.clear().then((r) => DataStore.start());
+    return DataStore.clear();
   }
 
   const [registrado, setRegistrado] = useState(false);

@@ -117,9 +117,10 @@ export async function notificacionesRecordatorio({
   sendNotifications({
     titulo: organizador ? "Esanea las entradas" : "Prepara tu codigo QR",
     descripcion:
-      "Tu evento ha comenzado. " + organizador
+      "Tu evento ha comenzado. " +
+      (organizador
         ? "Preparate para escanear las entradas y verifica que sea valida."
-        : "Ten a la mano tu codigo QR pagado para ingresar",
+        : "Ten a la mano tu codigo QR pagado para ingresar"),
 
     tipo: TipoNotificacion.RECORDATORIOEVENTO,
     usuarioID: usuario.id,

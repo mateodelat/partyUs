@@ -432,6 +432,14 @@ export default function ({
   }
 
   function navigateScanner() {
+    if (evento.fechaFinal < new Date().getTime()) {
+      Alert.alert(
+        "Error",
+        "El evento ya ha pasado y no puedes escanear las reservas"
+      );
+      return;
+    }
+
     navigation.navigate("QRScanner", {
       eventoID: evento.id,
       tituloEvento: evento.titulo,
@@ -508,7 +516,7 @@ export default function ({
             padding: 0,
           }}
         >
-          {organizador && evento.fechaFinal > new Date().getTime() && (
+          {!!organizador && (
             <TouchableOpacity
               onPress={navigateScanner}
               style={{
