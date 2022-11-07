@@ -2,10 +2,7 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { StyleSheet, View, I18nManager, ViewStyle } from "react-native";
 
-import { ViewPropTypes } from "deprecated-react-native-prop-types";
-
 // compatability for react-native versions < 0.44
-const ViewPropTypesStyle = ViewPropTypes.style;
 let direction = I18nManager.isRTL ? "right" : "left";
 let opDirection = I18nManager.isRTL ? "Left" : "Right";
 const styles = StyleSheet.create({
@@ -45,8 +42,6 @@ export default class ProgressCircle extends Component {
     borderWidth: PropTypes.number,
     percent: PropTypes.number.isRequired, // eslint-disable-line react/no-unused-prop-types
     children: PropTypes.node,
-    containerStyle: ViewPropTypesStyle,
-    outerCircleStyle: ViewPropTypesStyle,
   };
 
   static defaultProps = {

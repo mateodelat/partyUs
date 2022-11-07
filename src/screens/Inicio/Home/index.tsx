@@ -464,21 +464,24 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
   async function onRefresh() {
     setRefreshing(true);
-
-    DataStore.query(Usuario, await getUserSub()).then((r) => {
-      setUsuario({
-        ...r,
+    try {
+      DataStore.query(Usuario, await getUserSub()).then((r) => {
+        setUsuario({
+          ...r,
+        });
+        // Pedir foto de perfil de usuario
+        getImageUrl(r.foto).then(setProfilePicture);
       });
-      // Pedir foto de perfil de usuario
-      getImageUrl(r.foto).then(setProfilePicture);
-    });
 
-    // Obtener nuevas notificaciones al usuario
-    queryNewNotifications().then(setNewNotifications);
+      // Obtener nuevas notificaciones al usuario
+      queryNewNotifications().then(setNewNotifications);
 
-    // Obtener eventos por filtro
-    await handleSearch(filters);
-    setRefreshing(false);
+      // Obtener eventos por filtro
+      await handleSearch(filters);
+      setRefreshing(false);
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    }
   }
 
   async function handleProfile() {
