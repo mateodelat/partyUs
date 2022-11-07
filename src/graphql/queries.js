@@ -12,6 +12,7 @@ export const getUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
+      receiveNewReservations
       imagenFondo
       direccion
       phoneNumber
@@ -115,6 +116,7 @@ export const listUsuarios = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -172,6 +174,7 @@ export const syncUsuarios = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -237,6 +240,7 @@ export const getEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -363,6 +367,7 @@ export const listEventos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -445,6 +450,7 @@ export const syncEventos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -836,6 +842,7 @@ export const getReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -882,6 +889,7 @@ export const getReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1016,6 +1024,7 @@ export const listReservas = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1136,6 +1145,7 @@ export const syncReservas = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1249,6 +1259,7 @@ export const getReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber

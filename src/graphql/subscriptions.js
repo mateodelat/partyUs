@@ -15,6 +15,7 @@ export const onCreateUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
+      receiveNewReservations
       imagenFondo
       direccion
       phoneNumber
@@ -116,6 +117,7 @@ export const onUpdateUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
+      receiveNewReservations
       imagenFondo
       direccion
       phoneNumber
@@ -217,6 +219,7 @@ export const onDeleteUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
+      receiveNewReservations
       imagenFondo
       direccion
       phoneNumber
@@ -337,6 +340,7 @@ export const onCreateEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -461,6 +465,7 @@ export const onUpdateEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -585,6 +590,7 @@ export const onDeleteEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1060,6 +1066,7 @@ export const onCreateReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1106,6 +1113,7 @@ export const onCreateReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1228,6 +1236,7 @@ export const onUpdateReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1274,6 +1283,7 @@ export const onUpdateReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1396,6 +1406,7 @@ export const onDeleteReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1442,6 +1453,7 @@ export const onDeleteReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1577,6 +1589,7 @@ export const onCreateReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1715,6 +1728,7 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1853,6 +1867,7 @@ export const onDeleteReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber

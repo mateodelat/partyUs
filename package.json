@@ -28,6 +28,7 @@
     "aws-amplify": "^4.3.43",
     "aws-amplify-react-native": "^6.0.8",
     "card-validator": "^8.1.1",
+    "date-and-time": "0.14.2",
     "expo": "^46.0.16",
     "expo-application": "^4.2.2",
     "expo-av": "^12.0.4",
@@ -47,8 +48,10 @@
     "expo-updates": "^0.14.6",
     "graphql": "^16.6.0",
     "install": "^0.13.0",
+    "mime": "1.4.1",
     "moment": "^2.29.4",
     "native": "^0.3.3",
+    "qs": "6.0.4",
     "react": "18.0.0",
     "react-dom": "18.0.0",
     "react-native": "0.69.6",
@@ -69,8 +72,9 @@
     "react-native-view-shot": "3.3.0",
     "react-native-web": "^0.18.10",
     "react-native-webview": "11.23.0",
-    "sane": "^5.0.1",
-    "sprintf-js": "^1.1.2"
+    "sprintf-js": "^1.1.2",
+    "trim-newlines": "3.0.1",
+    "underscore": "1.12.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.19.3",

@@ -325,7 +325,7 @@ export default function ({
   }, []);
 
   function handleIrAPerfil() {
-    Alert.alert("", "Navegar a detalle de perfil");
+    // Alert.alert("", "Navegar a detalle de perfil");
   }
 
   function handleViewLocation() {
