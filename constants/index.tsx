@@ -765,7 +765,10 @@ export async function getImageUrl(data?: string | null) {
       ? data
       : await Storage.get(data).catch((e) => {
           console.log(e);
-          Alert.alert("Error", "Hubo un problema subiendo la imagen");
+          Alert.alert(
+            "Error",
+            "Hubo un problema obteniendo la imagen" + e.message
+          );
           return "";
         })
     : null;

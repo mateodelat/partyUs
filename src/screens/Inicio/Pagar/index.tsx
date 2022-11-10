@@ -376,7 +376,17 @@ export default function ({
         notificacionesOrganizador(TipoPago.TARJETA, personasTotales);
 
         navigation.popToTop();
-        navigation.navigate("ExitoScreen");
+        navigation.navigate("ExitoScreen", {
+          txtExito: "Reserva creada",
+          descripcion:
+            "Se ha creado tu reserva con exito. Puedes consultar tu qr en Perfil - Mis reservas",
+          onPress: () => {
+            navigation.popToTop();
+            navigation.navigate("Perfil");
+            navigation.navigate("MisReservas", { reservaID });
+          },
+          txtOnPress: "Ver boleto",
+        });
       } else {
         throw new Error("No se encontro tipo de pago del resultado");
       }

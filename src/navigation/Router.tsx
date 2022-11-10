@@ -123,7 +123,7 @@ export default function () {
           component={MisReservas}
           initialParams={{ showHelp: true }}
           options={{
-            title: "Mis reservas",
+            title: "Mis boletos",
           }}
         />
 

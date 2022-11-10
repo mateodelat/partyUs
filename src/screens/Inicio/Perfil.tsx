@@ -269,7 +269,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
             borderColor: azulClaro,
           }}
           textStyle={{ color: azulClaro }}
-          titulo="Mis eventos"
+          titulo="Mis boletos"
           onPress={() => navigation.navigate("MisReservas")}
         />
         {organizador && (
