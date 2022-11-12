@@ -14,9 +14,12 @@
       "backgroundColor": "#ffffff"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/7b95f4ec-2ba2-4572-a5c3-d78d94e77689"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
@@ -67,7 +70,6 @@
           "color": "#ffffff"
         }
       ],
-
       [
         "expo-media-library",
         {
@@ -93,6 +95,9 @@
           "config": {}
         }
       ]
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     }
   }
 }

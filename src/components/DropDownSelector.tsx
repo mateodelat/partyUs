@@ -39,6 +39,7 @@ export default function ({
 
             position: "absolute",
             zIndex: 1,
+            elevation: 1,
           }}
         />
       )}
@@ -123,6 +124,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     maxHeight: 200,
     zIndex: 1,
+    elevation: 1,
     top: 55,
 
     borderWidth: 2,
