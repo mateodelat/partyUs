@@ -33,7 +33,7 @@
         },
         "createReserva": {
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/createReserva-4f787338554334554844-build.zip",
+          "s3Key": "amplify-builds/createReserva-426c764232765064724a-build.zip",
           "secretKey": "sk_e266853b34704432b3fbac85079350ac",
           "merchantId": "mcwffetlymvvcqthcdxu"
         },
