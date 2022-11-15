@@ -51,53 +51,26 @@ export default function () {
 
   const [imagenes, setImagenes] = useState<ImagenesType>([]);
 
-  const [editingImages, setEditingImages] = useState(false);
+  const editingImages = true;
 
   const [imageSelected, setImageSelected] = useState<undefined | number>();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [tipoModal, setTipoModal] = useState<enumModal>();
 
-  function handlePressImage(index: number) {
+  function handlePressImage(index?: number, abrir?: boolean) {
     // Cambiar estado si no esta seleccionada
-    if (editingImages) {
+    if (!abrir) {
       setImagenes((o) => {
         o[index].selected = !o[index].selected;
         return [...o];
       });
     }
-
     // Abrir imagen si no estamos en estado de seleccion
     else {
       setModalVisible(true);
       setTipoModal(enumModal.OPENIMAGE);
       setImageSelected(index);
-    }
-  }
-
-  function handleLongPress(index?: number) {
-    // Si no se estaba editando se empieza y seleccionar imagen
-    if (!editingImages) {
-      if (index === undefined) return;
-
-      setImagenes((o) => {
-        o[index].selected = !o[index].selected;
-        return [...o];
-      });
-
-      setEditingImages(true);
-    } else {
-      // Limpiar imagenes seleccionadas
-      setImagenes((o) => {
-        o = o.map((el) => {
-          el.selected = false;
-          return el;
-        });
-
-        return [...o];
-      });
-
-      setEditingImages(false);
     }
   }
 
@@ -109,6 +82,9 @@ export default function () {
     imagenes.filter((d) => d.selected).length === 1
       ? imagenes.findIndex((e) => e.selected)
       : false;
+
+  let imagenPrincipalIdx = imagenes.findIndex((e) => e.imagenPrincipal);
+  imagenPrincipalIdx = imagenPrincipalIdx !== -1 ? imagenPrincipalIdx : 0;
 
   function makeMainImage() {
     if (typeof oneImageSelectedIdx !== "number") return;
@@ -126,10 +102,14 @@ export default function () {
 
       return [...ne];
     });
-    setEditingImages(false);
   }
 
   function handleDeleteImages() {
+    // Si no hay elementos seleccionados devolver
+    if (!imagenes.find((s) => s.selected)) {
+      Alert.alert("Error", "Selecciona una imagen a borrar");
+      return;
+    }
     setImagenes((old) => {
       // Filtrar solo por imagenes seleccionadas
       old = old
@@ -154,8 +134,6 @@ export default function () {
             };
           }
         });
-
-      setEditingImages(false);
 
       return old;
     });
@@ -221,12 +199,6 @@ export default function () {
   }
 
   function handlePressAdd() {
-    if (editingImages) {
-      // Limpiar imagenes seleccionadas
-
-      handleLongPress();
-    }
-
     setModalVisible(true);
     setTipoModal(enumModal.SELECTIMAGE);
   }
@@ -240,7 +212,6 @@ export default function () {
       <HeaderAgregar
         step={1}
         handleDelete={handleDeleteImages}
-        handleDone={handleLongPress}
         handleBack={() => {
           if (evento) {
             AsyncAlert(
@@ -253,7 +224,7 @@ export default function () {
             navigation.pop();
           }
         }}
-        editing={editingImages}
+        editing={!!imagenes.length}
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -337,14 +308,19 @@ export default function () {
                   </View>
                 </Pressable>
               ) : (
-                <Image
+                <Pressable
                   style={{ flex: 1 }}
-                  source={{
-                    uri: imagenPrincipal
-                      ? imagenPrincipal.uri
-                      : imagenes[0]?.uri,
-                  }}
-                />
+                  onPress={() => handlePressImage(imagenPrincipalIdx, true)}
+                >
+                  <Image
+                    style={{ flex: 1 }}
+                    source={{
+                      uri: imagenPrincipal
+                        ? imagenPrincipal.uri
+                        : imagenes[0]?.uri,
+                    }}
+                  />
+                </Pressable>
               )}
             </View>
           ) : (
@@ -396,8 +372,8 @@ export default function () {
                 }
 
                 return (
+                  // Seleccionar la imagen al hacer click
                   <Pressable
-                    onLongPress={() => handleLongPress(index)}
                     onPress={() => handlePressImage(index)}
                     style={{
                       height: 100,

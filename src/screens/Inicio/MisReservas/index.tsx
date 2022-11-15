@@ -33,6 +33,7 @@ type ReservaType = Reserva & {
 export function MisReservas({ navigation, route }) {
   // Si se pasa un id de reserva entonces manejarlo para pedir inicialmente solo esa reserva
   const paramsReservaID = route.params?.reservaID;
+  const paramsEventoID = route.params?.eventoID;
   const efectivoCompletado = route.params?.efectivoCompletado;
   const { setBottomMessage } = useUser();
   let usuario = useUser().usuario;
@@ -117,6 +118,12 @@ export function MisReservas({ navigation, route }) {
         setLimitReached(true);
       }
 
+      // Si tenemos eventoID, filtrar las reservas que coincidan con el evento
+      if (paramsEventoID && firstRender) {
+        r = r.filter((e) => e.eventoID === paramsEventoID);
+        console.log("Filtrado");
+      }
+
       let res = await Promise.all(
         r.map(async (e) => {
           let r = { ...e };
@@ -147,7 +154,6 @@ export function MisReservas({ navigation, route }) {
       // 2) Despues por canceladas
       // 3) Luego por fecha del evento
       // 4) Si hay varias en un evento por fecha creadas
-      console.log("\n");
 
       res = res.sort((a, b) => {
         // Si expiro, mandarla al final

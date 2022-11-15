@@ -15,8 +15,8 @@ class ErrorRouter extends React.Component {
   }
 
   componentDidCatch(error: Error) {
-    console.log(error);
-    Alert.alert("Ocurrio un error", error.message);
+    // console.log(error);
+    // Alert.alert("Ocurrio un error", error.message);
     // Bugsnag.notify(error)
   }
 
@@ -39,7 +39,7 @@ class ErrorRouter extends React.Component {
               >
                 La aplicacion tuvo un problema que no la dejo continuar,
                 presiona el boton de abajo para volver a cargar la app. Por
-                favor contactanos si el problema persiste
+                favor contactanos si el problema persiste:
               </Text>
             </View>
           </View>

@@ -9,6 +9,7 @@ import {
   Text,
   View,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { EventoType } from "../Home";
@@ -432,6 +433,14 @@ export default function ({
   }
 
   function navigateScanner() {
+    if (evento.fechaFinal < new Date().getTime()) {
+      Alert.alert(
+        "Error",
+        "El evento ya ha pasado y no puedes escanear las reservas"
+      );
+      return;
+    }
+
     navigation.navigate("QRScanner", {
       eventoID: evento.id,
       tituloEvento: evento.titulo,
@@ -508,7 +517,7 @@ export default function ({
             padding: 0,
           }}
         >
-          {organizador && evento.fechaFinal > new Date().getTime() && (
+          {!!organizador && (
             <TouchableOpacity
               onPress={navigateScanner}
               style={{
@@ -544,11 +553,27 @@ export default function ({
               >
                 {/* Foto de perfil */}
                 <View style={styles.fotoPerfil}>
-                  <Image
-                    source={{ uri: fotoPerfil ? fotoPerfil : "" }}
-                    style={{ flex: 1, borderRadius: 25 }}
-                  />
+                  <View
+                    style={{
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <ActivityIndicator
+                      style={{ position: "absolute" }}
+                      size={"small"}
+                      color={"#000"}
+                    />
 
+                    <Image
+                      style={{
+                        width: 70,
+                        height: 70,
+                        borderRadius: 25,
+                      }}
+                      source={{ uri: fotoPerfil ? fotoPerfil : "" }}
+                    />
+                  </View>
                   {/* Icono calififcacion */}
                   <View
                     style={{
@@ -798,7 +823,24 @@ export default function ({
                           </Text>
                         </View>
                       ) : e.foto ? (
-                        <Image style={{ flex: 1 }} source={{ uri: e.foto }} />
+                        <View
+                          style={{
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flex: 1,
+                          }}
+                        >
+                          <ActivityIndicator
+                            style={{ position: "absolute" }}
+                            size={"small"}
+                            color={"#000"}
+                          />
+
+                          <Image
+                            style={{ width: "100%", height: "100%" }}
+                            source={{ uri: e.foto }}
+                          />
+                        </View>
                       ) : (
                         <EmptyProfile size={30} />
                       )}
@@ -823,10 +865,28 @@ export default function ({
                     return (
                       <View key={idx} style={styles.reservaContainer}>
                         {/* Foto de perfil del usuario */}
-                        <Image
-                          source={{ uri: res.usuario.foto }}
-                          style={styles.imagenPerfilReserva}
-                        />
+                        <View
+                          style={{
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 40,
+                            height: 40,
+                          }}
+                        >
+                          <ActivityIndicator
+                            style={{ position: "absolute" }}
+                            size={"small"}
+                            color={"#000"}
+                          />
+
+                          <Image
+                            source={{ uri: res.usuario.foto }}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                            }}
+                          />
+                        </View>
 
                         {/* Detalles del evento */}
                         <View style={{ flex: 1 }}>
@@ -952,11 +1012,10 @@ const styles = StyleSheet.create({
   },
 
   imagenPerfilReserva: {
-    width: 40,
-    height: 40,
+    width: "100%",
+    height: "100%",
 
     borderRadius: 30,
-    marginRight: 10,
   },
 
   statusReserva: {

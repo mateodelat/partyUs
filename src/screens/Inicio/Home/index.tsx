@@ -104,7 +104,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   const [userLocation, setUserLocation] =
     useState<null | Location.LocationObjectCoords>(null);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [fetchedEvents, setFetchedEvents] = useState<EventoType[] | []>([]);
 

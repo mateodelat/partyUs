@@ -6,11 +6,12 @@ import {
   Text,
   Pressable,
   View,
+  FlatList,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 
 import { Notificacion, TipoNotificacion } from "../../../models";
-import { rojoClaro, shadowBaja, verde } from "../../../../constants";
+import { rojoClaro, shadowBaja, timer, verde } from "../../../../constants";
 import Element from "./Element";
 import { DataStore } from "aws-amplify";
 
@@ -89,6 +90,15 @@ export default function ({ navigation }) {
 
         navigation.navigate("MisReservas", { reservaID: item.reservaID });
         break;
+      case TipoNotificacion.RECORDATORIOEVENTO:
+        if (item.usuarioID === item.organizadorID) {
+          // Si el organizador es igual al cliente, es porque es el guia
+          navigation.navigate("MisEventos", { eventoID: item.eventoID });
+          return;
+        }
+
+        navigation.navigate("MisReservas", { eventoID: item.eventoID });
+        break;
 
       case TipoNotificacion.CALIFICAUSUARIO:
         Alert.alert(
@@ -123,6 +133,16 @@ export default function ({ navigation }) {
     });
     setNotificaciones([]);
     setNewNotifications(0);
+  }
+
+  async function handleDeleteItem(item: Notificacion, index: number) {
+    // Esperar a que se complete la animacion 10ms
+    await timer(10);
+    setNotificaciones((prev) => {
+      prev.splice(index, 1);
+      return [...prev];
+    });
+    DataStore.delete(Notificacion, item.id);
   }
 
   return (
@@ -187,27 +207,30 @@ export default function ({ navigation }) {
                 />
               )}
             </Pressable>
-            {notificaciones?.map((item, index) => {
-              return (
-                <View
-                  key={index}
-                  style={{
-                    flex: 1,
-                    marginBottom: index === notificaciones.length - 1 ? 40 : 0,
-                    ...styles.notificationContainer,
-                  }}
-                >
-                  <Element
-                    tipo={item.tipo}
-                    titulo={item.titulo}
-                    descripcion={item.descripcion}
-                    tiempo={item.showAt ? item.showAt : item.createdAt}
-                    leido={!!item.leido}
-                    onPress={() => handlePressItem(item, index)}
-                  />
-                </View>
-              );
-            })}
+            <FlatList
+              data={notificaciones}
+              renderItem={({ item, index }) => {
+                return (
+                  <View
+                    style={{
+                      flex: 1,
+                      marginBottom:
+                        index === notificaciones.length - 1 ? 40 : 0,
+                    }}
+                  >
+                    <Element
+                      tipo={item.tipo}
+                      titulo={item.titulo}
+                      descripcion={item.descripcion}
+                      tiempo={item.showAt ? item.showAt : item.createdAt}
+                      leido={!!item.leido}
+                      handleDeleteItem={() => handleDeleteItem(item, index)}
+                      onPress={() => handlePressItem(item, index)}
+                    />
+                  </View>
+                );
+              }}
+            />
           </>
         )}
       </ScrollView>
@@ -231,13 +254,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     margin: 20,
     fontSize: 16,
-  },
-
-  notificationContainer: {
-    backgroundColor: "#fff",
-
-    margin: 20,
-
-    ...shadowBaja,
   },
 });

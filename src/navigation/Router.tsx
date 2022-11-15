@@ -82,6 +82,7 @@ export default function () {
   return (
     <NavigationContainer linking={linking} fallback={<Loading indicator />}>
       <Stack.Navigator
+        initialRouteName="Notificaciones"
         screenOptions={{
           header: ({
             route: { name, params },
@@ -122,7 +123,7 @@ export default function () {
           component={MisReservas}
           initialParams={{ showHelp: true }}
           options={{
-            title: "Mis reservas",
+            title: "Mis boletos",
           }}
         />
 

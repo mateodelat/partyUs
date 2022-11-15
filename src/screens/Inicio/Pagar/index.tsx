@@ -227,6 +227,9 @@ export default function ({
       }
       if (tipoPago !== "EFECTIVO") {
         // Si el tipo de pago es un numero seleccionar la tarjeta de la lista
+        setButtonLoading(true);
+        setLoading(true);
+
         const tarjeta = tarjetasGuardadas[tipoPago];
         tarjetaID = await tarjeta.id;
 
@@ -373,7 +376,17 @@ export default function ({
         notificacionesOrganizador(TipoPago.TARJETA, personasTotales);
 
         navigation.popToTop();
-        navigation.navigate("ExitoScreen");
+        navigation.navigate("ExitoScreen", {
+          txtExito: "Reserva creada",
+          descripcion:
+            "Se ha creado tu reserva con exito. Puedes consultar tu qr en Perfil - Mis reservas",
+          onPress: () => {
+            navigation.popToTop();
+            navigation.navigate("Perfil");
+            navigation.navigate("MisReservas", { reservaID });
+          },
+          txtOnPress: "Ver boleto",
+        });
       } else {
         throw new Error("No se encontro tipo de pago del resultado");
       }

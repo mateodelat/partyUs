@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
-import { Boleto } from "../../../models";
+
 import {
   formatMoney,
   mayusFirstLetter,
@@ -46,6 +46,14 @@ export default function ({
       return "";
     }
   })();
+
+  //  Si esta not show description, reemplazar \n por muchos espacios para forzar brinco de linea en number of lines
+  descripcion = showDescripcion
+    ? descripcion
+    : descripcion.replace(
+        "\n",
+        "                                                                                         "
+      );
 
   return (
     <Pressable onPress={handleShowDescripcion} style={styles.boletoContainer}>

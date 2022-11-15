@@ -294,6 +294,7 @@ exports.handler = async (event
                     items {
                         pagado
                         cancelado
+                        fechaExpiracionUTC
                         id
                         _deleted
                     }
@@ -355,7 +356,9 @@ exports.handler = async (event
 
             if (tipoPago === "EFECTIVO" && total !== 0) {
                 const efectivoDeny = !!r.listReservas.items.find(e => {
-                    return !e.pagado && !e._deleted
+                    // Si el evento ya fue pagado o borrado o la fecha de expiracion es menor a la del dioa de hoy da falso para ese item
+                    if (e.pagado || e.fechaExpiracionUTC < new Date().toISOString() || e._deleted) return false
+                    else return true
                 })
 
                 if (efectivoDeny) {

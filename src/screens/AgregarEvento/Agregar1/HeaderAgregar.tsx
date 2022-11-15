@@ -32,7 +32,7 @@ export default function ({
 
   const navigation = useNavigation<any>();
 
-  const title = editing ? "" : "Agregar evento";
+  const title = "Agregar evento";
 
   return (
     <View
@@ -44,30 +44,19 @@ export default function ({
     >
       <View style={styles.innerContainer}>
         <Text style={styles.backText}>{title}</Text>
-
-        {editing ? (
-          <Feather
-            onPress={handleDelete}
-            name={"trash-2"}
-            style={{ ...styles.backIcon, left: 10 }}
-            size={30}
-            color={azulClaro}
-          />
-        ) : (
-          <AntDesign
-            onPress={handleBack ? handleBack : () => navigation.pop()}
-            style={styles.backIcon}
-            name="left"
-            size={30}
-            color={azulClaro}
-          />
-        )}
+        <AntDesign
+          onPress={handleBack ? handleBack : () => navigation.pop()}
+          style={styles.backIcon}
+          name="left"
+          size={30}
+          color={azulClaro}
+        />
 
         {editing && (
           <Feather
-            onPress={handleDone}
-            name={"check"}
-            style={{ position: "absolute", right: 15, top: 5 }}
+            onPress={handleDelete}
+            name={"trash-2"}
+            style={{ position: "absolute", right: 10, top: 5 }}
             size={30}
             color={azulClaro}
           />

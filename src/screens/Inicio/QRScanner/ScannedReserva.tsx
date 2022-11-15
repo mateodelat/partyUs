@@ -26,7 +26,7 @@ import {
 import { Boleto, Reserva } from "../../../models";
 import { Ionicons } from "@expo/vector-icons";
 
-import { AntDesign } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import Loading from "../../../components/Loading";
 import useUser from "../../../Hooks/useUser";
 
@@ -34,6 +34,7 @@ import { Entypo } from "@expo/vector-icons";
 import { DataStore } from "aws-amplify";
 import { ReservasBoletos } from "../../../models";
 import EmptyProfile from "../../../components/EmptyProfile";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ({
   reserva,
@@ -105,6 +106,8 @@ export default function ({
     }
   }
 
+  const { top } = useSafeAreaInsets();
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -112,6 +115,7 @@ export default function ({
         <View
           style={{
             paddingBottom: 10,
+            paddingTop: top,
             width: "100%",
             zIndex: 1,
           }}
@@ -165,8 +169,10 @@ export default function ({
               justifyContent: "center",
             }}
           >
-            <AntDesign name="checkcircle" size={100} color={azulClaro} />
-            <Text style={styles.ingresarPersona}>Ingresar al evento</Text>
+            <FontAwesome name="hand-o-up" size={100} color={azulClaro} />
+            <Text style={styles.ingresarPersona}>
+              Click para confirmar entrada
+            </Text>
           </TouchableOpacity>
 
           <View style={styles.textContainer}>

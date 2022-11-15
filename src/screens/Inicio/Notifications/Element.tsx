@@ -1,5 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  Dimensions,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { AntDesign } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -10,7 +19,14 @@ import { Feather } from "@expo/vector-icons";
 
 import { TipoNotificacion } from "../../../models";
 import moment from "moment";
-import { azulClaro, rojoClaro } from "../../../../constants";
+import {
+  azulClaro,
+  rojoClaro,
+  shadowBaja,
+  vibrar,
+  VibrationType,
+} from "../../../../constants";
+import { Swipeable } from "react-native-gesture-handler";
 
 const sizeIcon = 30;
 const Icon = ({ tipo }: { tipo: TipoNotificacion }) => {
@@ -87,8 +103,10 @@ export default ({
   onPress,
   leido,
   tipo,
+  handleDeleteItem,
 }) => {
   const [tiempo, setTiempo] = useState(() => moment(time).from(moment()));
+  let scrollX = useRef(new Animated.Value(0));
 
   useEffect(() => {
     const i = setInterval(() => {
@@ -97,42 +115,91 @@ export default ({
 
     return () => {
       clearTimeout(i);
+      scrollX.current?.removeAllListeners();
     };
   }, [tiempo]);
+
+  const { width } = Dimensions.get("screen");
+
+  const dismissing = useRef(false);
+
+  const widthDismiss = 100;
+
   return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        ...styles.container,
-        opacity: leido ? 0.4 : 1,
+    <Swipeable
+      onEnded={(r) => {
+        if (dismissing.current) {
+          // Animar hasta el final
+          handleDeleteItem();
+        }
+      }}
+      rightThreshold={widthDismiss}
+      renderRightActions={(...props) => {
+        scrollX.current = props[1];
+        scrollX.current.addListener((e) => {
+          // Si se pasa de 100 y no se ha visualizado hacer el dismising a true
+          if (e.value < -widthDismiss && !dismissing.current) {
+            vibrar(VibrationType.medium);
+            dismissing.current = true;
+
+            // Si se regresa resetar
+          } else if (e.value > -widthDismiss && dismissing.current) {
+            vibrar(VibrationType.medium);
+            dismissing.current = false;
+          }
+        });
+
+        return (
+          <Animated.View
+            style={{
+              justifyContent: "center",
+              width,
+              height: 10,
+            }}
+          />
+        );
       }}
     >
-      {/* Puntito de notificacion */}
-
-      {/* Imagen de notificacion */}
-      <View style={styles.image}>
-        <Icon tipo={tipo} />
-      </View>
-
-      {/* Textos */}
-      <View style={styles.textos}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.titulo} numberOfLines={1}>
-            {titulo}
-          </Text>
-          <Text numberOfLines={5} style={styles.descripcion}>
-            {descripcion}
-          </Text>
-        </View>
-        <View
-          style={{ flexDirection: "row", alignItems: "center", marginLeft: 10 }}
+      <View style={styles.container}>
+        <Pressable
+          onPress={onPress}
+          style={{
+            flexDirection: "row",
+            opacity: leido ? 0.4 : 1,
+          }}
         >
-          <AntDesign name="clockcircle" size={15} color="gray" />
+          {/* Puntito de notificacion */}
 
-          <Text style={styles.tiempo}>{tiempo}</Text>
-        </View>
+          {/* Imagen de notificacion */}
+          <View style={styles.image}>
+            <Icon tipo={tipo} />
+          </View>
+
+          {/* Textos */}
+          <View style={styles.textos}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.titulo} numberOfLines={1}>
+                {titulo}
+              </Text>
+              <Text numberOfLines={5} style={styles.descripcion}>
+                {descripcion}
+              </Text>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginLeft: 10,
+              }}
+            >
+              <AntDesign name="clockcircle" size={15} color="gray" />
+
+              <Text style={styles.tiempo}>{tiempo}</Text>
+            </View>
+          </View>
+        </Pressable>
       </View>
-    </Pressable>
+    </Swipeable>
   );
 };
 
@@ -143,10 +210,10 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
+    padding: 20,
+    margin: 20,
+
+    ...shadowBaja,
   },
 
   image: {

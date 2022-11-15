@@ -114,10 +114,7 @@ export default function ({ navigation, route }) {
 
   const handleBarCodeScanned = async (d: BarCodeEvent) => {
     const { data } = d;
-    console.log({
-      data,
-    });
-
+    console.log(d);
     if (error) return;
 
     try {
@@ -260,7 +257,7 @@ export default function ({ navigation, route }) {
       ) : (
         <BarCodeScanner
           ref={scanRef}
-          barCodeTypes={["qr"]}
+          // barCodeTypes={["qr"]}
           onBarCodeScanned={scanning ? undefined : handleBarCodeScanned}
           style={{
             marginTop: 70,

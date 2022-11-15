@@ -7,6 +7,7 @@ import {
   Platform,
   Pressable,
   Route,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -123,7 +124,7 @@ export default function ({
   }
 
   return (
-    <View
+    <ScrollView
       style={{
         flex: 1,
         backgroundColor: "#fff",
@@ -183,7 +184,7 @@ export default function ({
           ¿No tienes cuenta? <Text style={{ color: "blue" }}>Registrate</Text>
         </Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 

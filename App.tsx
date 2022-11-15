@@ -22,7 +22,6 @@ import moment from "moment";
 
 import Bugsnag from "@bugsnag/expo";
 
-LogBox.ignoreLogs([/\[WARN\] .* DataStore/g]);
 // LogBox.ignoreAllLogs();
 moment.locale("es");
 
@@ -52,7 +51,7 @@ export default function App() {
     const dstore = Hub.listen("datastore", async (hubData) => {
       const { event, data } = hubData.payload;
 
-      if (event === "syncQueriesReady") {
+      if (event === "syncQueriesReady" || event === "ready") {
         setLoading(false);
       }
     });
