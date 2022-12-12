@@ -104,32 +104,32 @@ export default function ({
   useEffect(() => {
     setInnerModal(true);
 
-    // setNumber({
-    //   value: "4242424242424242",
-    //   validation: {
-    //     card: {
-    //       cvv: 3,
-    //       type: "visa",
-    //     },
-    //     isPotentiallyValid: true,
-    //     isValid: true,
-    //   },
-    // });
-    // setName("Test name");
-    // setExpiry({
-    //   value: "02/24",
-    //   validation: {
-    //     isPotentiallyValid: true,
-    //     isValid: true,
-    //   },
-    // });
-    // setCvv({
-    //   value: "022",
-    //   validation: {
-    //     isPotentiallyValid: true,
-    //     isValid: true,
-    //   },
-    // });
+    setNumber({
+      value: "5454545454545454",
+      validation: {
+        card: {
+          cvv: 3,
+          type: "visa",
+        },
+        isPotentiallyValid: true,
+        isValid: true,
+      },
+    });
+    setName("Test name");
+    setExpiry({
+      value: "02/24",
+      validation: {
+        isPotentiallyValid: true,
+        isValid: true,
+      },
+    });
+    setCvv({
+      value: "022",
+      validation: {
+        isPotentiallyValid: true,
+        isValid: true,
+      },
+    });
   }, []);
 
   function handleSave() {
@@ -203,6 +203,27 @@ export default function ({
               <AntDesign name="Safety" size={24} color={azulClaro} />
             </View>
             <View style={styles.line} />
+
+            <Image
+              source={{
+                uri: "https://documents.openpay.mx/wp-content/uploads/2021/03/Openpay_tarjetas-de-debito.png",
+              }}
+              style={{
+                width: "100%",
+                height: 100,
+              }}
+            />
+
+            <Image
+              source={{
+                uri: "https://documents.openpay.mx/wp-content/uploads/2022/02/openpay-color.png",
+              }}
+              style={{
+                width: "100%",
+                height: 100,
+                resizeMode: "contain",
+              }}
+            />
 
             {/* Numero de tarjeta */}
             <InputOnFocusV2

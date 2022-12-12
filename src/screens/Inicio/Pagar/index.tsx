@@ -460,10 +460,8 @@ export default function ({
             return r;
           })
           .catch((e) => {
-            Alert.alert(
-              "Error",
-              "Hubo un error guardando la tarjeta: " + e.error.description
-            );
+            console.log(e.error);
+            Alert.alert("Error", "Tarjeta no valida, hubo un error");
 
             setTipoPago(undefined);
 

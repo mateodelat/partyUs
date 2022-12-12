@@ -321,18 +321,18 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
               )
 
               // Por fechas
-              .fechaInicial(
-                "gt",
-                // Si no hay fecha inicial poner la fecha de hoy minima
-                fechaMin ? fechaMin.getTime() : new Date().getTime()
-              )
-              .fechaFinal(
-                "lt",
-                fechaMax
-                  ? fechaMax.getTime()
-                  : // Si no hay fecha max la fecha de hoy en 5 años
-                    new Date().getTime() + msInDay * 365 * 5
-              )
+              // .fechaInicial(
+              //   "gt",
+              //   // Si no hay fecha inicial poner la fecha de hoy minima
+              //   fechaMin ? fechaMin.getTime() : new Date().getTime()
+              // )
+              // .fechaFinal(
+              //   "lt",
+              //   fechaMax
+              //     ? fechaMax.getTime()
+              //     : // Si no hay fecha max la fecha de hoy en 5 años
+              //       new Date().getTime() + msInDay * 365 * 5
+              // )
 
               // Rango precios
               // Si el precio minimo o el maximo se encuentra en el rango input
@@ -359,18 +359,18 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
               )
 
               // Por fechas
-              .fechaInicial(
-                "gt",
-                // Si no hay fecha inicial poner la fecha de hoy minima
-                fechaMin ? fechaMin.getTime() : new Date().getTime()
-              )
-              .fechaFinal(
-                "lt",
-                fechaMax
-                  ? fechaMax.getTime()
-                  : // Si no hay fecha max la fecha de hoy en 5 años
-                    new Date().getTime() + msInDay * 365 * 5
-              )
+              // .fechaInicial(
+              //   "gt",
+              //   // Si no hay fecha inicial poner la fecha de hoy minima
+              //   fechaMin ? fechaMin.getTime() : new Date().getTime()
+              // )
+              // .fechaFinal(
+              //   "lt",
+              //   fechaMax
+              //     ? fechaMax.getTime()
+              //     : // Si no hay fecha max la fecha de hoy en 5 años
+              //       new Date().getTime() + msInDay * 365 * 5
+              // )
 
               // Rango precios
               // Si el precio minimo o el maximo se encuentra en el rango input
