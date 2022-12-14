@@ -345,6 +345,110 @@ app.post('/payments/bankaccount', function (req, res) {
 
 
 
+/******************************************
+* POST Crear transferencia entre cuentas  *
+******************************************/
+app.post('/payments/transfer', function (req, res) {
+  // Add your code here
+  try {
+    const source_id = req.body.source_id
+    const target_id = req.body.target_id
+    const amount = req.body.amount
+
+
+    const description = req.body.description
+    const order_id = req.body.order_id
+
+    if (!target_id || !source_id || !amount) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio target_id, source_id o amount",
+        body: req.body
+      })
+    }
+
+    openpay.customers.transfers.create(source_id, {
+      customer_id: target_id,
+      amount,
+      description,
+      order_id
+
+    }, function (error, body) {
+      if (error?.http_code) {
+        res.status(error?.http_code)
+      }
+
+      res.json({
+        error,
+        body
+      })
+    })
+  }
+  catch (e) {
+    console.log(e)
+    res.status(500)
+    res.json({
+      error: "Hubo un error",
+      body: e.message
+    })
+  }
+});
+
+
+
+
+
+/*******************************
+* POST Crear fee sobre cuenta  *
+*******************************/
+app.post('/payments/fee', function (req, res) {
+  // Add your code here
+  try {
+    const source_id = req.body.source_id
+    const amount = req.body.amount
+
+
+    const description = req.body.description
+    const order_id = req.body.order_id
+
+    if (!source_id || !amount) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio source_id o amount",
+        body: req.body
+      })
+    }
+
+    openpay.fees.create({
+      customer_id: source_id,
+      amount,
+      description,
+      order_id
+
+    }, function (error, body) {
+      if (error?.http_code) {
+        res.status(error?.http_code)
+      }
+
+      res.json({
+        error,
+        body
+      })
+    })
+  }
+  catch (e) {
+    console.log(e)
+    res.status(500)
+    res.json({
+      error: "Hubo un error",
+      body: e.message
+    })
+  }
+});
+
+
+
+
 
 /****************************
 * Borrar tarjetas cliente *

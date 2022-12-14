@@ -72,10 +72,14 @@ export async function sendAdminNotification({
   organizadorID,
   eventoID,
   reservaID,
+
+  onlyPush,
 }: {
   titulo: string;
   descripcion: string;
   sender: Usuario;
+
+  onlyPush?: boolean;
 
   organizadorID?: string;
   eventoID?: string;
@@ -93,21 +97,23 @@ export async function sendAdminNotification({
   admins.map((usr) => {
     const { notificationToken, owner, id } = usr;
 
-    DataStore.save(
-      new Notificacion({
-        tipo: TipoNotificacion.ADMIN,
+    if (!onlyPush) {
+      DataStore.save(
+        new Notificacion({
+          tipo: TipoNotificacion.ADMIN,
 
-        titulo,
-        descripcion,
+          titulo,
+          descripcion,
 
-        showAt: new Date().toISOString(),
+          showAt: new Date().toISOString(),
 
-        usuarioID: id,
-        eventoID: eventoID,
-        organizadorID: organizadorID,
-        reservaID: reservaID,
-      })
-    );
+          usuarioID: id,
+          eventoID: eventoID,
+          organizadorID: organizadorID,
+          reservaID: reservaID,
+        })
+      );
+    }
 
     sendPushNotification({
       title: titulo,
@@ -517,7 +523,7 @@ export async function fetchFromOpenpay<T>({
   };
 
   const url = production
-    ? "https://sandbox-api.openpay.mx/v1/"
+    ? "https://api.openpay.mx/v1/"
     : "https://sandbox-api.openpay.mx/v1/";
 
   return fetch(url + MERCHANT_ID + path, requestOptions).then(
@@ -711,6 +717,8 @@ export const shadowMedia = {
 
   elevation: 4,
 };
+
+export const produccion = false;
 
 export const shadowBaja = {
   shadowColor: "#000",

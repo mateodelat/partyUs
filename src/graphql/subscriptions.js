@@ -15,6 +15,8 @@ export const onCreateUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
+      titularCuenta
+      receiveNewReservations
       imagenFondo
       direccion
       phoneNumber
@@ -69,6 +71,7 @@ export const onCreateUsuario = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -116,6 +119,8 @@ export const onUpdateUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
+      titularCuenta
+      receiveNewReservations
       imagenFondo
       direccion
       phoneNumber
@@ -170,6 +175,7 @@ export const onUpdateUsuario = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -217,6 +223,8 @@ export const onDeleteUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
+      titularCuenta
+      receiveNewReservations
       imagenFondo
       direccion
       phoneNumber
@@ -271,6 +279,7 @@ export const onDeleteUsuario = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -337,6 +346,8 @@ export const onCreateEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        titularCuenta
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -395,6 +406,7 @@ export const onCreateEvento = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -461,6 +473,8 @@ export const onUpdateEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        titularCuenta
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -519,6 +533,7 @@ export const onUpdateEvento = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -585,6 +600,8 @@ export const onDeleteEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        titularCuenta
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -643,6 +660,7 @@ export const onDeleteEvento = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -876,6 +894,7 @@ export const onCreateCupon = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -926,6 +945,7 @@ export const onUpdateCupon = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -976,6 +996,160 @@ export const onDeleteCupon = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
+          tipoPago
+          chargeID
+          transactionID
+          feeID
+          cashBarcode
+          cashReference
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          fechaExpiracionUTC
+          eventoID
+          usuarioID
+          cuponID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onCreateRetiro = /* GraphQL */ `
+  subscription OnCreateRetiro($filter: ModelSubscriptionRetiroFilterInput) {
+    onCreateRetiro(filter: $filter) {
+      id
+      organizadorID
+      amount
+      adminID
+      mensaje
+      Reservas {
+        items {
+          id
+          total
+          comision
+          pagadoAlOrganizador
+          cantidad
+          pagado
+          paymentTime
+          transaccionAOrganizadorID
+          tipoPago
+          chargeID
+          transactionID
+          feeID
+          cashBarcode
+          cashReference
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          fechaExpiracionUTC
+          eventoID
+          usuarioID
+          cuponID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onUpdateRetiro = /* GraphQL */ `
+  subscription OnUpdateRetiro($filter: ModelSubscriptionRetiroFilterInput) {
+    onUpdateRetiro(filter: $filter) {
+      id
+      organizadorID
+      amount
+      adminID
+      mensaje
+      Reservas {
+        items {
+          id
+          total
+          comision
+          pagadoAlOrganizador
+          cantidad
+          pagado
+          paymentTime
+          transaccionAOrganizadorID
+          tipoPago
+          chargeID
+          transactionID
+          feeID
+          cashBarcode
+          cashReference
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          fechaExpiracionUTC
+          eventoID
+          usuarioID
+          cuponID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const onDeleteRetiro = /* GraphQL */ `
+  subscription OnDeleteRetiro($filter: ModelSubscriptionRetiroFilterInput) {
+    onDeleteRetiro(filter: $filter) {
+      id
+      organizadorID
+      amount
+      adminID
+      mensaje
+      Reservas {
+        items {
+          id
+          total
+          comision
+          pagadoAlOrganizador
+          cantidad
+          pagado
+          paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -1019,6 +1193,23 @@ export const onCreateReserva = /* GraphQL */ `
       cantidad
       pagado
       paymentTime
+      transaccionAOrganizadorID
+      transaccionAOrganizador {
+        id
+        organizadorID
+        amount
+        adminID
+        mensaje
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
       tipoPago
       chargeID
       transactionID
@@ -1060,6 +1251,8 @@ export const onCreateReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1106,6 +1299,8 @@ export const onCreateReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        titularCuenta
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1187,6 +1382,23 @@ export const onUpdateReserva = /* GraphQL */ `
       cantidad
       pagado
       paymentTime
+      transaccionAOrganizadorID
+      transaccionAOrganizador {
+        id
+        organizadorID
+        amount
+        adminID
+        mensaje
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
       tipoPago
       chargeID
       transactionID
@@ -1228,6 +1440,8 @@ export const onUpdateReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1274,6 +1488,8 @@ export const onUpdateReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        titularCuenta
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1355,6 +1571,23 @@ export const onDeleteReserva = /* GraphQL */ `
       cantidad
       pagado
       paymentTime
+      transaccionAOrganizadorID
+      transaccionAOrganizador {
+        id
+        organizadorID
+        amount
+        adminID
+        mensaje
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
       tipoPago
       chargeID
       transactionID
@@ -1396,6 +1629,8 @@ export const onDeleteReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1442,6 +1677,8 @@ export const onDeleteReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        titularCuenta
+        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1529,6 +1766,19 @@ export const onCreateReservasBoletos = /* GraphQL */ `
         cantidad
         pagado
         paymentTime
+        transaccionAOrganizadorID
+        transaccionAOrganizador {
+          id
+          organizadorID
+          amount
+          adminID
+          mensaje
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         tipoPago
         chargeID
         transactionID
@@ -1577,6 +1827,8 @@ export const onCreateReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1667,6 +1919,19 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
         cantidad
         pagado
         paymentTime
+        transaccionAOrganizadorID
+        transaccionAOrganizador {
+          id
+          organizadorID
+          amount
+          adminID
+          mensaje
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         tipoPago
         chargeID
         transactionID
@@ -1715,6 +1980,8 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1805,6 +2072,19 @@ export const onDeleteReservasBoletos = /* GraphQL */ `
         cantidad
         pagado
         paymentTime
+        transaccionAOrganizadorID
+        transaccionAOrganizador {
+          id
+          organizadorID
+          amount
+          adminID
+          mensaje
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         tipoPago
         chargeID
         transactionID
@@ -1853,6 +2133,8 @@ export const onDeleteReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
+          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber

@@ -38,7 +38,6 @@ export default function ({
             width: width * 2,
 
             position: "absolute",
-            zIndex: 1,
             elevation: 1,
           }}
         />
@@ -67,36 +66,34 @@ export default function ({
 
       {shown && (
         <View style={styles.dropDownList}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {items.map((m, idx) => {
-              const selected = selectedItem === m;
-              function handlePress() {
-                if (selected) return;
-                handleSelectItem(m);
-                setShown(false);
-              }
+          {items.map((m, idx) => {
+            const selected = selectedItem === m;
+            function handlePress() {
+              if (selected) return;
+              handleSelectItem(m);
+              setShown(false);
+            }
 
-              return (
-                <TouchableOpacity
-                  onPress={handlePress}
-                  activeOpacity={selected ? 1 : 0.2}
+            return (
+              <TouchableOpacity
+                onPress={handlePress}
+                activeOpacity={selected ? 1 : 0.2}
+                style={{
+                  ...styles.itemDropDown,
+                }}
+                key={idx}
+              >
+                <Text
                   style={{
-                    ...styles.itemDropDown,
+                    ...styles.selectedDropDownTxt,
+                    color: selected ? azulClaro : "#555",
                   }}
-                  key={idx}
                 >
-                  <Text
-                    style={{
-                      ...styles.selectedDropDownTxt,
-                      color: selected ? azulClaro : "#555",
-                    }}
-                  >
-                    {mayusFirstLetter(m)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
+                  {mayusFirstLetter(m)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       )}
     </View>
@@ -114,18 +111,11 @@ const styles = StyleSheet.create({
   selectedDropDownTxt: {
     fontSize: 18,
     flex: 1,
-    color: "#555",
+    color: "red",
   },
 
   dropDownList: {
     width: "100%",
-
-    position: "absolute",
-    backgroundColor: "#fff",
-    maxHeight: 200,
-    zIndex: 1,
-    elevation: 1,
-    top: 55,
 
     borderWidth: 2,
     borderTopWidth: 0,

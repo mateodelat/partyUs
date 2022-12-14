@@ -20,19 +20,23 @@
     }
   },
   "Resources": {
-    "LambdaLayerVersiondb0ea50a": {
+    "LambdaLayerVersione70a0cf3": {
       "Type": "AWS::Lambda::LayerVersion",
       "Properties": {
-        "CompatibleRuntimes": [
-          "nodejs14.x"
-        ],
+        "CompatibleRuntimes": {
+          "Ref": "runtimes"
+        },
         "Content": {
           "S3Bucket": {
             "Ref": "deploymentBucketName"
           },
-          "S3Key": "amplify-builds/partyuslayer-LambdaLayerVersiondb0ea50a-build.zip"
+          "S3Key": {
+            "Ref": "s3Key"
+          }
         },
-        "Description": "Updated layer version 2022-09-25T23:22:17.969Z",
+        "Description": {
+          "Ref": "description"
+        },
         "LayerName": {
           "Fn::Sub": [
             "partyuslayer-${env}",
@@ -47,11 +51,13 @@
       "DeletionPolicy": "Delete",
       "UpdateReplacePolicy": "Retain"
     },
-    "LambdaLayerPermissionPrivatedb0ea50a": {
+    "LambdaLayerPermissionPrivatee70a0cf3": {
       "Type": "AWS::Lambda::LayerVersionPermission",
       "Properties": {
         "Action": "lambda:GetLayerVersion",
-        "LayerVersionArn": "arn:aws:lambda:us-east-1:832832547198:layer:partyuslayer-staging:3",
+        "LayerVersionArn": {
+          "Ref": "LambdaLayerVersione70a0cf3"
+        },
         "Principal": {
           "Ref": "AWS::AccountId"
         }
@@ -61,7 +67,7 @@
   "Outputs": {
     "Arn": {
       "Value": {
-        "Ref": "LambdaLayerVersiondb0ea50a"
+        "Ref": "LambdaLayerVersione70a0cf3"
       }
     }
   }

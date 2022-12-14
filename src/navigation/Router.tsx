@@ -35,6 +35,7 @@ import Soporte from "../screens/Perfil/Soporte";
 import Loading from "../components/Loading";
 
 import AdminStack from "./AdminStack";
+import JSONVisualizer from "../components/JSONVisualizer";
 
 function NombreApellidosOnPress({ navigation }: any) {
   const { setUsuario, usuario } = useUser();
@@ -82,7 +83,7 @@ export default function () {
   return (
     <NavigationContainer linking={linking} fallback={<Loading indicator />}>
       <Stack.Navigator
-        initialRouteName="Notificaciones"
+        // initialRouteName="AdminStack"
         screenOptions={{
           header: ({
             route: { name, params },
@@ -228,6 +229,8 @@ export default function () {
             ...TransitionPresets.ModalTransition,
           }}
         />
+
+        <Stack.Screen name="JSONVisualizer" component={JSONVisualizer} />
 
         <Stack.Screen name="Soporte" component={Soporte} />
         <Stack.Screen

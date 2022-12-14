@@ -8,6 +8,7 @@ import sprintfJs from "sprintf-js";
 import * as Application from "expo-application";
 
 import uuid from "react-native-uuid";
+import { produccion } from "../../constants";
 
 const MERCHANT_ID = "mcwffetlymvvcqthcdxu";
 
@@ -17,10 +18,9 @@ sessionId = sessionId.toUpperCase().replace(/-/g, "");
 
 type OpenpayProps = {
   onCreateSesionID: (tok: string) => void;
-  isProductionMode: boolean;
 };
 
-export default function ({ onCreateSesionID, isProductionMode }: OpenpayProps) {
+export default function ({ onCreateSesionID }: OpenpayProps) {
   const API_URL_SANDBOX = "https://sandbox-api.openpay.mx";
   const API_URL_PRODUCTION = "https://api.openpay.mx";
 
@@ -55,7 +55,7 @@ export default function ({ onCreateSesionID, isProductionMode }: OpenpayProps) {
     identifierForVendor = identifierForVendor.replace(/-/g, "");
 
     const uri = vsprintf("%s/oa/logo.htm?m=%s&s=%s", [
-      isProductionMode ? API_URL_PRODUCTION : API_URL_SANDBOX,
+      produccion ? API_URL_PRODUCTION : API_URL_SANDBOX,
       MERCHANT_ID,
       sessionId,
     ]);

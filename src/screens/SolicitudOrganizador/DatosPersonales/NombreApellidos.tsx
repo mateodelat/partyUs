@@ -46,7 +46,9 @@ export default function ({
   const [phoneFlag, setPhoneFlag] = useState("🇲🇽");
   const [codePickerVisible, setCodePickerVisible] = useState(false);
 
-  const [phoneNumber, setPhoneNumber] = useState(phn ? phn : "");
+  const [phoneNumber, setPhoneNumber] = useState(
+    phn ? formatTelefono(phn) : ""
+  );
 
   // Erorres formato
   const [errorNombre, setErrorNombre] = useState("");

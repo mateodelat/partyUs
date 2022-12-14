@@ -76,7 +76,7 @@ export type EventoType = Evento & {
 
 export async function queryNewNotifications() {
   const sub = await getUserSub();
-  return DataStore.query(Notificacion, (e) =>
+  return await DataStore.query(Notificacion, (e) =>
     e
       .showAt("lt", new Date().toISOString())
       .leido("ne", true)
@@ -87,7 +87,10 @@ export async function queryNewNotifications() {
 }
 
 export default function ({ navigation }: { navigation: NavigationProp }) {
-  const { usuario, setUsuario } = useUser();
+  const {
+    usuario: { foto },
+    setUsuario,
+  } = useUser();
 
   const [minPrice, setMinPrice] = useState<number>();
   const [maxPrice, setMaxPrice] = useState<number>();
@@ -108,9 +111,16 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
   const [fetchedEvents, setFetchedEvents] = useState<EventoType[] | []>([]);
 
+  const [loadingHidden, setLoadingHidden] = useState(false);
+
   const [eventosFiltrados, setEventosFiltrados] = useState<EventoType[] | []>(
     []
   );
+
+  // Al cambiar la imagen de perfil del usuario pedirla
+  useEffect(() => {
+    getImageUrl(foto).then(setProfilePicture);
+  }, [foto]);
 
   const notificationBellRef = useRef<React.RefObject<TouchableOpacity>>();
 
@@ -321,18 +331,18 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
               )
 
               // Por fechas
-              // .fechaInicial(
-              //   "gt",
-              //   // Si no hay fecha inicial poner la fecha de hoy minima
-              //   fechaMin ? fechaMin.getTime() : new Date().getTime()
-              // )
-              // .fechaFinal(
-              //   "lt",
-              //   fechaMax
-              //     ? fechaMax.getTime()
-              //     : // Si no hay fecha max la fecha de hoy en 5 años
-              //       new Date().getTime() + msInDay * 365 * 5
-              // )
+              .fechaInicial(
+                "gt",
+                // Si no hay fecha inicial poner la fecha de hoy minima
+                fechaMin ? fechaMin.getTime() : new Date().getTime()
+              )
+              .fechaFinal(
+                "lt",
+                fechaMax
+                  ? fechaMax.getTime()
+                  : // Si no hay fecha max la fecha de hoy en 5 años
+                    new Date().getTime() + msInDay * 365 * 5
+              )
 
               // Rango precios
               // Si el precio minimo o el maximo se encuentra en el rango input
@@ -359,18 +369,18 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
               )
 
               // Por fechas
-              // .fechaInicial(
-              //   "gt",
-              //   // Si no hay fecha inicial poner la fecha de hoy minima
-              //   fechaMin ? fechaMin.getTime() : new Date().getTime()
-              // )
-              // .fechaFinal(
-              //   "lt",
-              //   fechaMax
-              //     ? fechaMax.getTime()
-              //     : // Si no hay fecha max la fecha de hoy en 5 años
-              //       new Date().getTime() + msInDay * 365 * 5
-              // )
+              .fechaInicial(
+                "gt",
+                // Si no hay fecha inicial poner la fecha de hoy minima
+                fechaMin ? fechaMin.getTime() : new Date().getTime()
+              )
+              .fechaFinal(
+                "lt",
+                fechaMax
+                  ? fechaMax.getTime()
+                  : // Si no hay fecha max la fecha de hoy en 5 años
+                    new Date().getTime() + msInDay * 365 * 5
+              )
 
               // Rango precios
               // Si el precio minimo o el maximo se encuentra en el rango input
@@ -541,15 +551,17 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
                     height: 45,
                   }}
                 >
-                  <ActivityIndicator
-                    style={{
-                      position: "absolute",
-                    }}
-                    size={"small"}
-                    color={"black"}
-                  />
-                  {}
+                  {!loadingHidden && (
+                    <ActivityIndicator
+                      style={{
+                        position: "absolute",
+                      }}
+                      size={"small"}
+                      color={"black"}
+                    />
+                  )}
                   <Image
+                    onLoadEnd={() => setLoadingHidden(true)}
                     style={styles.profilePicture}
                     source={{
                       uri: profilePicture,

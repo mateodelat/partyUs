@@ -49,7 +49,14 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
   async function handleSaveInfo() {
     try {
-      const { idData, fechaNacimiento } = usuario;
+      const {
+        idData,
+        fechaNacimiento,
+        cuentaBancaria,
+        titularCuenta,
+        phoneCode,
+        phoneNumber,
+      } = usuario;
 
       const key = "usr-" + usuario.id + "|id.jpg";
 
@@ -58,7 +65,11 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
         throw new Error(
           "Error al guardar informacion del usuario pues no hay idData"
         );
+      } else if (!cuentaBancaria || !titularCuenta) {
+        Alert.alert("Error", "No se detecto la cuenta CLABE o el titular");
+        return;
       }
+
       const uri = JSON.parse(idData).uri;
       setLoading(true);
 
@@ -90,6 +101,12 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
             ne.nombre = nombre;
             ne.paterno = paterno;
             ne.materno = materno;
+
+            ne.phoneNumber = phoneNumber;
+            ne.phoneCode = phoneCode;
+
+            ne.cuentaBancaria = cuentaBancaria;
+            ne.titularCuenta = titularCuenta;
 
             ne.fechaNacimiento = fechaNacimiento;
           })

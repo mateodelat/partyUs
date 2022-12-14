@@ -84,6 +84,10 @@ export interface chargeType {
     "order_id": string,
     "status": transactionStatus_type,
     "transaction_type": tipoTransaccion,
+    "payment_method": {
+        "type": "redirect",
+        "url": string
+    },
 
     payment_method?: {
         "barcode_url": string,

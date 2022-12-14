@@ -107,7 +107,12 @@ export default function ({ navigation }) {
                 })
               );
             });
-            Alert.alert("Admin", "Usuario se hizo admin con exito");
+            Alert.alert(
+              "Admin",
+              "Usuario se " +
+                (!item.admin ? "hizo" : "quitó") +
+                " admin con exito"
+            );
           }
 
           function handleSetNotificacionReserva() {

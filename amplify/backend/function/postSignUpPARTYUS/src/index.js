@@ -49,7 +49,9 @@ async function createCustomer({
 
   var config = {
     method: 'post',
-    url: 'https://sandbox-api.openpay.mx/v1/mcwffetlymvvcqthcdxu/customers',
+    url: 'https://sandbox-api.openpay.mx/v1/mcwffetlymvvcqthcdxu/customers'
+    // 'https://api.openpay.mx/v1/m1qt7k7zcarncm0jkvrp/customers'
+    ,
     headers: {
       'Authorization': "Basic " + authKey,
       'Content-Type': 'application/json'
