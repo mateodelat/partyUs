@@ -50,16 +50,9 @@
     "mime": "1.4.1",
     "moment": "^2.29.4",
     "native": "^0.3.3",
-<<<<<<< HEAD
-    "qs": "6.0.4",
-    "react": "18.0.0",
-    "react-dom": "18.0.0",
-    "react-native": "0.69.6",
-=======
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-native": "^0.69.6",
->>>>>>> staging
     "react-native-animated-input": "^1.1.0",
     "react-native-animated-nav-tab-bar": "^3.1.8",
     "react-native-base64": "^0.2.1",
