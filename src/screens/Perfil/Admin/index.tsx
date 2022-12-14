@@ -29,16 +29,16 @@ export default function ({ navigation }) {
 
       {/* Eventos de la app */}
       <TouchableOpacity
-        onPress={() => navigation.navigate("EventosAdmin")}
+        onPress={() => navigation.navigate("PagosAOrganizador")}
         style={styles.buttonContainer}
       >
         <MaterialIcons
           style={styles.icon}
-          name="event"
+          name="payments"
           size={24}
           color="white"
         />
-        <Text style={styles.textoBoton}>Eventos creados</Text>
+        <Text style={styles.textoBoton}>Organizadores por pagar</Text>
       </TouchableOpacity>
     </View>
   );

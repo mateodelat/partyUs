@@ -59,6 +59,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "titularCuenta": {
+                    "name": "titularCuenta",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "receiveNewReservations": {
                     "name": "receiveNewReservations",
                     "isArray": false,
@@ -938,6 +945,26 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "transaccionAOrganizadorID": {
+                    "name": "transaccionAOrganizadorID",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "transaccionAOrganizador": {
+                    "name": "transaccionAOrganizador",
+                    "isArray": false,
+                    "type": {
+                        "model": "Retiro"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "retiroReservasId"
+                    }
+                },
                 "tipoPago": {
                     "name": "tipoPago",
                     "isArray": false,
@@ -1134,6 +1161,15 @@ export const schema = {
                 {
                     "type": "key",
                     "properties": {
+                        "name": "byRetiro",
+                        "fields": [
+                            "transaccionAOrganizadorID"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
                         "name": "byEvento",
                         "fields": [
                             "eventoID"
@@ -1200,6 +1236,125 @@ export const schema = {
                                     "update"
                                 ],
                                 "identityClaim": "cognito:username"
+                            },
+                            {
+                                "groupClaim": "cognito:groups",
+                                "provider": "userPools",
+                                "allow": "groups",
+                                "groups": [
+                                    "Admin"
+                                ],
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "Retiro": {
+            "name": "Retiro",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "organizadorID": {
+                    "name": "organizadorID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "amount": {
+                    "name": "amount",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "adminID": {
+                    "name": "adminID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "mensaje": {
+                    "name": "mensaje",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "Reservas": {
+                    "name": "Reservas",
+                    "isArray": true,
+                    "type": {
+                        "model": "Reserva"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": "transaccionAOrganizadorID"
+                    }
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "Retiros",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "public",
+                                "provider": "apiKey",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "public",
+                                "provider": "iam",
+                                "operations": [
+                                    "read"
+                                ]
+                            },
+                            {
+                                "allow": "private",
+                                "operations": [
+                                    "read"
+                                ]
                             },
                             {
                                 "groupClaim": "cognito:groups",
@@ -1580,6 +1735,6 @@ export const schema = {
         }
     },
     "nonModels": {},
-    "codegenVersion": "3.3.1",
-    "version": "1a708aaeb96765a702cb4e3a67b17b69"
+    "codegenVersion": "3.3.2",
+    "version": "9ad11c3e45745a62fba7fac87f76b328"
 };

@@ -55,13 +55,14 @@ import CardInput, { saveParams } from "../../../components/CardInput";
 
 import OpenPay from "../../../components/OpenPay";
 import useUser from "../../../Hooks/useUser";
-import { cardType } from "../../../../types/openpay";
+import { cardType, chargeType } from "../../../../types/openpay";
 import { DataStore } from "aws-amplify";
 import { TipoNotificacion } from "../../../models";
 import { Notificacion } from "../../../models";
 import { notificacionesRecordatorio } from "../Notifications/functions";
 import RadioButton from "../../../components/RadioButton";
 import { TipoPago } from "../../../models";
+import WebView from "react-native-webview";
 
 export default function ({
   route,
@@ -95,6 +96,8 @@ export default function ({
   const boletos = route.params.boletos.filter((e: any) => e.quantity);
 
   const [modalVisible, setModalVisible] = useState(false);
+
+  const [threeDsecure, setThreeDsecure] = useState("");
   const [sesionId, setSesionId] = useState<string>();
 
   const { setNewNotifications, usuario, setLoading } = useUser();
@@ -258,6 +261,36 @@ export default function ({
     setButtonLoading(true);
     setLoading(true);
     try {
+      // const { userPaymentID: customer_id } = await DataStore.query(
+      //   Usuario,
+      //   sub
+      // );
+
+      // if (tipoPago !== "EFECTIVO") {
+      //   const result = await fetchFromOpenpay<chargeType>({
+      //     path: "/customers/" + customer_id + "/charges",
+      //     type: "POST",
+      //     secretKey: "",
+      //     input: {
+      //       device_session_id: sesionId,
+      //       source_id: tarjetaID,
+      //       method: "card",
+      //       amount: total,
+      //       currency: "MXN",
+
+      //       use_3d_secure: true,
+      //       redirect_url: "https://www.partyusmx.com/",
+      //     },
+      //   });
+
+      //   setButtonLoading(false);
+      //   setLoading(false);
+
+      //   if (result?.payment_method.url) {
+      //     setThreeDsecure(result.payment_method.url);
+      //   }
+      //   return;
+      // } else {
       const result = (await fetchFromAPI("/createReserva", "POST", {
         tipoPago:
           tipoPago === "EFECTIVO"
@@ -460,10 +493,8 @@ export default function ({
             return r;
           })
           .catch((e) => {
-            Alert.alert(
-              "Error",
-              "Hubo un error guardando la tarjeta: " + e.error.description
-            );
+            console.log(e.error);
+            Alert.alert("Error", "Tarjeta no valida, hubo un error");
 
             setTipoPago(undefined);
 
@@ -937,7 +968,33 @@ export default function ({
       >
         <CardInput onAdd={handleAddCard} setModalVisible={setModalVisible} />
       </Modal>
-      <OpenPay onCreateSesionID={setSesionId} isProductionMode={false} />
+      {/* <Modal
+        animationType={"none"}
+        transparent={true}
+        visible={!!threeDsecure}
+        onRequestClose={() => {
+          setThreeDsecure("");
+        }}
+      >
+        <WebView
+          onNavigationStateChange={(e) => {
+            if (e.url.startsWith("https://www.partyusmx.com/")) {
+              setThreeDsecure("");
+              navigation.navigate("ExitoScreen", {
+                txtExito: "Reserva creada",
+                descripcion:
+                  "Se ha creado tu reserva con exito. Puedes consultar tu qr en Perfil - Mis reservas",
+                txtOnPress: "Ver boleto",
+              });
+            }
+          }}
+          source={{ uri: threeDsecure }}
+          style={{
+            flex: 1,
+          }}
+        />
+      </Modal> */}
+      <OpenPay onCreateSesionID={setSesionId} />
     </View>
   );
 }

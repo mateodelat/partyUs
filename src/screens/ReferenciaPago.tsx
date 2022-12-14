@@ -1,6 +1,5 @@
 import {
   Alert,
-  CameraRoll,
   Image,
   Modal,
   Pressable,
@@ -24,7 +23,7 @@ import { Entypo } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import Header from "../navigation/components/Header";
-import MediaLibrary, {
+import {
   requestPermissionsAsync,
   saveToLibraryAsync,
 } from "expo-media-library";
@@ -41,7 +40,7 @@ export default function ({
       amount: number;
       codebar: {
         uri: string;
-        reference: number;
+        number: number;
       };
       limitDate: number | Date;
       titulo: string;
@@ -49,6 +48,7 @@ export default function ({
   };
 }) {
   let { amount, codebar, titulo } = route.params;
+
   let { limitDate } = route.params;
   if (limitDate) {
     limitDate = new Date(limitDate);
@@ -129,7 +129,7 @@ export default function ({
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <ViewShot
-          ref={viewShowRef}
+          ref={viewShowRef as any}
           style={{ flex: 1, backgroundColor: "#ffff" }}
         >
           <View style={styles.innerContainer}>
@@ -210,7 +210,7 @@ export default function ({
                 source={{ uri: codebar.uri }}
                 style={styles.codebarImage}
               />
-              <Text style={styles.number}>{codebar.reference}</Text>
+              <Text style={styles.number}>{codebar.number}</Text>
               <TouchableOpacity
                 style={styles.buttonContainer}
                 onPress={handleSaveImage}
@@ -397,6 +397,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 14,
     textAlign: "center",
+    color: "#000",
   },
   amount: {
     fontWeight: "bold",

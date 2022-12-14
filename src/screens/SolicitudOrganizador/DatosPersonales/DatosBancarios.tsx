@@ -4,6 +4,7 @@ import HeaderSolicitud from "../components/HeaderSolicitud";
 import AnimatedInput from "../../../components/AnimatedInput";
 import Boton from "../../../components/Boton";
 import {
+  AsyncAlert,
   azulClaro,
   fetchFromAPI,
   formatCuentaCLABE,
@@ -18,10 +19,22 @@ export default function ({ route }: { route: any }) {
   const navigation = useNavigation<any>();
   const { usuario, setUsuario, setLoading } = useUser();
 
-  const { cuentaBancaria: c } = usuario;
+  const { cuentaBancaria: c, titularCuenta: tit } = usuario;
 
-  const [cuentaBancaria, setCuentaBancaria] = useState(c);
+  const [cuentaBancaria, setCuentaBancaria] = useState(
+    c ? formatCuentaCLABE(c) : ""
+  );
   const [clabeData, setClabeData] = useState(validateClabe(c));
+
+  const nombreCompleto =
+    route.params.nombre +
+    " " +
+    route.params.paterno +
+    " " +
+    route.params.materno;
+  const [titularCuenta, setTitularCuenta] = useState(
+    tit ? tit : nombreCompleto
+  );
 
   const [error, setError] = useState("");
 
@@ -34,6 +47,18 @@ export default function ({ route }: { route: any }) {
       setError(message);
       return;
     }
+    if (!titularCuenta) {
+      Alert.alert("Error", "Agrega el titular de la cuenta");
+      return;
+    }
+
+    if (
+      !(await AsyncAlert(
+        "Atencion",
+        "Asegurate de que tu cuenta CLABE sea valida, partyus no se hace responsable por fondos perdidos"
+      ))
+    )
+      return;
 
     setLoading(true);
     // Quitar espacios
@@ -44,6 +69,7 @@ export default function ({ route }: { route: any }) {
       ...usuario,
       ...route.params,
       cuentaBancaria: clabe,
+      titularCuenta: titularCuenta.toUpperCase(),
     });
 
     const input = {
@@ -102,6 +128,14 @@ export default function ({ route }: { route: any }) {
             setCuentaBancaria(formatCuentaCLABE(r));
             setClabeData(validateClabe(r));
           }}
+        />
+
+        <AnimatedInput
+          styleContent={{ marginTop: 20 }}
+          autoCapitalize={"characters"}
+          placeholder="Titular de la cuenta"
+          value={titularCuenta}
+          onChangeText={setTitularCuenta}
         />
 
         <Text style={styles.bankTxt}>{bankName + " " + bankCity}</Text>

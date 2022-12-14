@@ -429,40 +429,35 @@ export default function Agregar2({
             })}
           </View>
         </Pressable>
-        <View
-          style={{
-            marginTop: 40,
-          }}
-        />
-      </ScrollView>
 
-      <Pressable
-        onPress={() => {
-          if (aceptoTerminos) {
-            setAceptoTerminos(false);
-          } else {
-            setAceptoTerminos({
-              ip,
-              hora: new Date(),
-            });
-          }
-          vibrar(VibrationType.medium);
-        }}
-        style={styles.termsContainer}
-      >
-        <View
-          style={{
-            width: 30.5,
+        <Pressable
+          onPress={() => {
+            if (aceptoTerminos) {
+              setAceptoTerminos(false);
+            } else {
+              setAceptoTerminos({
+                ip,
+                hora: new Date(),
+              });
+            }
+            vibrar(VibrationType.medium);
           }}
-        />
-        <Text style={styles.textoTerminos}>
-          Acepto{" "}
-          <Text style={{ color: azulClaro }} onPress={abrirTerminos}>
-            terminos y condiciones
+          style={styles.termsContainer}
+        >
+          <View
+            style={{
+              width: 30.5,
+            }}
+          />
+          <Text style={styles.textoTerminos}>
+            Acepto{" "}
+            <Text style={{ color: azulClaro }} onPress={abrirTerminos}>
+              terminos y condiciones
+            </Text>
           </Text>
-        </Text>
-        <RadioButton checked={!!aceptoTerminos} />
-      </Pressable>
+          <RadioButton checked={!!aceptoTerminos} />
+        </Pressable>
+      </ScrollView>
 
       <Boton
         loading={loading}
@@ -529,6 +524,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 80,
     padding: 20,
+    marginBottom: 10,
   },
 
   textoTerminos: {

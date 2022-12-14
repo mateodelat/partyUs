@@ -5,6 +5,8 @@ import Header from "./components/Header";
 import Admin from "../screens/Perfil/Admin";
 import Usuarios from "../screens/Perfil/Admin/Usuarios";
 import EventosAdmin from "../screens/Perfil/Admin/EventosAdmin";
+import PagosAOrganizador from "../screens/Perfil/Admin/PagosAOrganizador";
+import EnvioDinero from "../screens/Perfil/Admin/EnvioDinero";
 
 // import Home from '../screens/Admin'
 // import SolicitudesPendientes from '../screens/Admin/SolicitudesPendientes';
@@ -26,6 +28,7 @@ export default function AdminStack() {
 
   return (
     <Stack.Navigator
+      // initialRouteName="PagosAOrganizador"
       screenOptions={{
         header: (params) => {
           const {
@@ -41,6 +44,14 @@ export default function AdminStack() {
       }}
     >
       <Stack.Screen
+        name={"Home"}
+        component={Admin}
+        options={{
+          title: "Administrar app",
+        }}
+      />
+
+      <Stack.Screen
         name={"Usuarios"}
         component={Usuarios}
         options={{
@@ -49,12 +60,21 @@ export default function AdminStack() {
       />
 
       <Stack.Screen
-        name={"Home"}
-        component={Admin}
+        name={"PagosAOrganizador"}
+        component={PagosAOrganizador}
         options={{
-          title: "Administrar app",
+          headerShown: false,
         }}
       />
+
+      <Stack.Screen
+        name={"EnvioDinero"}
+        component={EnvioDinero}
+        options={{
+          title: "Transferencia de dinero",
+        }}
+      />
+
       <Stack.Screen name={"EventosAdmin"} component={EventosAdmin} />
     </Stack.Navigator>
   );

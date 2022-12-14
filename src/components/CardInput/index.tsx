@@ -105,7 +105,7 @@ export default function ({
     setInnerModal(true);
 
     // setNumber({
-    //   value: "4242424242424242",
+    //   value: "370000000000002",
     //   validation: {
     //     card: {
     //       cvv: 3,
@@ -203,6 +203,27 @@ export default function ({
               <AntDesign name="Safety" size={24} color={azulClaro} />
             </View>
             <View style={styles.line} />
+
+            {/* <Image
+              source={{
+                uri: "https://documents.openpay.mx/wp-content/uploads/2021/03/Openpay_tarjetas-de-debito.png",
+              }}
+              style={{
+                width: "100%",
+                height: 100,
+              }}
+            />
+
+            <Image
+              source={{
+                uri: "https://documents.openpay.mx/wp-content/uploads/2022/02/openpay-color.png",
+              }}
+              style={{
+                width: "100%",
+                height: 100,
+                resizeMode: "contain",
+              }}
+            /> */}
 
             {/* Numero de tarjeta */}
             <InputOnFocusV2

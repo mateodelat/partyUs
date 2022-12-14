@@ -22,6 +22,7 @@ export default function ({
   textStyle,
   style,
   RightIcon,
+  LeftIcon,
   showHelp,
 }: {
   title?: string | null;
@@ -31,6 +32,7 @@ export default function ({
   showHelp?: boolean;
   style?: ViewStyle;
   RightIcon?: React.FunctionComponent;
+  LeftIcon?: React.FunctionComponent;
 }) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation() as any;
@@ -50,14 +52,18 @@ export default function ({
       }}
     >
       <View style={{ ...styles.backContainer }}>
-        <TouchableOpacity
-          style={styles.backIcon}
-          onPress={() => {
-            handleBack ? handleBack() : navigation?.pop();
-          }}
-        >
-          <AntDesign name="left" size={30} color="black" />
-        </TouchableOpacity>
+        {!LeftIcon ? (
+          <TouchableOpacity
+            style={styles.backIcon}
+            onPress={() => {
+              handleBack ? handleBack() : navigation?.pop();
+            }}
+          >
+            <AntDesign name="left" size={30} color="black" />
+          </TouchableOpacity>
+        ) : (
+          <LeftIcon />
+        )}
         <Text
           style={{
             ...styles.backText,

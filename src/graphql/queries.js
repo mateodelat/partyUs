@@ -12,6 +12,7 @@ export const getUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
+      titularCuenta
       receiveNewReservations
       imagenFondo
       direccion
@@ -67,6 +68,7 @@ export const getUsuario = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -116,6 +118,7 @@ export const listUsuarios = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        titularCuenta
         receiveNewReservations
         imagenFondo
         direccion
@@ -174,6 +177,7 @@ export const syncUsuarios = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        titularCuenta
         receiveNewReservations
         imagenFondo
         direccion
@@ -240,6 +244,7 @@ export const getEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        titularCuenta
         receiveNewReservations
         imagenFondo
         direccion
@@ -299,6 +304,7 @@ export const getEvento = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -367,6 +373,7 @@ export const listEventos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
           receiveNewReservations
           imagenFondo
           direccion
@@ -450,6 +457,7 @@ export const syncEventos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
           receiveNewReservations
           imagenFondo
           direccion
@@ -696,6 +704,7 @@ export const getCupon = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -791,6 +800,119 @@ export const syncCupons = /* GraphQL */ `
     }
   }
 `;
+export const getRetiro = /* GraphQL */ `
+  query GetRetiro($id: ID!) {
+    getRetiro(id: $id) {
+      id
+      organizadorID
+      amount
+      adminID
+      mensaje
+      Reservas {
+        items {
+          id
+          total
+          comision
+          pagadoAlOrganizador
+          cantidad
+          pagado
+          paymentTime
+          transaccionAOrganizadorID
+          tipoPago
+          chargeID
+          transactionID
+          feeID
+          cashBarcode
+          cashReference
+          ingreso
+          horaIngreso
+          cancelado
+          canceledAt
+          cancelReason
+          fechaExpiracionUTC
+          eventoID
+          usuarioID
+          cuponID
+          organizadorID
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
+        nextToken
+        startedAt
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+    }
+  }
+`;
+export const listRetiros = /* GraphQL */ `
+  query ListRetiros(
+    $filter: ModelRetiroFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listRetiros(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        organizadorID
+        amount
+        adminID
+        mensaje
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
+export const syncRetiros = /* GraphQL */ `
+  query SyncRetiros(
+    $filter: ModelRetiroFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncRetiros(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        organizadorID
+        amount
+        adminID
+        mensaje
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
+      nextToken
+      startedAt
+    }
+  }
+`;
 export const getReserva = /* GraphQL */ `
   query GetReserva($id: ID!) {
     getReserva(id: $id) {
@@ -801,6 +923,23 @@ export const getReserva = /* GraphQL */ `
       cantidad
       pagado
       paymentTime
+      transaccionAOrganizadorID
+      transaccionAOrganizador {
+        id
+        organizadorID
+        amount
+        adminID
+        mensaje
+        Reservas {
+          nextToken
+          startedAt
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+      }
       tipoPago
       chargeID
       transactionID
@@ -842,6 +981,7 @@ export const getReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
           receiveNewReservations
           imagenFondo
           direccion
@@ -889,6 +1029,7 @@ export const getReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
+        titularCuenta
         receiveNewReservations
         imagenFondo
         direccion
@@ -976,6 +1117,19 @@ export const listReservas = /* GraphQL */ `
         cantidad
         pagado
         paymentTime
+        transaccionAOrganizadorID
+        transaccionAOrganizador {
+          id
+          organizadorID
+          amount
+          adminID
+          mensaje
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         tipoPago
         chargeID
         transactionID
@@ -1024,6 +1178,7 @@ export const listReservas = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
           receiveNewReservations
           imagenFondo
           direccion
@@ -1097,6 +1252,19 @@ export const syncReservas = /* GraphQL */ `
         cantidad
         pagado
         paymentTime
+        transaccionAOrganizadorID
+        transaccionAOrganizador {
+          id
+          organizadorID
+          amount
+          adminID
+          mensaje
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         tipoPago
         chargeID
         transactionID
@@ -1145,6 +1313,7 @@ export const syncReservas = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
           receiveNewReservations
           imagenFondo
           direccion
@@ -1211,6 +1380,19 @@ export const getReservasBoletos = /* GraphQL */ `
         cantidad
         pagado
         paymentTime
+        transaccionAOrganizadorID
+        transaccionAOrganizador {
+          id
+          organizadorID
+          amount
+          adminID
+          mensaje
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+        }
         tipoPago
         chargeID
         transactionID
@@ -1259,6 +1441,7 @@ export const getReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
+          titularCuenta
           receiveNewReservations
           imagenFondo
           direccion
@@ -1353,6 +1536,7 @@ export const listReservasBoletos = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID
@@ -1427,6 +1611,7 @@ export const syncReservasBoletos = /* GraphQL */ `
           cantidad
           pagado
           paymentTime
+          transaccionAOrganizadorID
           tipoPago
           chargeID
           transactionID

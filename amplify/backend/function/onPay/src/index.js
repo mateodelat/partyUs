@@ -17,6 +17,7 @@ const { createNotificacionReturns, reservaReturns } = require('/opt/graphqlRetur
 const Openpay = require("openpay")
 var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
 const axios = require('axios');
+openpay.setProductionReady(true);
 
 
 async function graphqlRequest({ query, variables }) {

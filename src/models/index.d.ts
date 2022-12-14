@@ -72,6 +72,10 @@ type ReservaMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
+type RetiroMetaData = {
+  readOnlyFields: 'createdAt' | 'updatedAt';
+}
+
 type CuponMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
@@ -89,6 +93,7 @@ type EagerUsuario = {
   readonly email?: string | null;
   readonly foto?: string | null;
   readonly cuentaBancaria?: string | null;
+  readonly titularCuenta?: string | null;
   readonly receiveNewReservations?: boolean | null;
   readonly imagenFondo?: string | null;
   readonly direccion?: string | null;
@@ -121,6 +126,7 @@ type LazyUsuario = {
   readonly email?: string | null;
   readonly foto?: string | null;
   readonly cuentaBancaria?: string | null;
+  readonly titularCuenta?: string | null;
   readonly receiveNewReservations?: boolean | null;
   readonly imagenFondo?: string | null;
   readonly direccion?: string | null;
@@ -276,6 +282,8 @@ type EagerReserva = {
   readonly cantidad?: number | null;
   readonly pagado?: boolean | null;
   readonly paymentTime?: string | null;
+  readonly transaccionAOrganizadorID?: string | null;
+  readonly transaccionAOrganizador?: Retiro | null;
   readonly tipoPago?: TipoPago | keyof typeof TipoPago | null;
   readonly chargeID?: string | null;
   readonly transactionID?: string | null;
@@ -308,6 +316,8 @@ type LazyReserva = {
   readonly cantidad?: number | null;
   readonly pagado?: boolean | null;
   readonly paymentTime?: string | null;
+  readonly transaccionAOrganizadorID?: string | null;
+  readonly transaccionAOrganizador: AsyncItem<Retiro | undefined>;
   readonly tipoPago?: TipoPago | keyof typeof TipoPago | null;
   readonly chargeID?: string | null;
   readonly transactionID?: string | null;
@@ -336,6 +346,34 @@ export declare type Reserva = LazyLoading extends LazyLoadingDisabled ? EagerRes
 
 export declare const Reserva: (new (init: ModelInit<Reserva, ReservaMetaData>) => Reserva) & {
   copyOf(source: Reserva, mutator: (draft: MutableModel<Reserva, ReservaMetaData>) => MutableModel<Reserva, ReservaMetaData> | void): Reserva;
+}
+
+type EagerRetiro = {
+  readonly id: string;
+  readonly organizadorID: string;
+  readonly amount: number;
+  readonly adminID: string;
+  readonly mensaje?: string | null;
+  readonly Reservas?: (Reserva | null)[] | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyRetiro = {
+  readonly id: string;
+  readonly organizadorID: string;
+  readonly amount: number;
+  readonly adminID: string;
+  readonly mensaje?: string | null;
+  readonly Reservas: AsyncCollection<Reserva>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Retiro = LazyLoading extends LazyLoadingDisabled ? EagerRetiro : LazyRetiro
+
+export declare const Retiro: (new (init: ModelInit<Retiro, RetiroMetaData>) => Retiro) & {
+  copyOf(source: Retiro, mutator: (draft: MutableModel<Retiro, RetiroMetaData>) => MutableModel<Retiro, RetiroMetaData> | void): Retiro;
 }
 
 type EagerCupon = {

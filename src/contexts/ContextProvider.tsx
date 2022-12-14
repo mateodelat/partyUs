@@ -18,6 +18,7 @@ import {
   rojoClaro,
   shadowBaja,
   shadowMedia,
+  timer,
 } from "../../constants";
 
 import * as Notifications from "expo-notifications";
@@ -145,20 +146,25 @@ export default function ({
           await resetDatastore();
 
           // Pedir las notificaciones nuevas del usuario tras 3 segundos para esperar a que carguen los modelos
-          setTimeout(() => {
-            queryNewNotifications().then(setNewNotifications);
-          }, 3000);
-          setLoading(false);
           if (!username) {
             throw new Error(
               "No hay nombre de usuario cuando inicia sesion en context provider"
             );
           }
+          // Si el usuario viene de registrarse recientemente mandar la peticion a API graphql y setearlo a falso
+          if (registrado) {
+            setRegistrado(false);
+          }
+          setLoading(false);
 
+          await timer(800);
           fetchUsuario(username, registrado);
+          queryNewNotifications().then(setNewNotifications);
+
           break;
 
         case "signOut":
+          console.log("User signed out");
           setLoading(true);
           // Borrar usuario default
           setUsuario(defultUSR);

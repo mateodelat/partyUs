@@ -25,6 +25,9 @@ export default function ({
       nombre: string;
       materno: string;
       paterno: string;
+
+      phoneCode: string;
+      phoneNumber: string;
     };
   };
 }) {
@@ -45,7 +48,7 @@ export default function ({
 
   const hours = new Date().getTimezoneOffset() * 60 * 1000;
 
-  const maxDate = new Date(new Date().getTime() - msInDay * 18 * 365);
+  const maxDate = new Date(new Date().getTime());
 
   const dateBorn = fechaNacimiento
     ? new Date(fechaNacimiento.getTime() + hours)
@@ -63,13 +66,17 @@ export default function ({
 
     // Si el usuario tiene mas de 18 años pasa
     if (hace18Años.getTime() >= fechaNacimiento.getTime()) {
-      const { materno, paterno, nombre } = route.params;
+      const { materno, paterno, nombre, phoneCode, phoneNumber } = route.params;
 
       navigation.navigate("Step3", {
         ...usuario,
         nombre,
         paterno,
         materno,
+
+        phoneCode,
+        phoneNumber,
+
         fechaNacimiento: fechaNacimiento.toISOString(),
       });
     } else {

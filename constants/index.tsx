@@ -7,9 +7,6 @@ import { Alert, Linking } from "react-native";
 import { API, Auth, DataStore, Storage } from "aws-amplify";
 import { TipoNotificacion, Usuario } from "../src/models";
 
-const MERCHANT_ID = "mcwffetlymvvcqthcdxu";
-const PUBLIC_KEY = "pk_69d96c0ed3bd4ea8a6956d8e51867876";
-
 import base64 from "react-native-base64";
 import awsmobile from "../src/aws-exports";
 import { errorOpenPay } from "../types/openpay";
@@ -72,10 +69,14 @@ export async function sendAdminNotification({
   organizadorID,
   eventoID,
   reservaID,
+
+  onlyPush,
 }: {
   titulo: string;
   descripcion: string;
   sender: Usuario;
+
+  onlyPush?: boolean;
 
   organizadorID?: string;
   eventoID?: string;
@@ -93,21 +94,23 @@ export async function sendAdminNotification({
   admins.map((usr) => {
     const { notificationToken, owner, id } = usr;
 
-    DataStore.save(
-      new Notificacion({
-        tipo: TipoNotificacion.ADMIN,
+    if (!onlyPush) {
+      DataStore.save(
+        new Notificacion({
+          tipo: TipoNotificacion.ADMIN,
 
-        titulo,
-        descripcion,
+          titulo,
+          descripcion,
 
-        showAt: new Date().toISOString(),
+          showAt: new Date().toISOString(),
 
-        usuarioID: id,
-        eventoID: eventoID,
-        organizadorID: organizadorID,
-        reservaID: reservaID,
-      })
-    );
+          usuarioID: id,
+          eventoID: eventoID,
+          organizadorID: organizadorID,
+          reservaID: reservaID,
+        })
+      );
+    }
 
     sendPushNotification({
       title: titulo,
@@ -517,7 +520,7 @@ export async function fetchFromOpenpay<T>({
   };
 
   const url = production
-    ? "https://sandbox-api.openpay.mx/v1/"
+    ? "https://api.openpay.mx/v1/"
     : "https://sandbox-api.openpay.mx/v1/";
 
   return fetch(url + MERCHANT_ID + path, requestOptions).then(
@@ -711,6 +714,15 @@ export const shadowMedia = {
 
   elevation: 4,
 };
+
+export const produccion = false;
+
+export const MERCHANT_ID = produccion
+  ? "m1qt7k7zcarncm0jkvrp"
+  : "mcwffetlymvvcqthcdxu";
+const PUBLIC_KEY = produccion
+  ? "pk_dced8b24006d4a74bd3efd5158f58d15"
+  : "pk_69d96c0ed3bd4ea8a6956d8e51867876";
 
 export const shadowBaja = {
   shadowColor: "#000",

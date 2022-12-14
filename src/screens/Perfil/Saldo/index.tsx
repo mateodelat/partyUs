@@ -11,7 +11,13 @@ import {
   ActivityIndicator,
   Pressable,
 } from "react-native";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, {
+  Children,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import {
   azulClaro,
   azulFondo,
@@ -19,6 +25,7 @@ import {
   colorFondo,
   fetchFromAPI,
   fetchFromOpenpay,
+  formatCuentaCLABE,
   formatDay,
   formatMoney,
   getCardIcon,
@@ -27,6 +34,7 @@ import {
   msInMinute,
   rojo,
   rojoClaro,
+  sendAdminNotification,
   shadowBaja,
   shadowMedia,
   shadowMuyBaja,
@@ -48,9 +56,17 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
+import { clabe } from "../../../../constants/ClabeValidator";
+
 import Logo from "../../../components/Logo";
 import CardInput, { saveParams } from "../../../components/CardInput";
 import OpenPay from "../../../components/OpenPay";
+import { logger } from "react-native-logs";
+import ClabeInput, {
+  saveParamsClabeInput,
+} from "../../../components/ClabeInput";
+import { DataStore } from "aws-amplify";
+import { Usuario } from "../../../models";
 
 type resource_type =
   | "charges"
@@ -80,6 +96,7 @@ export default function ({ navigation, route }) {
 
   const [refreshingTransfers, setRefreshingTransfers] = useState(true);
   const [limitTransfersReached, setLimitTransfersReached] = useState(true);
+  const [transfersOffset, setTransfersOffset] = useState(0);
 
   const [sesionId, setSesionId] = useState("");
 
@@ -93,20 +110,10 @@ export default function ({ navigation, route }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [addingCard, setAddingCard] = useState(false);
 
-  // Cuenta del usuario si es organizador
-  const [cuentasBancarias, setCuentasBancarias] = useState<bankAccount_type[]>(
-    []
-  );
-
   const LIMIT = 10;
 
   useEffect(() => {
     if (organizador) {
-      // Pedir cuentas bancarias del cliente
-      fetchData({
-        type: "bankaccount",
-      });
-
       // Si es organizador de pide inicialmente las transacciones
       fetchData({
         offset: 0,
@@ -128,6 +135,14 @@ export default function ({ navigation, route }) {
     fetchData({
       type: "client",
     });
+
+    // Mandar alerta si no hay cuenta bancaria
+    if (!usuario.cuentaBancaria) {
+      Alert.alert(
+        "Atencion",
+        "Ingresa tu cuenta bancaria para retirar tu saldo"
+      );
+    }
   }, []);
 
   async function fetchData({
@@ -184,19 +199,34 @@ export default function ({ navigation, route }) {
               } else {
                 setLimitTransfersReached(false);
               }
+              if (addToData) {
+                setTransfersOffset([...transfers, ...r].length);
+              } else {
+                setTransfersOffset(r.length);
+              }
 
               // Filtrar por transacciones que no sean de cobro en la app o tipo cancelada
               r = r.filter((e) => {
                 const des = e.description;
 
-                const transferLabelIDX = des.search("transfer>>>");
+                const transferLabelIDX = des.search(/transfer>>>|retiro>>>/);
 
-                let tipo: "cash" | "card" | "cancel" = des.slice(
+                let tipo: "cash" | "card" | "cancel" | "retiro" = des.slice(
                   0,
                   transferLabelIDX
                 ) as any;
 
-                if (tipo !== "cancel" && e.operation_type === "out") {
+                // Si es retiro
+                if (des.search(/retiro>>>/) > 0) {
+                  tipo = "retiro";
+                }
+
+                // Si es una transferencia entre clientes y no es retiro eliminar
+                if (
+                  tipo !== "cancel" &&
+                  e.operation_type === "out" &&
+                  des.search("retiro") < 0
+                ) {
                   console.log(
                     "Se elimino una transaccion de movimiento de dinero por cargo"
                   );
@@ -206,7 +236,11 @@ export default function ({ navigation, route }) {
 
               // Si hay que agregar a la anterior data (pagination)
               if (addToData) {
-                setTransfers((prev) => [...prev, ...r]);
+                setTransfers((prev) => {
+                  const arr = [...prev, ...r];
+
+                  return arr;
+                });
               } else {
                 setTransfers(r);
               }
@@ -245,26 +279,6 @@ export default function ({ navigation, route }) {
             }
           });
 
-        case "bankaccount":
-          return await fetchFromAPI<bankAccount_type[]>(
-            "/payments/bankaccount",
-            "GET",
-            undefined,
-            {
-              customer_id: usuario.userPaymentID,
-            }
-          ).then(({ body }) => {
-            if (!!body?.length) {
-              setCuentasBancarias(body);
-              return body;
-            } else {
-              Alert.alert(
-                "Error",
-                "Ocurrio un error, no se encuentra tarjeta bancaria asociada a tu cuenta, contactanos para recibir tu dinero."
-              );
-            }
-          });
-
         default:
           Alert.alert("Error", "No se recibio tipo para pedir los datos");
           return null;
@@ -297,11 +311,16 @@ export default function ({ navigation, route }) {
   }
 
   async function onNextPage(type: "charges" | "transactions") {
-    if (limitChargesReached) return;
+    if (
+      (limitChargesReached && type === "charges") ||
+      (limitTransfersReached && type === "transactions")
+    ) {
+      return;
+    }
 
     await fetchData({
       type,
-      offset: type === "charges" ? charges?.length : transfers?.length,
+      offset: type === "charges" ? charges?.length : transfersOffset,
       addToData: true,
     });
   }
@@ -460,10 +479,28 @@ export default function ({ navigation, route }) {
     });
   }
 
+  // Estado de la app para ver si ya se mando la notificacion
+  let adminRememberSent = false;
+
   function handleRetirar() {
+    // Mandar notificaciones a los administradores cada que alguien quiere retirar
+
+    // Mandar notificaciones solo si es mayor 1000 la cantidad en la cuenta que se debe
+    if (customer?.balance > 1000 && !adminRememberSent) {
+      adminRememberSent = true;
+
+      sendAdminNotification({
+        titulo: "Atencion",
+        descripcion: " quiere retirar sus fondos",
+        sender: usuario,
+        organizadorID: usuario.id,
+        onlyPush: true,
+      });
+    }
+
     Alert.alert(
-      "Atencion",
-      "Los pagos de los eventos se envian al concluir el mismo, cualquier problema contacta con el soporte"
+      "Retiro de dinero",
+      "Gracias por utilizar partyus, en seguida un asesor se  encargara de enviarte tus fondos. Cualquier problema contacta con soporte"
     );
   }
 
@@ -481,7 +518,7 @@ export default function ({ navigation, route }) {
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={() => (
             <HeaderComponent
-              cuentasBancarias={cuentasBancarias}
+              setAddingCard={setAddingCard}
               handleRetirar={handleRetirar}
               handleRemoveCard={handleRemoveCard}
               tarjetasGuardadas={tarjetasGuardadas}
@@ -614,7 +651,7 @@ export default function ({ navigation, route }) {
           keyExtractor={(item) => item.id}
           ListHeaderComponent={() => (
             <HeaderComponent
-              cuentasBancarias={cuentasBancarias}
+              setAddingCard={setAddingCard}
               handleRetirar={handleRetirar}
               handleRemoveCard={handleRemoveCard}
               tarjetasGuardadas={tarjetasGuardadas}
@@ -648,6 +685,7 @@ export default function ({ navigation, route }) {
           }
           renderItem={({ item, index }) => {
             // Seccion para ver que fecha poner //
+
             const prev = transfers[index - 1];
             let itemDate = new Date(
               new Date(item.creation_date).getTime() +
@@ -686,10 +724,14 @@ export default function ({ navigation, route }) {
             const transferLabelIDX = des.search("transfer>>>");
             const descriptionLabelIDX = des.search("><");
 
-            let tipo: "cash" | "card" | "cancel" = des.slice(
+            let tipo: "cash" | "card" | "cancel" | "retiro" = des.slice(
               0,
               transferLabelIDX
             ) as any;
+
+            if (des.search("retiro>>>") > 0) {
+              tipo = "retiro";
+            }
 
             const reservaID = des.slice(
               transferLabelIDX + 11,
@@ -752,7 +794,7 @@ export default function ({ navigation, route }) {
           setModalVisible={setModalVisible}
         />
       </Modal>
-      <OpenPay onCreateSesionID={setSesionId} isProductionMode={false} />
+      <OpenPay onCreateSesionID={setSesionId} />
     </View>
   );
 }
@@ -764,8 +806,8 @@ function HeaderComponent({
   selector,
 
   addingCard,
+  setAddingCard,
   tarjetasGuardadas,
-  cuentasBancarias,
 
   handleRemoveCard,
   handleRetirar,
@@ -775,17 +817,60 @@ function HeaderComponent({
   setSelected: Dispatch<SetStateAction<"charges" | "transfers">>;
   setModalVisible: Dispatch<SetStateAction<boolean>>;
   addingCard: boolean;
+  setAddingCard: Dispatch<SetStateAction<boolean>>;
 
   selector: "charges" | "transfers";
 
   tarjetasGuardadas: cardType[];
-  cuentasBancarias: bankAccount_type[];
   handleRemoveCard: (idx: number) => void;
   handleRetirar: () => void;
 }) {
-  const {
-    usuario: { organizador },
-  } = useUser();
+  const { usuario, setUsuario } = useUser();
+
+  const [modalBank, setModalBank] = useState(false);
+
+  const { organizador } = usuario;
+
+  const log = logger.createLogger();
+
+  let cuentaBancaria;
+  if (usuario.cuentaBancaria) {
+    cuentaBancaria = clabe.validate(usuario.cuentaBancaria);
+  }
+
+  // Funcion para detectar si se quiere agreagar tarjeta o cuenta bancaria
+  function handlePressAdd() {
+    if (!organizador) {
+      setModalVisible(true);
+    } else {
+      setModalBank(true);
+    }
+  }
+
+  async function handleAddAccount(r: saveParamsClabeInput) {
+    // Actualizar el usuario local y subir a datastore la cuenta clabe
+    try {
+      setAddingCard(true);
+      const act = await DataStore.query(Usuario, usuario.id);
+      await DataStore.save(
+        Usuario.copyOf(act, (ne) => {
+          ne.cuentaBancaria = r.clabe;
+          ne.titularCuenta = r.titular;
+        })
+      );
+
+      setUsuario({
+        ...usuario,
+        cuentaBancaria: r.clabe,
+        titularCuenta: r.titular,
+      });
+    } catch (error) {
+      Alert.alert("Error", "Hubo un error guardando la cuenta CLABE");
+      log.error(error);
+    } finally {
+      setAddingCard(false);
+    }
+  }
 
   return (
     <View>
@@ -811,43 +896,43 @@ function HeaderComponent({
 
       <View style={styles.tarjetasContainer}>
         {/* Headder de tarjetas guardadas */}
-        <View
+
+        {/* Presionar para agregar cuenta bancaria/tarjeta */}
+
+        <TouchableOpacity
+          disabled={addingCard || cuentaBancaria}
+          onPress={handlePressAdd}
           style={{
             flexDirection: "row",
-            margin: 20,
             marginTop: 0,
             marginHorizontal: 0,
-            marginBottom: 30,
             alignItems: "center",
           }}
         >
           {/* Texto de info */}
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, paddingVertical: 10 }}>
             <Text style={styles.title}>
               {organizador ? "Cuenta bancaria" : "Tarjetas guardadas"}
             </Text>
             <Text style={{ ...styles.detailsAmount, margin: 0 }}>
               {organizador
-                ? "Cuenta bancaria a enviar el dinero"
+                ? "Cuenta a enviar el dinero"
                 : "Lista de tarjetas que guardaste"}
             </Text>
           </View>
 
           {/* Agregar nueva tarjeta */}
-          {!organizador && (
-            <TouchableOpacity
-              disabled={addingCard}
-              onPress={() => setModalVisible(true)}
-              style={styles.addContainer}
-            >
-              {addingCard ? (
-                <ActivityIndicator size={"small"} color={"black"} />
-              ) : (
-                <Entypo name="plus" size={30} color={"black"} />
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
+          {!organizador ||
+            (!cuentaBancaria && (
+              <View style={styles.addContainer}>
+                {addingCard ? (
+                  <ActivityIndicator size={"small"} color={"black"} />
+                ) : (
+                  <Entypo name="plus" size={30} color={"black"} />
+                )}
+              </View>
+            ))}
+        </TouchableOpacity>
 
         {/* Lista de tarjetas */}
         {!organizador
@@ -892,26 +977,35 @@ function HeaderComponent({
                 </View>
               );
             })
-          : cuentasBancarias?.map((cuenta, idx) => {
-              const { bank_name, clabe, holder_name, creation_date } = cuenta;
+          : // Mostrar la cuenta bancaria si existe
+            cuentaBancaria && (
+              <TouchableOpacity
+                onPress={handlePressAdd}
+                style={{ ...styles.cardItemContainer, marginTop: 20 }}
+              >
+                <MaterialCommunityIcons name="bank" size={30} color="black" />
 
-              return (
-                <View style={styles.cardItemContainer} key={idx}>
-                  <MaterialCommunityIcons name="bank" size={24} color="black" />
-
-                  {/* Datos de tarjeta */}
-                  <View style={{ marginLeft: 20 }}>
-                    {/* Nombre del banco y numeros de tarjeta */}
-                    <Text style={styles.cardInfoTxt}>
-                      {mayusFirstLetter(bank_name)} {clabe?.toLowerCase()}
-                    </Text>
-                    <Text style={{ ...styles.detailsAmount, marginTop: 4 }}>
-                      Agregada el {formatDay(creation_date)}
-                    </Text>
-                  </View>
+                {/* Datos de tarjeta */}
+                <View style={{ marginLeft: 20 }}>
+                  {/* Nombre del banco y numeros de tarjeta */}
+                  <Text style={{ ...styles.cardInfoTxt }}>
+                    {mayusFirstLetter(
+                      clabe.validate(usuario.cuentaBancaria).bank
+                    )}
+                  </Text>
+                  <Text
+                    style={{
+                      color: "#888",
+                      paddingVertical: 2,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {usuario.titularCuenta}
+                  </Text>
+                  <Text>{formatCuentaCLABE(usuario.cuentaBancaria)}</Text>
                 </View>
-              );
-            })}
+              </TouchableOpacity>
+            )}
       </View>
 
       {/* Botones selectores de tipo de historial */}
@@ -949,13 +1043,35 @@ function HeaderComponent({
           </Text>
         </Pressable>
       </View>
+
+      <Modal
+        animationType={"none"}
+        transparent={true}
+        visible={modalBank}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <ClabeInput
+          prevValues={{
+            clabe: usuario.cuentaBancaria,
+            titular: usuario.titularCuenta,
+          }}
+          onAdd={handleAddAccount}
+          setModalVisible={setModalBank}
+        />
+      </Modal>
     </View>
   );
 }
 
 const iconWidth = 45;
 
-function IconTransfers({ tipo }: { tipo: "cash" | "card" | "cancel" }) {
+function IconTransfers({
+  tipo,
+}: {
+  tipo: "cash" | "card" | "cancel" | "retiro";
+}) {
   switch (tipo) {
     case "cancel":
       return (
@@ -981,8 +1097,26 @@ function IconTransfers({ tipo }: { tipo: "cash" | "card" | "cancel" }) {
           />
         </View>
       );
+    case "retiro":
+      return (
+        <View style={styles.iconContainer}>
+          <FontAwesome5 name="hand-holding-usd" size={20} color={"#000"} />
+        </View>
+      );
     default:
-      return <Logo size={45} />;
+      return (
+        <View
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            width: iconWidth,
+
+            marginRight: 10,
+          }}
+        >
+          <Logo size={30} />
+        </View>
+      );
   }
 }
 

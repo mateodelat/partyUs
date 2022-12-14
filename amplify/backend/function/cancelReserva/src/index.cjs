@@ -20,8 +20,11 @@ const Openpay = require("openpay")
 // Actualizar url de produccion a fee refund
 var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
 const axios = require('axios');
-const url = "https://sandbox-api.openpay.mx/v1/"
-// : "https://sandbox-api.openpay.mx/v1/";
+const url =
+    // "https://sandbox-api.openpay.mx/v1/"
+    "https://api.openpay.mx/v1/";
+openpay.setProductionReady(true);
+
 
 
 async function graphqlRequest({ query, variables }) {

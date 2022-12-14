@@ -65,6 +65,7 @@ import Loading from "../../../components/Loading";
 import useUser from "../../../Hooks/useUser";
 import { Notificacion } from "../../../models";
 import { TipoNotificacion } from "../../../models";
+import ReservaItem from "./ReservaItem";
 
 type ReservaType = Reserva & {
   status?: reservaStatus;
@@ -409,8 +410,8 @@ export default function ({
   async function handleContinar() {
     // Si ya paso el evento mandar alerta
     if (evento.fechaFinal < new Date().getTime()) {
-      Alert.alert("Error", "El evento ya ha pasado");
-      return;
+      // Alert.alert("Error", "El evento ya ha pasado");
+      // return;
     }
 
     if (refreshing) {
@@ -862,73 +863,7 @@ export default function ({
                   <Text>No hay reservas</Text>
                 ) : (
                   reservas.map((res, idx) => {
-                    return (
-                      <View key={idx} style={styles.reservaContainer}>
-                        {/* Foto de perfil del usuario */}
-                        <View
-                          style={{
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: 40,
-                            height: 40,
-                          }}
-                        >
-                          <ActivityIndicator
-                            style={{ position: "absolute" }}
-                            size={"small"}
-                            color={"#000"}
-                          />
-
-                          <Image
-                            source={{ uri: res.usuario.foto }}
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                            }}
-                          />
-                        </View>
-
-                        {/* Detalles del evento */}
-                        <View style={{ flex: 1 }}>
-                          {/* Nickname */}
-                          <Text style={{ fontWeight: "bold" }}>
-                            @{res.usuario.nickname}
-                          </Text>
-
-                          {/* Fecha de ultima actualizacion de la reserva */}
-                          <Text style={{ ...styles.lightTxt }}>
-                            {formatDateShort(res.updatedAt) +
-                              " a las " +
-                              formatAMPM(res.updatedAt)}
-                          </Text>
-                          <Text style={styles.statusReserva}>{res.status}</Text>
-                        </View>
-
-                        {/* Precio y personas */}
-                        <View
-                          style={{
-                            paddingVertical: 5,
-                          }}
-                        >
-                          <Text style={{ fontWeight: "bold", flex: 1 }}>
-                            {formatMoney(res.pagadoAlOrganizador)}
-                          </Text>
-                          <Text
-                            style={{
-                              textAlign: "right",
-                            }}
-                          >
-                            <Ionicons
-                              style={{ marginRight: 5 }}
-                              name="person"
-                              size={14}
-                              color="black"
-                            />
-                            {" x" + res.cantidad}
-                          </Text>
-                        </View>
-                      </View>
-                    );
+                    return <ReservaItem key={idx} reserva={res} />;
                   })
                 )}
               </View>
@@ -1011,20 +946,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
-  imagenPerfilReserva: {
-    width: "100%",
-    height: "100%",
-
-    borderRadius: 30,
-  },
-
-  statusReserva: {
-    color: rojoClaro + "99",
-    fontSize: 12,
-    fontWeight: "bold",
-    marginTop: 3,
-  },
-
   comodities: {
     backgroundColor: azulFondo,
     padding: 10,
@@ -1062,17 +983,6 @@ const styles = StyleSheet.create({
     color: rojoClaro,
   },
 
-  reservaContainer: {
-    padding: 10,
-    backgroundColor: "#fff",
-    ...shadowMuyBaja,
-
-    flexDirection: "row",
-
-    alignItems: "center",
-    marginBottom: 10,
-  },
-
   innerContainer: {
     backgroundColor: "#fff",
     width: "100%",
@@ -1104,10 +1014,6 @@ const styles = StyleSheet.create({
   nicknameTxt: {
     fontSize: 16,
     marginTop: 2,
-    color: "#0005",
-  },
-
-  lightTxt: {
     color: "#0005",
   },
 

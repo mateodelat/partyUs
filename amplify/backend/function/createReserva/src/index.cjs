@@ -19,7 +19,7 @@ const { updateBoletoReturns, createReservasBoletosReturns, updateEventoReturns, 
 
 const Openpay = require("openpay")
 var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
-
+openpay.setProductionReady(true);
 
 
 const comisionApp = 0.15;

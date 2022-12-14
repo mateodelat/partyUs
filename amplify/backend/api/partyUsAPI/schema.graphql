@@ -21,6 +21,7 @@ type Usuario
   foto: String
 
   cuentaBancaria: String
+  titularCuenta: String
 
   receiveNewReservations: Boolean
 
@@ -207,6 +208,35 @@ type Cupon
   Reservas: [Reserva!] @hasMany(indexName: "byCupon", fields: ["id"])
 }
 
+type Retiro
+  @model
+  @auth(
+    rules: [
+      # Todos los demas pueden ver el retiro de fondos del organizador
+      { allow: public, provider: apiKey, operations: [read] }
+      { allow: public, provider: iam, operations: [read] }
+      # Autenticado
+      { allow: private, operations: [read] }
+      #
+      #
+      # Solo los admins pueden editarlo y modificarlo
+      { allow: groups, groups: ["Admin"] }
+    ]
+  ) {
+  id: ID
+
+  organizadorID: String!
+  amount: Float!
+  adminID: String!
+
+  feeID: String
+  transferID: String
+
+  mensaje: String
+
+  Reservas: [Reserva] @hasMany(indexName: "byRetiro", fields: ["id"])
+}
+
 type Reserva
   @model
   @auth(
@@ -234,6 +264,9 @@ type Reserva
 
   pagado: Boolean
   paymentTime: AWSDateTime
+
+  transaccionAOrganizadorID: ID @index(name: "byRetiro")
+  transaccionAOrganizador: Retiro @belongsTo
 
   tipoPago: tipoPago
 
