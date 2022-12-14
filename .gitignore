@@ -14,8 +14,6 @@ web-build/
 # macOS
 .DS_Store
 
-app.json
-team-provider-info.json
 
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend
@@ -35,6 +33,10 @@ amplifyconfiguration.dart
 amplify-build-config.json
 amplify-gradle-config.json
 amplifytools.xcconfig
+amplify/team-provider-info.json
+
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+
+app.json
