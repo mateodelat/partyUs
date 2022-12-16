@@ -10,16 +10,22 @@ export default function ({
   textStyle,
   color,
   RightIcon,
+
+  noInsets,
 }: {
   titulo: string;
   onPress: () => void;
   textStyle?: TextStyle;
   color?: string;
   RightIcon?: React.FunctionComponent;
+
+  noInsets?: boolean;
 }) {
   color = color ? color : azulClaro;
 
-  const { top } = useSafeAreaInsets();
+  let { top } = useSafeAreaInsets();
+
+  top = noInsets ? 20 : top + 20;
 
   return (
     <View
@@ -28,12 +34,12 @@ export default function ({
         alignItems: "center",
         justifyContent: "center",
         marginBottom: 20,
-        paddingTop: top + 20,
+        paddingTop: top,
       }}
     >
       <Text style={[styles.titleModal, { color }, textStyle]}>{titulo}</Text>
       <Feather
-        style={{ ...styles.backIcon, top: top + 20 }}
+        style={{ ...styles.backIcon, top: top }}
         name="x"
         size={30}
         color={color}

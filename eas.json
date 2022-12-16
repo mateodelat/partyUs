@@ -10,9 +10,16 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "autoIncrement": true
+    }
   },
   "submit": {
-    "production": {}
+    "staging": {
+      "autoIncrement": true
+    },
+    "production": {
+      "autoIncrement": true
+    }
   }
 }

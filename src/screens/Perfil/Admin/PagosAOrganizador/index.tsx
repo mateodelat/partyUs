@@ -209,7 +209,8 @@ export default function ({ navigation }) {
       <Header
         title="Por pagar"
         RightIcon={() =>
-          !selecting && (
+          !selecting &&
+          !!data?.length && (
             <Text
               onPress={() => setSelecting(true)}
               style={{
@@ -252,6 +253,9 @@ export default function ({ navigation }) {
         }
       />
       <FlatList
+        ListEmptyComponent={() => (
+          <Text style={styles.noHay}>No hay reservas nuevas</Text>
+        )}
         refreshControl={
           <RefreshControl onRefresh={onRefresh} refreshing={refreshing} />
         }
@@ -397,6 +401,11 @@ const styles = StyleSheet.create({
 
   nombre: {
     // fontSize: 16,
+    fontWeight: "bold",
+  },
+
+  noHay: {
+    padding: 20,
     fontWeight: "bold",
   },
 

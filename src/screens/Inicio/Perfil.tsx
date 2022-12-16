@@ -188,8 +188,6 @@ export default function Perfil({ navigation }: { navigation: any }) {
     navigation.navigate("Soporte");
   }
 
-  const { top } = useSafeAreaInsets();
-
   function handleNavigateAdmin() {
     navigation.navigate("AdminStack");
   }
@@ -428,6 +426,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
           <HeaderModal
             onPress={handleCancel}
             titulo={"Editar perfil"}
+            noInsets
             textStyle={{
               color: "#000",
               fontWeight: "bold",
@@ -440,7 +439,7 @@ export default function Perfil({ navigation }: { navigation: any }) {
                 style={{
                   position: "absolute",
                   right: 0,
-                  top: top + 10,
+                  top: 15,
                   padding: 10,
                 }}
               >

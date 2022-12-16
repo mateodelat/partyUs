@@ -494,7 +494,10 @@ export default function ({
           })
           .catch((e) => {
             console.log(e.error);
-            Alert.alert("Error", "Tarjeta no valida, hubo un error");
+            Alert.alert(
+              "Error",
+              "Tarjeta no valida, hubo un error" + e.error.description
+            );
 
             setTipoPago(undefined);
 

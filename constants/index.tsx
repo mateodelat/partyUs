@@ -495,13 +495,11 @@ export async function fetchFromOpenpay<T>({
   path,
   type,
   input,
-  production,
   secretKey,
 }: {
   path: string;
   type: "POST" | "CREATE" | "DELETE" | "GET";
   input?: Object;
-  production?: boolean;
   secretKey?: string;
 }) {
   let myHeaders = new Headers();
@@ -519,10 +517,10 @@ export async function fetchFromOpenpay<T>({
     body: raw,
   };
 
-  const url = production
+  const url = produccion
     ? "https://api.openpay.mx/v1/"
     : "https://sandbox-api.openpay.mx/v1/";
-
+  console.log(url + MERCHANT_ID + path);
   return fetch(url + MERCHANT_ID + path, requestOptions).then(
     async (res: any) => {
       res = await res.json();
@@ -715,7 +713,7 @@ export const shadowMedia = {
   elevation: 4,
 };
 
-export const produccion = false;
+export const produccion = true;
 
 export const MERCHANT_ID = produccion
   ? "m1qt7k7zcarncm0jkvrp"

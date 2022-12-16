@@ -1,0 +1,98 @@
+{
+  "expo": {
+    "name": "Partyus",
+    "slug": "Partyus",
+    "scheme": "partyus",
+    "version": "1.0.5",
+    "orientation": "portrait",
+    "icon": "./assets/icon512.png",
+    "userInterfaceStyle": "light",
+    "owner": "partyus",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/7b95f4ec-2ba2-4572-a5c3-d78d94e77689"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription ": "Partyus utiliza tu ubicacion para buscar experiencias cerca de ti",
+        "NSPhotoLibraryUsageDescription": "Permitir $(PRODUCT_NAME) acceder a tus fotos",
+        "NSPhotoLibraryAddUsageDescription": "Permitir $(PRODUCT_NAME) a guardar imagenes."
+      },
+      "buildNumber": "0.0.0",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDce3_ZI_6A4tOwKjJFnlvv7WLLUUls7bw"
+      },
+      "bundleIdentifier": "com.party.us"
+    },
+    "android": {
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "MEDIA_LIBRARY",
+        "CAMERA_ROLL",
+        "NOTIFICATIONS",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "VIBRATE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#fff"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDiyuMnwhdN15eAwUJjBBbUses8hWS3kO8"
+        }
+      },
+      "package": "com.party.us",
+      "versionCode": 5
+    },
+    "androidNavigationBar": {
+      "barStyle": "dark-content"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/IMG/Logo512.png",
+          "color": "#ffffff"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "Permitir $(PRODUCT_NAME) a guardar imagenes."
+        }
+      ]
+    ],
+    "extra": {
+      "bugsnag": {
+        "apiKey": "11a8a1a1b4c6c6d4fcab4452a9dbb48c"
+      },
+      "eas": {
+        "projectId": "7b95f4ec-2ba2-4572-a5c3-d78d94e77689"
+      }
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "@bugsnag/expo/hooks/post-publish.js",
+          "config": {}
+        }
+      ]
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    }
+  }
+}
