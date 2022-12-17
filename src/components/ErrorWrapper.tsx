@@ -4,6 +4,7 @@ import { View, Text, SafeAreaView, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Updates from "expo-updates";
 import Boton from "./Boton";
+import Bugsnag from "@bugsnag/expo";
 
 class ErrorRouter extends React.Component {
   state = {
@@ -15,9 +16,9 @@ class ErrorRouter extends React.Component {
   }
 
   componentDidCatch(error: Error) {
-    // console.log(error);
-    // Alert.alert("Ocurrio un error", error.message);
-    // Bugsnag.notify(error)
+    console.log(error);
+    Alert.alert("Ocurrio un error", error.message);
+    Bugsnag.notify(error);
   }
 
   render() {

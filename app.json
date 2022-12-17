@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "Partyus",
+    "name": "PartyUs",
     "slug": "Partyus",
     "scheme": "partyus",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/icon512.png",
     "userInterfaceStyle": "light",
@@ -17,15 +17,18 @@
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/7b95f4ec-2ba2-4572-a5c3-d78d94e77689"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription ": "Partyus utiliza tu ubicacion para buscar experiencias cerca de ti",
-        "NSPhotoLibraryUsageDescription": "Permitir $(PRODUCT_NAME) acceder a tus fotos",
-        "NSPhotoLibraryAddUsageDescription": "Permitir $(PRODUCT_NAME) a guardar imagenes."
+        "NSLocationWhenInUseUsageDescription ": "$(PRODUCT_NAME) utiliza tu ubicacion para buscar experiencias cerca de ti",
+        "NSPhotoLibraryUsageDescription": "$(PRODUCT_NAME) accede a tus fotos para subir imagenes de tu galeria",
+        "NSPhotoLibraryAddUsageDescription": "$(PRODUCT_NAME) necesita permiso para poder guardar la captura de pantalla en tu galeria."
       },
-      "buildNumber": "0.0.0",
+      "buildNumber": "0.0.3",
+      "bitcode": "Debug",
       "config": {
         "googleMapsApiKey": "AIzaSyDce3_ZI_6A4tOwKjJFnlvv7WLLUUls7bw"
       },
@@ -55,7 +58,7 @@
         }
       },
       "package": "com.party.us",
-      "versionCode": 5
+      "versionCode": 7
     },
     "androidNavigationBar": {
       "barStyle": "dark-content"
@@ -67,20 +70,14 @@
           "icon": "./assets/IMG/Logo512.png",
           "color": "#ffffff"
         }
-      ],
-      [
-        "expo-media-library",
-        {
-          "savePhotosPermission": "Permitir $(PRODUCT_NAME) a guardar imagenes."
-        }
       ]
     ],
     "extra": {
-      "bugsnag": {
-        "apiKey": "11a8a1a1b4c6c6d4fcab4452a9dbb48c"
-      },
       "eas": {
         "projectId": "7b95f4ec-2ba2-4572-a5c3-d78d94e77689"
+      },
+      "bugsnag": {
+        "apiKey": "caa263e669c4f1fe75a62d2f857a9a73"
       }
     },
     "hooks": {

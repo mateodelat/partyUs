@@ -353,6 +353,8 @@ type EagerRetiro = {
   readonly organizadorID: string;
   readonly amount: number;
   readonly adminID: string;
+  readonly feeID?: string | null;
+  readonly transferID?: string | null;
   readonly mensaje?: string | null;
   readonly Reservas?: (Reserva | null)[] | null;
   readonly createdAt?: string | null;
@@ -364,6 +366,8 @@ type LazyRetiro = {
   readonly organizadorID: string;
   readonly amount: number;
   readonly adminID: string;
+  readonly feeID?: string | null;
+  readonly transferID?: string | null;
   readonly mensaje?: string | null;
   readonly Reservas: AsyncCollection<Reserva>;
   readonly createdAt?: string | null;

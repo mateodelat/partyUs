@@ -3,6 +3,7 @@ import {
   Button,
   Keyboard,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -121,7 +122,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   }
 
   return (
-    <>
+    <ScrollView showsVerticalScrollIndicator={false}>
       <Pressable onPress={Keyboard.dismiss} style={styles.inputContainer}>
         <LoginHeader register />
         <AnimatedInput
@@ -183,7 +184,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           <Text style={{ color: "blue" }}>Inicia sesion</Text>
         </Text>
       </TouchableOpacity>
-    </>
+    </ScrollView>
   );
 }
 
@@ -192,6 +193,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     padding: 30,
+    paddingTop: 20,
     backgroundColor: "#FFF",
   },
 

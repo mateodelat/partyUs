@@ -14,12 +14,5 @@
       "autoIncrement": true
     }
   },
-  "submit": {
-    "staging": {
-      "autoIncrement": true
-    },
-    "production": {
-      "autoIncrement": true
-    }
-  }
+  "submit": {}
 }

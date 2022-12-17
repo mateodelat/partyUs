@@ -91,6 +91,11 @@ exports.handler = async (event, context, callback) => {
   const attributes = event.request.userAttributes;
 
 
+  // Si viene de post confirm password devolver
+  if (event.triggerSource === "PostConfirmation_ConfirmForgotPassword") {
+    callback(null, event);
+  }
+
   // Crear customer de plataforma pago
   const userPaymentID = await createCustomer({
     email: attributes.email,

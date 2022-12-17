@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     padding: 30,
+    paddingTop: 10,
   },
 
   forget: {
