@@ -410,8 +410,8 @@ export default function ({
   async function handleContinar() {
     // Si ya paso el evento mandar alerta
     if (evento.fechaFinal < new Date().getTime()) {
-      Alert.alert("Error", "El evento ya ha pasado");
-      return;
+      // Alert.alert("Error", "El evento ya ha pasado");
+      // return;
     }
 
     if (refreshing) {

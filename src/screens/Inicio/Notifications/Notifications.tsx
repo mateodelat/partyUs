@@ -7,7 +7,6 @@ import {
   Pressable,
   View,
   FlatList,
-  TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 
@@ -174,7 +173,7 @@ export default function ({ navigation }) {
           <Text style={styles.noHay}>No hay notificaciones</Text>
         ) : (
           <>
-            <TouchableOpacity
+            <Pressable
               style={{
                 backgroundColor: "#fff",
                 alignItems: "center",
@@ -207,7 +206,7 @@ export default function ({ navigation }) {
                   color={rojoClaro}
                 />
               )}
-            </TouchableOpacity>
+            </Pressable>
             <FlatList
               data={notificaciones}
               renderItem={({ item, index }) => {

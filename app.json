@@ -24,7 +24,7 @@
         "NSLocationWhenInUseUsageDescription ": "$(PRODUCT_NAME) utiliza tu ubicacion para buscar experiencias cerca de ti. ",
         "NSPhotoLibraryUsageDescription": "$(PRODUCT_NAME) accede a tus fotos para subir imagenes de tu galeria por ejemplo cuando quieres cambiar la foto de perfil o cuando agregas una imagen de evento.",
         "NSPhotoLibraryAddUsageDescription": "$(PRODUCT_NAME) necesita permiso para poder guardar la foto del boleto en tu galeria",
-        "NSCameraUsageDescription": "$(PRODUCT_NAME) necesita permiso de camara para escanear boletos o subir imagenes que tomes."
+        "NSCameraUsageDescription": "$(PRODUCT_NAME) necesita permiso de camara para escanear boletos o subir imagenes que tomes a tu foto de perfil."
       },
       "buildNumber": "0.0.4",
       "bitcode": "Debug",

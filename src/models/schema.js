@@ -403,13 +403,6 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "show": {
-                    "name": "show",
-                    "isArray": false,
-                    "type": "Boolean",
-                    "isRequired": false,
-                    "attributes": []
-                },
                 "personasReservadas": {
                     "name": "personasReservadas",
                     "isArray": false,
@@ -1757,5 +1750,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.3.2",
-    "version": "79917eabed93873c4582bd13e9ae7f1b"
+    "version": "186a0549df851277e571dc92ae2e07a3"
 };
