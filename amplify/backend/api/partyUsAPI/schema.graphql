@@ -106,6 +106,8 @@ type Evento
   comodities: [comoditiesEnum]
   musOtra: String
 
+  show: Boolean
+
   personasReservadas: Int
   personasMax: Int
 

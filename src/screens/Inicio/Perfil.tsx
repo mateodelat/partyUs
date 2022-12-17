@@ -22,6 +22,7 @@ import {
   getUserSub,
   isUrl,
   mayusFirstLetter,
+  sendAdminNotification,
   shadowBaja,
   shadowMarcada,
   subirImagen,
@@ -30,7 +31,7 @@ import {
 import HeaderModal from "../../components/HeaderModal";
 
 import { MaterialIcons } from "@expo/vector-icons";
-import { FontAwesome5 } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -38,7 +39,14 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { Auth, DataStore, Storage } from "aws-amplify";
 import ModalTipoImagen from "../../components/ModalTipoImagen";
 import InputOnFocusV2 from "../../components/InputOnFocusV2";
-import { Usuario } from "../../models";
+import {
+  Boleto,
+  Evento,
+  Notificacion,
+  Reserva,
+  ReservasBoletos,
+  Usuario,
+} from "../../models";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EmptyProfile from "../../components/EmptyProfile";
 
@@ -177,6 +185,125 @@ export default function Perfil({ navigation }: { navigation: any }) {
       Alert.alert("Error", "Hubo un error subiendo la imagen: " + e.message);
     } finally {
       setImageModalVisible(false);
+    }
+  }
+
+  async function handleDelete() {
+    try {
+      setLoading(true);
+
+      await AsyncAlert(
+        "Borrar cuenta",
+        "Atencion, esto borrara todos tus datos de partyus. Una vez borrados no hay vuelta atras. ¿Quieres continuar?"
+      ).then(async (r) => {
+        if (!r) return;
+        const sub = usuario.id;
+
+        // Si el usuario es organizador y tiene eventos futuros darle error y mandar notificacion a admins (posible fraude)
+        if (usuario.organizador) {
+          const eventos = await DataStore.query(Evento, (e) =>
+            e.CreatorID("eq", sub)
+          );
+
+          // Filtrar si hay eventos proximos en el usuario
+          if (
+            !!eventos.filter((e) => e.fechaFinal > new Date().getTime()).length
+          ) {
+            Alert.alert(
+              "Atencion",
+              "Tienes eventos proximos, no puedes borrar tu cuenta"
+            );
+
+            sendAdminNotification({
+              titulo: "Alerta de fraude",
+              sender: usuario,
+              descripcion:
+                "El organizador ha intentado borrar su cuenta con eventos proximos",
+              organizadorID: sub,
+            });
+            setLoading(false);
+
+            return;
+          } else {
+            // // De lo contrario borrar todos los eventos (que son pasados) y boletos asociados
+            // await Promise.all(
+            //   eventos.map((e) => {
+            //     // Borrar sus boletos asciados al evento
+            //     const boletos = DataStore.query(Notificacion, (e) =>
+            //       e.organizadorID("eq", sub)
+            //     );
+            //     await DataStore.delete(Boleto);
+            //     return DataStore.delete(Evento, e);
+            //   })
+            // );
+          }
+        }
+
+        // Borrar usuario de datastore
+        const usr = DataStore.query(Usuario, sub);
+
+        // Borrar notificaciones
+        const notificaciones = DataStore.query(Notificacion, (e) =>
+          e.usuarioID("eq", sub)
+        );
+
+        // Borrar reservas
+        const reservas = DataStore.query(Reserva, (e) =>
+          e.usuarioID("eq", sub)
+        );
+
+        ////////////////////////////////////////////////////
+        /////////////////SECION DE BORRADO//////////////////
+        ////////////////////////////////////////////////////
+
+        // Borrar el usuario
+        const delUsr = DataStore.delete(await usr);
+
+        // Borrar las notificaciones
+        const delNot = Promise.all(
+          (await notificaciones).map(async (not) => {
+            // Borrar notificacion
+
+            return DataStore.delete(not);
+          })
+        );
+
+        // Borrar reservas y relacion boletos
+        const delRes = Promise.all(
+          (await reservas).map(async (res) => {
+            // Borrar reserva boleto asociada
+            const reservasBoletos = await DataStore.query(
+              ReservasBoletos,
+              (e) => e.reservaID("eq", res.id)
+            );
+
+            await Promise.all(
+              reservasBoletos.map(async (rel) => {
+                DataStore.delete(rel);
+              })
+            );
+
+            // Borrar reserva asociada
+            return DataStore.delete(res);
+          })
+        );
+
+        // Esperar resolucion de todas funciones borradoras
+        await delNot;
+        await delRes;
+        await delUsr;
+        await Auth.deleteUser();
+
+        setLoading(false);
+        navigation.pop();
+      });
+    } catch (error) {
+      setLoading(false);
+
+      Alert.alert(
+        "Error",
+        "Hubo un error borrando los boletos: " + error.message
+      );
     }
   }
 
@@ -401,12 +528,34 @@ export default function Perfil({ navigation }: { navigation: any }) {
         )}
 
         <View style={{ flex: 1 }} />
+
         {/* Cerrar sesion */}
         <TouchableOpacity
           onPress={handleSignOut}
+          style={{
+            alignItems: "center",
+            width: "100%",
+            marginBottom: 10,
+          }}
+        >
+          <Text style={{ ...styles.signOutTxt }}>Cerrar sesion</Text>
+        </TouchableOpacity>
+
+        {/* Borrar cuenta */}
+        <TouchableOpacity
+          onPress={handleDelete}
           style={{ alignItems: "center", width: "100%" }}
         >
-          <Text style={styles.signOutTxt}>Cerrar sesion</Text>
+          <Text
+            style={{
+              ...styles.signOutTxt,
+              fontWeight: "normal",
+              color: "#444",
+              marginTop: 0,
+            }}
+          >
+            Borrar cuenta
+          </Text>
         </TouchableOpacity>
       </View>
 

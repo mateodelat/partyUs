@@ -273,6 +273,8 @@ export default function Agregar2({
         precioMin,
         precioMax,
 
+        show: true,
+
         detalles: evento.detalles,
 
         musica,

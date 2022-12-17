@@ -130,10 +130,19 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     setLoading(true);
     let eventos: EventoType[] = events
       ? events
-      : ((await DataStore.query(Evento, Predicates.ALL, {
-          sort: (e) => e.fechaInicial("ASCENDING").titulo("ASCENDING"),
-          // limit: 7,
-        })) as any);
+      : ((await DataStore.query(
+          Evento,
+          // Verificar que sea evento proximo
+          (e) =>
+            e
+              .fechaFinal("lt", new Date().getTime())
+              // Verificar que se sean eventos que se muestran
+              .show("eq", true),
+          {
+            sort: (e) => e.fechaInicial("ASCENDING").titulo("ASCENDING"),
+            // limit: 7,
+          }
+        )) as any);
 
     let precioMin: number | undefined;
     let precioMax: number | undefined;

@@ -170,6 +170,7 @@ type EagerEvento = {
   readonly musica?: MusicEnum | keyof typeof MusicEnum | null;
   readonly comodities?: (ComoditiesEnum | null)[] | keyof typeof ComoditiesEnum | null;
   readonly musOtra?: string | null;
+  readonly show?: boolean | null;
   readonly personasReservadas?: number | null;
   readonly personasMax?: number | null;
   readonly precioMin?: number | null;
@@ -196,6 +197,7 @@ type LazyEvento = {
   readonly musica?: MusicEnum | keyof typeof MusicEnum | null;
   readonly comodities?: (ComoditiesEnum | null)[] | keyof typeof ComoditiesEnum | null;
   readonly musOtra?: string | null;
+  readonly show?: boolean | null;
   readonly personasReservadas?: number | null;
   readonly personasMax?: number | null;
   readonly precioMin?: number | null;

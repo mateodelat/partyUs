@@ -17,17 +17,16 @@
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/7b95f4ec-2ba2-4572-a5c3-d78d94e77689"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": false,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription ": "$(PRODUCT_NAME) utiliza tu ubicacion para buscar experiencias cerca de ti",
-        "NSPhotoLibraryUsageDescription": "$(PRODUCT_NAME) accede a tus fotos para subir imagenes de tu galeria",
-        "NSPhotoLibraryAddUsageDescription": "$(PRODUCT_NAME) necesita permiso para poder guardar la captura de pantalla en tu galeria."
+        "NSLocationWhenInUseUsageDescription ": "$(PRODUCT_NAME) utiliza tu ubicacion para buscar experiencias cerca de ti. ",
+        "NSPhotoLibraryUsageDescription": "$(PRODUCT_NAME) accede a tus fotos para subir imagenes de tu galeria por ejemplo cuando quieres cambiar la foto de perfil o cuando agregas una imagen de evento.",
+        "NSPhotoLibraryAddUsageDescription": "$(PRODUCT_NAME) necesita permiso para poder guardar la foto del boleto en tu galeria",
+        "NSCameraUsageDescription": "$(PRODUCT_NAME) necesita permiso de camara para escanear boletos o subir imagenes que tomes."
       },
-      "buildNumber": "0.0.3",
+      "buildNumber": "0.0.4",
       "bitcode": "Debug",
       "config": {
         "googleMapsApiKey": "AIzaSyDce3_ZI_6A4tOwKjJFnlvv7WLLUUls7bw"
@@ -69,6 +68,12 @@
         {
           "icon": "./assets/IMG/Logo512.png",
           "color": "#ffffff"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "$(PRODUCT_NAME) accede a las fotos que quieras para subirlas a la app o escribir y guardar tu boleto."
         }
       ]
     ],
