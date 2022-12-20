@@ -86,16 +86,19 @@ export default function ({
     }
   }
   async function registerForPushNotificationsAsync(usuario: Usuario) {
-    let token: Notifications.ExpoPushToken["data"];
+    let token: string;
     const { status: existingStatus } =
       await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
+
+    console.log({ existingStatus });
     if (existingStatus !== "granted") {
       const { status } = await Notifications.requestPermissionsAsync();
+      console.log({ status });
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
-      alert("Failed to get push token for push notification!");
+      console.log("Failed to get push token for push notification!");
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync())?.data;

@@ -7,9 +7,6 @@ import { Alert, Linking } from "react-native";
 import { API, Auth, DataStore, Storage } from "aws-amplify";
 import { TipoNotificacion, Usuario } from "../src/models";
 
-const MERCHANT_ID = "mcwffetlymvvcqthcdxu";
-const PUBLIC_KEY = "pk_69d96c0ed3bd4ea8a6956d8e51867876";
-
 import base64 from "react-native-base64";
 import awsmobile from "../src/aws-exports";
 import { errorOpenPay } from "../types/openpay";
@@ -63,7 +60,28 @@ export function formatMoney(num?: number | null, showCents?: boolean) {
     num?.toFixed(!showCents ? 0 : 2)?.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
   );
 }
-export const partyusPhone = "+5213324963705";
+export const partyusPhone = "+5213312897347";
+
+export async function sendNotifcationsAll({
+  titulo,
+  descripcion,
+}: {
+  titulo: string;
+  descripcion?: string;
+}) {
+  DataStore.query(Usuario).then((ls) => {
+    ls.map((usr) => {
+      sendNotifications({
+        titulo,
+        descripcion,
+        tipo: TipoNotificacion.BIENVENIDA,
+        usuarioID: usr.id,
+        externalToken: usr.notificationToken,
+        showAt: new Date().toISOString(),
+      });
+    });
+  });
+}
 
 export async function sendAdminNotification({
   titulo,
@@ -498,13 +516,11 @@ export async function fetchFromOpenpay<T>({
   path,
   type,
   input,
-  production,
   secretKey,
 }: {
   path: string;
   type: "POST" | "CREATE" | "DELETE" | "GET";
   input?: Object;
-  production?: boolean;
   secretKey?: string;
 }) {
   let myHeaders = new Headers();
@@ -522,10 +538,9 @@ export async function fetchFromOpenpay<T>({
     body: raw,
   };
 
-  const url = production
+  const url = produccion
     ? "https://api.openpay.mx/v1/"
     : "https://sandbox-api.openpay.mx/v1/";
-
   return fetch(url + MERCHANT_ID + path, requestOptions).then(
     async (res: any) => {
       res = await res.json();
@@ -718,7 +733,14 @@ export const shadowMedia = {
   elevation: 4,
 };
 
-export const produccion = false;
+export const produccion = true;
+
+export const MERCHANT_ID = produccion
+  ? "m1qt7k7zcarncm0jkvrp"
+  : "mcwffetlymvvcqthcdxu";
+const PUBLIC_KEY = produccion
+  ? "pk_dced8b24006d4a74bd3efd5158f58d15"
+  : "pk_69d96c0ed3bd4ea8a6956d8e51867876";
 
 export const shadowBaja = {
   shadowColor: "#000",
@@ -996,6 +1018,7 @@ export async function sendNotifications({
   externalToken?: string;
 }) {
   showAt = showAt ? showAt : new Date().toISOString();
+  triggerTime = triggerTime ? triggerTime : new Date().getTime() / 1000;
 
   const data = {
     eventoID,

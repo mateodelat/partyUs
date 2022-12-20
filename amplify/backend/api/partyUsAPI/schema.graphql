@@ -346,9 +346,9 @@ enum placeEnum {
 }
 
 enum musicEnum {
-  REGGETON
+  REGGAETON
   POP
-  TECNO
+  TECHNO
   RAP
   BANDA
   ROCK

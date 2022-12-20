@@ -5,25 +5,30 @@
       "resourceName": "partyuslayer",
       "version": "Always choose latest version",
       "isLatestVersionSelected": true,
-      "env": "staging"
+      "env": "production"
     }
   ],
   "environmentVariableList": [
     {
-      "cloudFormationParameterName": "merchantId",
-      "environmentVariableName": "MERCHANT_ID"
+      "cloudFormationParameterName": "merchantIdProd",
+      "environmentVariableName": "MERCHANT_ID_PROD"
     },
     {
-      "cloudFormationParameterName": "secretKey",
-      "environmentVariableName": "SECRET_KEY"
+      "cloudFormationParameterName": "merchantIdStag",
+      "environmentVariableName": "MERCHANT_ID_STAG"
+    },
+    {
+      "cloudFormationParameterName": "secretKeyProd",
+      "environmentVariableName": "SECRET_KEY_PROD"
+    },
+    {
+      "cloudFormationParameterName": "secretKeyStag",
+      "environmentVariableName": "SECRET_KEY_STAG"
     }
   ],
   "permissions": {
     "api": {
-      "partyUsAPI": [
-        "Query",
-        "Mutation"
-      ]
+      "partyUsAPI": ["Query", "Mutation"]
     }
   }
 }

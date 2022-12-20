@@ -11,8 +11,9 @@ const axios = require('axios');
 const { GraphQLClient } = require('graphql-request');
 
 
+const production = process.env.ENV === "production"
 
-
+const SECRET_KEY = production ? process.env.SECRET_KEY_PROD : process.env.SECRET_KEY_STAG
 
 function generateProfilePicture(nombre) {
   const listaColores = [
@@ -25,10 +26,18 @@ function generateProfilePicture(nombre) {
     "F4F6F8",
     "cccccc",
   ];
-  const randomColor = Math.round(Math.random() * listaColores.length);
-  const bgc = listaColores[randomColor];
+  const randomColor = Math.round(Math.random() * listaColores.length - 1);
+  let bgc = listaColores[randomColor];
 
-  const color = randomColor > 3 ? "000" : "fff";
+
+  let color = randomColor > 3 ? "000" : "fff";
+
+  // Si no hay color de fondo seleccionar blanco y negro
+  if (!bgc || !color) {
+    bgc = "#fff"
+    color = "#000"
+  }
+
 
   return `https://ui-avatars.com/api/?name=${nombre}&bold=true&background=${bgc}&color=${color}&length=1`;
 }
@@ -45,12 +54,13 @@ async function createCustomer({
     "external_id": id,
     "requires_account": true
   });
-  let authKey = Buffer.from(process.env.SECRET_KEY).toString('base64').replace("=", "6")
+  let authKey = Buffer.from(SECRET_KEY).toString('base64').replace("=", "6")
 
   var config = {
     method: 'post',
-    url: 'https://sandbox-api.openpay.mx/v1/mcwffetlymvvcqthcdxu/customers'
-    // 'https://api.openpay.mx/v1/m1qt7k7zcarncm0jkvrp/customers'
+    url:
+      !production ? 'https://sandbox-api.openpay.mx/v1/mcwffetlymvvcqthcdxu/customers' :
+        'https://api.openpay.mx/v1/m1qt7k7zcarncm0jkvrp/customers'
     ,
     headers: {
       'Authorization': "Basic " + authKey,
@@ -89,6 +99,11 @@ exports.handler = async (event, context, callback) => {
   const sub = event.userName;
   const attributes = event.request.userAttributes;
 
+
+  // Si viene de post confirm password devolver
+  if (event.triggerSource === "PostConfirmation_ConfirmForgotPassword") {
+    callback(null, event);
+  }
 
   // Crear customer de plataforma pago
   const userPaymentID = await createCustomer({

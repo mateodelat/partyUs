@@ -79,6 +79,7 @@ export default function ({
             case "Attempt limit exceeded, please try after some time.":
               setError("Limite de intentos alcanzado, intentalo en un rato");
               break;
+
             default:
               setError(error.message);
               console.log(error);
@@ -182,7 +183,14 @@ export default function ({
                 setErrorCode(false);
                 break;
 
+              case "LimitExceededException: Attempt limit exceeded, please try after some time.":
+                setError("Limite de intentos alcanzado");
+                setErrorPassword(true);
+                setErrorCode(false);
+                break;
+
               default:
+                console.log(err);
                 clearErrors();
                 setError(err.message);
                 break;

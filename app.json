@@ -1,0 +1,102 @@
+{
+  "expo": {
+    "name": "PartyUs",
+    "slug": "Partyus",
+    "scheme": "partyus",
+    "version": "1.0.6",
+    "orientation": "portrait",
+    "icon": "./assets/icon512.png",
+    "userInterfaceStyle": "light",
+    "owner": "partyus",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/7b95f4ec-2ba2-4572-a5c3-d78d94e77689"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription ": "$(PRODUCT_NAME) utiliza tu ubicacion para buscar experiencias cerca de ti. ",
+        "NSPhotoLibraryUsageDescription": "$(PRODUCT_NAME) accede a tus fotos para subir imagenes de tu galeria por ejemplo cuando quieres cambiar la foto de perfil o cuando agregas una imagen de evento.",
+        "NSPhotoLibraryAddUsageDescription": "$(PRODUCT_NAME) necesita permiso para poder guardar la foto del boleto en tu galeria",
+        "NSCameraUsageDescription": "$(PRODUCT_NAME) necesita permiso de camara para escanear boletos o subir imagenes que tomes a tu foto de perfil."
+      },
+      "buildNumber": "0.0.5",
+      "bitcode": "Debug",
+      "config": {
+        "googleMapsApiKey": "AIzaSyDce3_ZI_6A4tOwKjJFnlvv7WLLUUls7bw"
+      },
+      "bundleIdentifier": "com.party.us"
+    },
+    "android": {
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "MEDIA_LIBRARY",
+        "CAMERA_ROLL",
+        "NOTIFICATIONS",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "VIBRATE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#fff"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDiyuMnwhdN15eAwUJjBBbUses8hWS3kO8"
+        }
+      },
+      "package": "com.party.us",
+      "versionCode": 7
+    },
+    "androidNavigationBar": {
+      "barStyle": "dark-content"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/IMG/Logo512.png",
+          "color": "#ffffff"
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "$(PRODUCT_NAME) accede a las fotos que quieras para subirlas a la app o escribir y guardar tu boleto."
+        }
+      ],
+      ["@bugsnag/plugin-expo-eas-sourcemaps"]
+    ],
+
+    "extra": {
+      "eas": {
+        "projectId": "7b95f4ec-2ba2-4572-a5c3-d78d94e77689"
+      },
+      "bugsnag": {
+        "apiKey": "caa263e669c4f1fe75a62d2f857a9a73"
+      }
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "@bugsnag/expo/hooks/post-publish.js",
+          "config": {}
+        }
+      ]
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    }
+  }
+}

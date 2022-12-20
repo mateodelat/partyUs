@@ -13,13 +13,17 @@
   REGION
 Amplify Params - DO NOT EDIT */
 
+const production = process.env.ENV === "production"
+
+const MERCHANT_ID = production ? process.env.MERCHANT_ID_PROD : process.env.MERCHANT_ID_STAG
+const SECRET_KEY = production ? process.env.SECRET_KEY_PROD : process.env.SECRET_KEY_STAG
+
 const { graphqlOperation } = require('/opt/graphqlOperation')
 const { updateBoletoReturns, createReservasBoletosReturns, updateEventoReturns, updateCuponReturns, reservaReturns } = require("/opt/graphqlReturns")
 
-
 const Openpay = require("openpay")
-var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
-// openpay.setProductionReady(true);
+var openpay = new Openpay(MERCHANT_ID, SECRET_KEY);
+openpay.setProductionReady(production);
 
 
 const comisionApp = 0.15;
@@ -44,6 +48,7 @@ const redondear = (numero, entero) => {
 
 async function graphqlRequest({ query, variables }) {
     const endpoint = process.env.API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
+
 
     let body = {}
 
@@ -643,7 +648,9 @@ exports.handler = async (event
                         source_id: sourceID,
                         amount: total,
                         description,
+                        redirect_url: "https://www.partyusmx.com",
                         order_id: "charge>>>" + reservaID,
+                        capture: true,
                         due_date: tipoPago === "EFECTIVO" ? limitDate : undefined,
                     },
                     async function (error, e) {
@@ -652,7 +659,6 @@ exports.handler = async (event
                         })
                         if (error) {
                             rej(error);
-                            throw new Error(error.description)
                         }
 
                         body.paymentID = e.id;
@@ -660,7 +666,7 @@ exports.handler = async (event
 
                         if (tipoPago === "EFECTIVO") {
                             if (!e.payment_method) {
-                                throw new Error(
+                                rej(
                                     "No se recibio url del voucher de la api de pagos"
                                 );
                             }
@@ -674,6 +680,13 @@ exports.handler = async (event
                             res();
                         }
                         else {
+                            // Verificar si no hay field de authorization, no esta autorizada con openpay
+                            if (!e.authorization) {
+                                rej("por el momento no podemos procesar ese tipo de tarjeta. Intenta con otra o pagando en efectivo en una tienda.")
+                                return
+
+                            }
+
                             await Promise.all([
                                 new Promise((res, rej) => {
                                     // Cargo comision al comprador
@@ -688,10 +701,9 @@ exports.handler = async (event
                                             feeID = fee.id
 
                                             if (error) {
-                                                rej("Error creando el fee sobre el cargo");
-                                                throw new Error(
-                                                    "Error enviando fondos. Contactanos para cancelar el cargo"
-                                                );
+                                                rej(error);
+                                                return
+
                                             }
 
                                             console.log("\nFEE RESULT:\n");
@@ -714,7 +726,8 @@ exports.handler = async (event
                                             transactionID = r.id
 
                                             if (error) {
-                                                rej("Error creando la transferencia sobre el cargo");
+                                                rej(error);
+                                                return
                                             }
 
                                             console.log("\nTRANSFER RESULT:\n");
@@ -731,6 +744,7 @@ exports.handler = async (event
                                 .catch((e) => {
                                     console.log(e);
                                     rej(e);
+                                    return
                                 });
                         }
                     }
@@ -895,66 +909,63 @@ exports.handler = async (event
             ? error.message
             : error.description
                 ? error.description
-                : error;
+                : error.errorMessage ? error.errorMessage : error;
 
+        //                 // Cancelar el cargo en caso de error en la funcion
+        // if (tipoPago !== "EFECTIVO" && chargeID) {
+        //     // Primer esperar a que se devuelvan transaccion y fee
+        //     await Promise.all([
+        //         new Promise((res, rej) => {
+        //             // Regresar comision del comprador
+        //             openpay.fees.refund(
+        //                 feeID, {
+        //                 description: "Fallo al crear reserva, comision devuelta"
+        //             },
+        //                 function (error, fee) {
+        //                     feeID = fee.id
 
+        //                     if (error) {
+        //                         rej("Error cancelando el fee sobre el cargo");
+        //                     }
 
+        //                     res();
+        //                 }
+        //             );
+        //         }),
+        //         new Promise((res, rej) => {
+        //             // Devolver del organizador al comprador
+        //             openpay.customers.transfers.create(
+        //                 ownerPaymentID,
+        //                 {
+        //                     customer_id: clientPaymentID,
+        //                     amount: enviarACreador,
+        //                     order_id: "transferRefund>>>" + reservaID,
+        //                 },
+        //                 (error, r) => {
+        //                     transactionID = r.id
 
+        //                     if (error) {
+        //                         rej("Error creando la transferencia sobre el cargo");
+        //                     }
 
-        // Cancelar el cargo en caso de error en la funcion
-        if (tipoPago !== "EFECTIVO" && chargeID) {
-            // Primer esperar a que se devuelvan transaccion y fee
-            await Promise.all([
-                new Promise((res, rej) => {
-                    // Regresar comision del comprador
-                    openpay.fees.refund(
-                        feeID, {
-                        description: "Fallo al crear reserva, comision devuelta"
-                    },
-                        function (error, fee) {
-                            feeID = fee.id
+        //                     console.log("\nTRANSFER RESULT:\n");
+        //                     console.log(r);
+        //                     res();
+        //                 }
+        //             );
+        //         }),
+        //     ]).then(r => {
+        //         msg = "Fallo en crear la reserva, cargos devueltos"
+        //         return openpay.customers.charges.refund(clientPaymentID, chargeID, {
+        //             description: "Fallo en crear la reserva, cargo devuelto"
+        //         }, (err, charge) => {
+        //             console.log("Cargo cancelado con exito: " + charge)
+        //         })
 
-                            if (error) {
-                                rej("Error cancelando el fee sobre el cargo");
-                            }
+        //     })
 
-                            res();
-                        }
-                    );
-                }),
-                new Promise((res, rej) => {
-                    // Devolver del organizador al comprador
-                    openpay.customers.transfers.create(
-                        ownerPaymentID,
-                        {
-                            customer_id: clientPaymentID,
-                            amount: enviarACreador,
-                            order_id: "transferRefund>>>" + reservaID,
-                        },
-                        (error, r) => {
-                            transactionID = r.id
+        // }
 
-                            if (error) {
-                                rej("Error creando la transferencia sobre el cargo");
-                            }
-
-                            console.log("\nTRANSFER RESULT:\n");
-                            console.log(r);
-                            res();
-                        }
-                    );
-                }),
-            ]).then(r => {
-                msg = "Fallo en crear la reserva, cargos devueltos"
-                return openpay.customers.charges.refund(clientPaymentID, chargeID, {
-                    description: "Fallo en crear la reserva, cargo devuelto"
-                }, (err, charge) => {
-                    console.log("Cargo cancelado con exito: " + charge)
-                })
-
-            })
-
-        }
 
         return formatResponse({
             statusCode: 500,

@@ -1696,9 +1696,9 @@ export const schema = {
         "MusicEnum": {
             "name": "MusicEnum",
             "values": [
-                "REGGETON",
+                "REGGAETON",
                 "POP",
-                "TECNO",
+                "TECHNO",
                 "RAP",
                 "BANDA",
                 "ROCK",

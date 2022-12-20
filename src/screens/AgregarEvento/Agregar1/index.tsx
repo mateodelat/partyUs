@@ -301,9 +301,10 @@ export default function () {
                         color: "#fff",
                         fontWeight: "bold",
                         fontSize: 20,
+                        textAlign: "center",
                       }}
                     >
-                      IMAGEN PRINCIPAL
+                      PRESIONA PARA IMAGEN PRINCIPAL
                     </Text>
                   </View>
                 </Pressable>

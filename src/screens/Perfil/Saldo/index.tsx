@@ -135,15 +135,9 @@ export default function ({ navigation, route }) {
     fetchData({
       type: "client",
     });
-
-    // Mandar alerta si no hay cuenta bancaria
-    if (!usuario.cuentaBancaria) {
-      Alert.alert(
-        "Atencion",
-        "Ingresa tu cuenta bancaria para retirar tu saldo"
-      );
-    }
   }, []);
+
+  let alertRetirosShown = false;
 
   async function fetchData({
     offset,
@@ -254,6 +248,19 @@ export default function ({ navigation, route }) {
             `/payments/clientInfo?id=${usuario.userPaymentID}`,
             "GET"
           ).then(({ body }) => {
+            if (!!body?.balance && !alertRetirosShown) {
+              alertRetirosShown = true;
+
+              // Si el cliente tiene fondos mandar alerta de contactarnos para retiro de fondos, fue una cancelacion de evento
+              if (!usuario.organizador) {
+                Alert.alert("Atencion", "Contactanos para retirar tus fondos");
+              } else {
+                Alert.alert(
+                  "Atencion",
+                  "Ingresa tu cuenta bancaria para retirar los fondos"
+                );
+              }
+            }
             setCustomer(body);
           });
 

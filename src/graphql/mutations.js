@@ -15,8 +15,6 @@ export const createUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
-      titularCuenta
-      receiveNewReservations
       imagenFondo
       direccion
       phoneNumber
@@ -119,8 +117,6 @@ export const updateUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
-      titularCuenta
-      receiveNewReservations
       imagenFondo
       direccion
       phoneNumber
@@ -223,8 +219,6 @@ export const deleteUsuario = /* GraphQL */ `
       email
       foto
       cuentaBancaria
-      titularCuenta
-      receiveNewReservations
       imagenFondo
       direccion
       phoneNumber
@@ -346,8 +340,6 @@ export const createEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
-        titularCuenta
-        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -473,8 +465,6 @@ export const updateEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
-        titularCuenta
-        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -600,8 +590,6 @@ export const deleteEvento = /* GraphQL */ `
         email
         foto
         cuentaBancaria
-        titularCuenta
-        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1272,8 +1260,6 @@ export const createReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
-          titularCuenta
-          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1320,8 +1306,6 @@ export const createReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
-        titularCuenta
-        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1464,8 +1448,6 @@ export const updateReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
-          titularCuenta
-          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1512,8 +1494,6 @@ export const updateReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
-        titularCuenta
-        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1656,8 +1636,6 @@ export const deleteReserva = /* GraphQL */ `
           email
           foto
           cuentaBancaria
-          titularCuenta
-          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -1704,8 +1682,6 @@ export const deleteReserva = /* GraphQL */ `
         email
         foto
         cuentaBancaria
-        titularCuenta
-        receiveNewReservations
         imagenFondo
         direccion
         phoneNumber
@@ -1855,8 +1831,6 @@ export const createReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
-          titularCuenta
-          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -2009,8 +1983,6 @@ export const updateReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
-          titularCuenta
-          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber
@@ -2163,8 +2135,6 @@ export const deleteReservasBoletos = /* GraphQL */ `
           email
           foto
           cuentaBancaria
-          titularCuenta
-          receiveNewReservations
           imagenFondo
           direccion
           phoneNumber

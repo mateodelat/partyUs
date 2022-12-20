@@ -1,28 +1,22 @@
 import React, { useState } from "react";
-import {
-  Text,
-  View,
-  StyleSheet,
-  Pressable,
-  TextInput,
-  Alert,
-  Keyboard,
-} from "react-native";
-import { Entypo } from "@expo/vector-icons";
+import { View, StyleSheet, Pressable, Alert, Keyboard } from "react-native";
 import { Auth } from "aws-amplify";
-import { rojo } from "../../../../constants";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import Boton from "../../../components/Boton";
 import AnimatedInput from "../../../components/AnimatedInput";
 
 export default ({
-  correo,
+  route: { params },
   navigation,
 }: {
-  correo?: string;
+  route: {
+    params: {
+      username?: string;
+    };
+  };
   navigation: NavigationProp;
 }) => {
-  const [email, setEmail] = useState(correo);
+  const [email, setEmail] = useState(params.username);
   const [check, setCheck] = useState(true);
 
   const [loading, setLoading] = useState(false);

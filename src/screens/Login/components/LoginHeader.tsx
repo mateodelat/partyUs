@@ -23,8 +23,7 @@ export default function ({ register }: { register?: boolean }) {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 80,
-    marginTop: 20,
+    marginBottom: 50,
   },
 
   descTxt: {

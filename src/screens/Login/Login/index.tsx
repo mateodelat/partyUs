@@ -10,7 +10,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -19,7 +18,6 @@ import AnimatedInput from "../../../components/AnimatedInput";
 
 import LoginHeader from "../components/LoginHeader";
 import Boton from "../../../components/Boton";
-import { SafeAreaView } from "react-native-safe-area-context";
 import HidePassword from "../components/HidePassword";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import { Auth } from "aws-amplify";
@@ -193,6 +191,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end",
     padding: 30,
+    paddingTop: 10,
   },
 
   forget: {

@@ -20,6 +20,7 @@ import {
   enumToArray,
   mayusFirstLetter,
   areListsEqual,
+  clearDate,
 } from "../../../../../constants";
 import SelectorDeslizable from "../../../../components/SelectorDeslizable";
 
@@ -82,9 +83,13 @@ export default function ({
   const lugarList = enumToArray(PlaceEnum);
 
   // Precio maximo redondeado al 50 mas alto
-  const maximumValue = redondear(maxPrice, 50, tipoRedondeo.ARRIBA);
+  const maximumValue = redondear(
+    maxPrice > 1000 ? maxPrice : 1000,
+    50,
+    tipoRedondeo.ARRIBA
+  );
   // Precio minimo redondeado al 50 mas bajo
-  const minimumValue = redondear(minPrice, 50, tipoRedondeo.ABAJO);
+  const minimumValue = 0;
 
   const [innerModal, setInnerModal] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
@@ -157,13 +162,34 @@ export default function ({
   function handleConfirmDate(date: Date) {
     setIsDatePickerVisible(false);
 
+    // Si es fecha inicial ponerlo al minimo (00:00:00:00)
+    if (fechaInicial) {
+      date.setHours(0);
+      date.setMinutes(0);
+      date.setSeconds(0);
+      date.setMilliseconds(0);
+    }
+    // Si es fecha final ponerlo al maximo de horas para abarcar todos los eventos
+    if (!fechaInicial) {
+      // Poner la hora a las (23:59:59)
+      date.setHours(23);
+      date.setMinutes(59);
+      date.setSeconds(59);
+      date.setMilliseconds(999);
+    }
+
     // Si la nueva fecha inicial es mayor a la fecha final se hace un dia menos
     if (dateRange && dateRange[1] && fechaInicial && date >= dateRange[1]) {
+      Alert.alert(
+        "Atencion",
+        "La fecha inicial debe ser menor a la fecha final"
+      );
       date = new Date(dateRange[1].getTime() - msInDay);
     }
 
     // Si la nueva fecha final es menor a la fecha inicial se hace un dia mas
     if (dateRange && dateRange[0] && !fechaInicial && date <= dateRange[0]) {
+      Alert.alert("Atencion", "La fecha final debe ser mayor a la fecha final");
       date = new Date(dateRange[0].getTime() + msInDay);
     }
 
@@ -585,18 +611,16 @@ export default function ({
               <Text style={styles.resetTxt}>Reiniciar</Text>
             </TouchableOpacity>
           </View>
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            locale="es"
+            mode="date"
+            date={dateRange ? dateRange[fechaInicial ? 0 : 1] : minDate}
+            onConfirm={handleConfirmDate}
+            onCancel={hideDatePicker}
+          />
         </Modal>
       </View>
-
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        date={dateRange ? dateRange[fechaInicial ? 0 : 1] : minDate}
-        minimumDate={minDate}
-        maximumDate={maxDate}
-        onConfirm={handleConfirmDate}
-        onCancel={hideDatePicker}
-      />
     </Modal>
   );
 }

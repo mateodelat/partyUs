@@ -322,9 +322,6 @@ export default function ({
         );
       }
 
-      // Mandar notificaciones de recordatorio
-      notificacionesRecordatorio({ evento: route.params, usuario });
-
       setButtonLoading(false);
       setLoading(false);
 
@@ -370,6 +367,8 @@ export default function ({
             organizadorID: CreatorID,
           })
         );
+        // Mandar notificaciones de recordatorio
+        notificacionesRecordatorio({ evento: route.params, usuario });
 
         notificacionesOrganizador(TipoPago.EFECTIVO, personasTotales);
 
@@ -404,6 +403,8 @@ export default function ({
             organizadorID: CreatorID,
           })
         );
+        // Mandar notificaciones de recordatorio
+        notificacionesRecordatorio({ evento: route.params, usuario });
 
         // Mandarle la notificacion al organizador de evento pagado
         notificacionesOrganizador(TipoPago.TARJETA, personasTotales);
@@ -494,7 +495,10 @@ export default function ({
           })
           .catch((e) => {
             console.log(e.error);
-            Alert.alert("Error", "Tarjeta no valida, hubo un error");
+            Alert.alert(
+              "Error",
+              "Tarjeta no valida, hubo un error" + e.error.description
+            );
 
             setTipoPago(undefined);
 
@@ -968,7 +972,7 @@ export default function ({
       >
         <CardInput onAdd={handleAddCard} setModalVisible={setModalVisible} />
       </Modal>
-      {/* <Modal
+      <Modal
         animationType={"none"}
         transparent={true}
         visible={!!threeDsecure}
@@ -993,7 +997,7 @@ export default function ({
             flex: 1,
           }}
         />
-      </Modal> */}
+      </Modal>
       <OpenPay onCreateSesionID={setSesionId} />
     </View>
   );
