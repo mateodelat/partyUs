@@ -148,9 +148,9 @@ export default function ({
         }}
       >
         {modalType === "pick" ? (
-          <View>
+          <>
             <Pressable onPress={handleCloseModal} style={{ flex: 1 }} />
-            <View style={{ ...styles.innerContainer, paddingTop: top }}>
+            <View style={{ ...styles.innerContainer, paddingBottom: bottom }}>
               <View style={styles.header}>
                 <Text style={styles.title}>Tipo de la imagen</Text>
                 <Feather
@@ -212,7 +212,7 @@ export default function ({
                 </Text>
               </Pressable>
             </View>
-          </View>
+          </>
         ) : (
           <>
             <Pressable onPress={handleCloseModal} style={{ flex: 1 }} />

@@ -1,5 +1,6 @@
 import {
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -46,6 +47,7 @@ export default function Agregar2({
   navigation: NavigationProp;
 }) {
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [pickerState, setPickerState] = useState<"date" | "time">("date");
 
   const { setEvento, evento } = useEvento();
 
@@ -119,6 +121,13 @@ export default function Agregar2({
   }
 
   function handleConfirmDate(date: Date) {
+    // Si estamos en os y vamos en seleccionar mes, cambiar a hora
+    if (Platform.OS === "ios" && pickerState === "date") {
+      setPickerState("time");
+      return;
+    }
+
+    setPickerState("date");
     setIsDatePickerVisible(false);
 
     if (isInitialDate) {
@@ -289,7 +298,6 @@ export default function Agregar2({
           </TouchableOpacity>
         </View>
       </View>
-
       <Boton
         style={{ margin: 20, marginBottom: bottom ? bottom : 20 }}
         titulo="Continuar"
@@ -299,9 +307,8 @@ export default function Agregar2({
       <DateTimePickerModal
         locale="es"
         is24Hour={false}
-        textColor={"#000"}
         isVisible={isDatePickerVisible}
-        mode="datetime"
+        mode={Platform.OS === "ios" ? pickerState : "datetime"}
         date={
           isInitialDate
             ? fechaInicial

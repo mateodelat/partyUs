@@ -301,6 +301,7 @@ export default function () {
                         color: "#fff",
                         fontWeight: "bold",
                         fontSize: 20,
+                        textAlign: "center",
                       }}
                     >
                       PRESIONA PARA IMAGEN PRINCIPAL

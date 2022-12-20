@@ -22,11 +22,7 @@ export default ({
         )}/persona)`}</Text>
       </View>
 
-      {!cantidad ? (
-        <Text style={styles.cantidad}>x{cantidad}</Text>
-      ) : (
-        <Text style={styles.cantidad}>x{cantidad}</Text>
-      )}
+      <Text style={styles.cantidad}>x{cantidad}</Text>
 
       {cantidad ? (
         <Text style={styles.precio}>
@@ -50,6 +46,7 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 18,
     color: "#444",
+    paddingRight: 20,
     // fontWeight: 'bold',
   },
 

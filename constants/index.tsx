@@ -60,7 +60,7 @@ export function formatMoney(num?: number | null, showCents?: boolean) {
     num?.toFixed(!showCents ? 0 : 2)?.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,")
   );
 }
-export const partyusPhone = "+5213324963705";
+export const partyusPhone = "+5213312897347";
 
 export async function sendNotifcationsAll({
   titulo,

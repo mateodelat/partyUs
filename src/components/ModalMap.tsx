@@ -17,11 +17,14 @@ import {
   Platform,
 } from "react-native";
 
+import { createMapLink } from "react-native-open-maps";
+
 import MapView, { LatLng, Region } from "react-native-maps";
 
 import { Entypo, Feather } from "@expo/vector-icons";
 
 import {
+  AsyncAlert,
   azulClaro,
   azulFondo,
   azulOscuro,
@@ -49,6 +52,9 @@ export type locationType = Region & {
   ubicacionNombre?: string;
   ubicacionId?: string;
 };
+
+// Abrir un link a google maps en el celular
+let mapsAlertShown = false;
 
 export default ({
   style,
@@ -277,8 +283,55 @@ export default ({
   };
 
   function handleCancel() {
+    mapsAlertShown = false;
     setPlace(selectedPlace);
     setModalVisible(false);
+  }
+
+  function openGoogleMaps(openAlways?: true) {
+    // Mostrarlo solo una vez con la flag
+    console.log({
+      mapsAlertShown,
+      openAlways,
+    });
+    (!mapsAlertShown || !!openAlways) &&
+      AsyncAlert("Atencion", "Se abrira google maps, ¿quieres continuar?").then(
+        (r) => {
+          mapsAlertShown = true;
+
+          if (!r) {
+            return;
+          }
+
+          try {
+            let link = "";
+
+            // Si tiene place ID, ir directo al mismo
+            if (place.ubicacionId) {
+              link = createMapLink({
+                navigate: true,
+                provider: "google",
+                end: place.ubicacionNombre,
+                endPlaceId: place.ubicacionId,
+              });
+            } else {
+              // Ver por coordenadas
+              link = createMapLink({
+                navigate: true,
+                provider: "google",
+                latitude: place.latitude,
+                longitude: place.longitude,
+              });
+            }
+
+            Linking.openURL(link);
+
+            console.log(link);
+          } catch (error) {
+            Alert.alert("Error", "Ocurrio un error abriendo el mapa");
+          }
+        }
+      );
   }
 
   const { bottom } = useSafeAreaInsets();
@@ -297,7 +350,10 @@ export default ({
         <StatusBar translucent={false} animated={false} />
         <Pressable
           onPress={() => {
+            // Si hay ubicacion link preguntar al usuario si desa ver en
             Keyboard.dismiss();
+
+            !handleSelectPlace && openGoogleMaps();
           }}
           style={[styles.container, style]}
         >
@@ -481,7 +537,12 @@ export default ({
               }}
             >
               {/* Marcador */}
-              {place && <Marker coordinate={place} />}
+              {place && (
+                <Marker
+                  onPress={() => openGoogleMaps(true)}
+                  coordinate={place}
+                />
+              )}
             </MapView>
 
             {place?.ubicacionNombre && handleSelectPlace && (

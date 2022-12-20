@@ -659,7 +659,6 @@ exports.handler = async (event
                         })
                         if (error) {
                             rej(error);
-                            throw new Error(error.description)
                         }
 
                         body.paymentID = e.id;
@@ -667,7 +666,7 @@ exports.handler = async (event
 
                         if (tipoPago === "EFECTIVO") {
                             if (!e.payment_method) {
-                                throw new Error(
+                                rej(
                                     "No se recibio url del voucher de la api de pagos"
                                 );
                             }
@@ -681,6 +680,13 @@ exports.handler = async (event
                             res();
                         }
                         else {
+                            // Verificar si no hay field de authorization, no esta autorizada con openpay
+                            if (!e.authorization) {
+                                rej("por el momento no podemos procesar ese tipo de tarjeta. Intenta con otra o pagando en efectivo en una tienda.")
+                                return
+
+                            }
+
                             await Promise.all([
                                 new Promise((res, rej) => {
                                     // Cargo comision al comprador
@@ -695,10 +701,9 @@ exports.handler = async (event
                                             feeID = fee.id
 
                                             if (error) {
-                                                rej("Error creando el fee sobre el cargo");
-                                                throw new Error(
-                                                    "Error enviando fondos. Contactanos para cancelar el cargo"
-                                                );
+                                                rej(error);
+                                                return
+
                                             }
 
                                             console.log("\nFEE RESULT:\n");
@@ -721,7 +726,8 @@ exports.handler = async (event
                                             transactionID = r.id
 
                                             if (error) {
-                                                rej("Error creando la transferencia sobre el cargo");
+                                                rej(error);
+                                                return
                                             }
 
                                             console.log("\nTRANSFER RESULT:\n");
@@ -738,6 +744,7 @@ exports.handler = async (event
                                 .catch((e) => {
                                     console.log(e);
                                     rej(e);
+                                    return
                                 });
                         }
                     }
@@ -902,66 +909,7 @@ exports.handler = async (event
             ? error.message
             : error.description
                 ? error.description
-                : error;
-
-
-
-
-
-        // Cancelar el cargo en caso de error en la funcion
-        if (tipoPago !== "EFECTIVO" && chargeID) {
-            // Primer esperar a que se devuelvan transaccion y fee
-            await Promise.all([
-                new Promise((res, rej) => {
-                    // Regresar comision del comprador
-                    openpay.fees.refund(
-                        feeID, {
-                        description: "Fallo al crear reserva, comision devuelta"
-                    },
-                        function (error, fee) {
-                            feeID = fee.id
-
-                            if (error) {
-                                rej("Error cancelando el fee sobre el cargo");
-                            }
-
-                            res();
-                        }
-                    );
-                }),
-                new Promise((res, rej) => {
-                    // Devolver del organizador al comprador
-                    openpay.customers.transfers.create(
-                        ownerPaymentID,
-                        {
-                            customer_id: clientPaymentID,
-                            amount: enviarACreador,
-                            order_id: "transferRefund>>>" + reservaID,
-                        },
-                        (error, r) => {
-                            transactionID = r.id
-
-                            if (error) {
-                                rej("Error creando la transferencia sobre el cargo");
-                            }
-
-                            console.log("\nTRANSFER RESULT:\n");
-                            console.log(r);
-                            res();
-                        }
-                    );
-                }),
-            ]).then(r => {
-                msg = "Fallo en crear la reserva, cargos devueltos"
-                return openpay.customers.charges.refund(clientPaymentID, chargeID, {
-                    description: "Fallo en crear la reserva, cargo devuelto"
-                }, (err, charge) => {
-                    console.log("Cargo cancelado con exito: " + charge)
-                })
-
-            })
-
-        }
+                : error.errorMessage ? error.errorMessage : error;
 
         return formatResponse({
             statusCode: 500,

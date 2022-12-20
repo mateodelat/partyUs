@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
   titleModal: {
     fontSize: 18,
     color: azulClaro,
+    textAlign: "center",
 
     top: 5,
 

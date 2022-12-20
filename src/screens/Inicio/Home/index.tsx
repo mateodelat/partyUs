@@ -64,8 +64,6 @@ import EmptyProfile from "../../../components/EmptyProfile";
 import { Boleto } from "../../../models";
 import { locationType } from "../../../components/ModalMap";
 import { Notificacion } from "../../../models";
-import { Reserva } from "../../../models";
-import { notificacionesRecordatorio } from "../Notifications/functions";
 
 export type EventoType = Evento & {
   favoritos?: boolean;
@@ -436,33 +434,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
     fetchEvents(eventos, verified);
     setFilters(filters);
-  }
-
-  // Funcion que cambia estado en un evento filtrado y en evento normal
-  function updateEvent(newEvent: EventoType) {
-    // Pasar nuevo evento por el filtro
-    const filtradoIdx = eventosFiltrados.findIndex(
-      (e: any) => e.id === newEvent.id
-    );
-    const fetchedIdx = fetchedEvents.findIndex(
-      (e: any) => e.id === newEvent.id
-    );
-
-    if (filtradoIdx !== -1) {
-      let nuevosEventos = [...eventosFiltrados];
-      nuevosEventos[filtradoIdx] = newEvent;
-
-      setEventosFiltrados([...nuevosEventos]);
-    }
-    if (fetchedIdx !== -1) {
-      let nuevosEventos = [...eventosFiltrados];
-      nuevosEventos[fetchedIdx] = newEvent;
-
-      setFetchedEvents([...nuevosEventos]);
-    } else {
-      Alert.alert("Error", "Favor de reportarlo a los desarrolladores");
-      return;
-    }
   }
 
   function handlePressItem(id?: string) {
