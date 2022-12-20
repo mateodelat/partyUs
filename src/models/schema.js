@@ -1287,6 +1287,20 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "feeID": {
+                    "name": "feeID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "transferID": {
+                    "name": "transferID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "mensaje": {
                     "name": "mensaje",
                     "isArray": false,
@@ -1736,5 +1750,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.3.2",
-    "version": "9ad11c3e45745a62fba7fac87f76b328"
+    "version": "186a0549df851277e571dc92ae2e07a3"
 };

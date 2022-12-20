@@ -1,0 +1,53 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-partyus-staging-225309-authRole",
+      "UnauthRoleArn": "arn:aws:iam::832832547198:role/amplify-partyus-staging-225309-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::832832547198:role/amplify-partyus-staging-225309-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-partyus-staging-225309-deployment",
+      "UnauthRoleName": "amplify-partyus-staging-225309-unauthRole",
+      "StackName": "amplify-partyus-staging-225309",
+      "StackId": "arn:aws:cloudformation:us-east-1:832832547198:stack/amplify-partyus-staging-225309/d3a953c0-3d24-11ed-aa76-124443ab0e99",
+      "AmplifyAppId": "d6ofsd2zgb7i5"
+    },
+    "categories": {
+      "auth": {
+        "partyusAUTH": {}
+      },
+      "storage": {
+        "partyusStorage": {}
+      },
+      "function": {
+        "partyuslayer": {
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/partyuslayer-LambdaLayerVersione70a0cf3-build.zip"
+        },
+        "paymentsHandler": {
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/paymentsHandler-3963514779657a322b63-build.zip"
+        },
+        "postSignUpPARTYUS": {
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/postSignUpPARTYUS-46376d7350384b333832-build.zip"
+        },
+        "createReserva": {
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/createReserva-324731716a517256486a-build.zip"
+        },
+        "onPay": {
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/onPay-6b556f4d67436e514f56-build.zip"
+        },
+        "partyusgraphqlOperations": {
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/partyusgraphqlOperations-LambdaLayerVersion615e2164-build.zip"
+        },
+        "cancelReserva": {
+          "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
+          "s3Key": "amplify-builds/cancelReserva-39567275657a6b326f4e-build.zip"
+        }
+      }
+    }
+  }
+}
