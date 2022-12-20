@@ -131,6 +131,10 @@ export default function ({
         handleCloseModal();
       });
   }
+  let { top, bottom } = useSafeAreaInsets();
+
+  top = top ? top + 15 : 20;
+  bottom = bottom ? bottom + 15 : 20;
 
   return (
     <View style={{ ...styles.container, ...style }}>
@@ -144,9 +148,9 @@ export default function ({
         }}
       >
         {modalType === "pick" ? (
-          <>
+          <View>
             <Pressable onPress={handleCloseModal} style={{ flex: 1 }} />
-            <View style={{ ...styles.innerContainer, paddingTop: 20 }}>
+            <View style={{ ...styles.innerContainer, paddingTop: top }}>
               <View style={styles.header}>
                 <Text style={styles.title}>Tipo de la imagen</Text>
                 <Feather
@@ -208,11 +212,11 @@ export default function ({
                 </Text>
               </Pressable>
             </View>
-          </>
+          </View>
         ) : (
           <>
             <Pressable onPress={handleCloseModal} style={{ flex: 1 }} />
-            <View style={styles.innerContainer}>
+            <View style={{ ...styles.innerContainer, paddingBottom: bottom }}>
               <View style={styles.header}>
                 <Text style={styles.title}>Link de la imagen</Text>
                 {linkImage.length === 0 ? (

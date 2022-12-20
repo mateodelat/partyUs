@@ -56,6 +56,8 @@ const styles = StyleSheet.create({
     color: azulClaro,
 
     top: 5,
+
+    paddingHorizontal: 20,
   },
 
   backIcon: {

@@ -62,6 +62,27 @@ export function formatMoney(num?: number | null, showCents?: boolean) {
 }
 export const partyusPhone = "+5213324963705";
 
+export async function sendNotifcationsAll({
+  titulo,
+  descripcion,
+}: {
+  titulo: string;
+  descripcion?: string;
+}) {
+  DataStore.query(Usuario).then((ls) => {
+    ls.map((usr) => {
+      sendNotifications({
+        titulo,
+        descripcion,
+        tipo: TipoNotificacion.BIENVENIDA,
+        usuarioID: usr.id,
+        externalToken: usr.notificationToken,
+        showAt: new Date().toISOString(),
+      });
+    });
+  });
+}
+
 export async function sendAdminNotification({
   titulo,
   descripcion,
@@ -520,7 +541,6 @@ export async function fetchFromOpenpay<T>({
   const url = produccion
     ? "https://api.openpay.mx/v1/"
     : "https://sandbox-api.openpay.mx/v1/";
-  console.log(url + MERCHANT_ID + path);
   return fetch(url + MERCHANT_ID + path, requestOptions).then(
     async (res: any) => {
       res = await res.json();
@@ -998,6 +1018,7 @@ export async function sendNotifications({
   externalToken?: string;
 }) {
   showAt = showAt ? showAt : new Date().toISOString();
+  triggerTime = triggerTime ? triggerTime : new Date().getTime() / 1000;
 
   const data = {
     eventoID,

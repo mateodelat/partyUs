@@ -13,13 +13,17 @@
   REGION
 Amplify Params - DO NOT EDIT */
 
+const production = process.env.ENV === "production"
+
+const MERCHANT_ID = production ? process.env.MERCHANT_ID_PROD : process.env.MERCHANT_ID_STAG
+const SECRET_KEY = production ? process.env.SECRET_KEY_PROD : process.env.SECRET_KEY_STAG
+
 const { graphqlOperation } = require('/opt/graphqlOperation')
 const { updateBoletoReturns, createReservasBoletosReturns, updateEventoReturns, updateCuponReturns, reservaReturns } = require("/opt/graphqlReturns")
 
-
 const Openpay = require("openpay")
-var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
-openpay.setProductionReady(true);
+var openpay = new Openpay(MERCHANT_ID, SECRET_KEY);
+openpay.setProductionReady(production);
 
 
 const comisionApp = 0.15;
@@ -44,6 +48,7 @@ const redondear = (numero, entero) => {
 
 async function graphqlRequest({ query, variables }) {
     const endpoint = process.env.API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
+
 
     let body = {}
 
@@ -643,7 +648,9 @@ exports.handler = async (event
                         source_id: sourceID,
                         amount: total,
                         description,
+                        redirect_url: "https://www.partyusmx.com",
                         order_id: "charge>>>" + reservaID,
+                        capture: true,
                         due_date: tipoPago === "EFECTIVO" ? limitDate : undefined,
                     },
                     async function (error, e) {

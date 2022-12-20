@@ -82,9 +82,13 @@ export default function ({
   const lugarList = enumToArray(PlaceEnum);
 
   // Precio maximo redondeado al 50 mas alto
-  const maximumValue = redondear(maxPrice, 50, tipoRedondeo.ARRIBA);
+  const maximumValue = redondear(
+    maxPrice > 1000 ? maxPrice : 1000,
+    50,
+    tipoRedondeo.ARRIBA
+  );
   // Precio minimo redondeado al 50 mas bajo
-  const minimumValue = redondear(minPrice, 50, tipoRedondeo.ABAJO);
+  const minimumValue = 0;
 
   const [innerModal, setInnerModal] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);

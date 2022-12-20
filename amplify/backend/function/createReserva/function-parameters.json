@@ -17,20 +17,26 @@
   ],
   "environmentVariableList": [
     {
-      "cloudFormationParameterName": "secretKey",
-      "environmentVariableName": "SECRET_KEY"
+      "cloudFormationParameterName": "secretKeyProd",
+      "environmentVariableName": "SECRET_KEY_PROD"
     },
     {
-      "cloudFormationParameterName": "merchantId",
-      "environmentVariableName": "MERCHANT_ID"
+      "cloudFormationParameterName": "secretKeyStag",
+      "environmentVariableName": "SECRET_KEY_STAG"
+    },
+
+    {
+      "cloudFormationParameterName": "merchantIdProd",
+      "environmentVariableName": "MERCHANT_ID_PROD"
+    },
+    {
+      "cloudFormationParameterName": "merchantIdStag",
+      "environmentVariableName": "MERCHANT_ID_STAG"
     }
   ],
   "permissions": {
     "api": {
-      "partyUsAPI": [
-        "Query",
-        "Mutation"
-      ]
+      "partyUsAPI": ["Query", "Mutation"]
     }
   }
 }

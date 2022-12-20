@@ -9,9 +9,15 @@ const bodyParser = require('body-parser')
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 
 
+const production = process.env.ENV === "production"
+
+const MERCHANT_ID = production ? process.env.MERCHANT_ID_PROD : process.env.MERCHANT_ID_STAG
+const SECRET_KEY = production ? process.env.SECRET_KEY_PROD : process.env.SECRET_KEY_STAG
+
+
 var Openpay = require('openpay');
-var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
-openpay.setProductionReady(true);
+var openpay = new Openpay(MERCHANT_ID, SECRET_KEY);
+openpay.setProductionReady(production);
 
 
 // declare a new express app

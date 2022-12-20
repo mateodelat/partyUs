@@ -26,7 +26,7 @@
         "NSPhotoLibraryAddUsageDescription": "$(PRODUCT_NAME) necesita permiso para poder guardar la foto del boleto en tu galeria",
         "NSCameraUsageDescription": "$(PRODUCT_NAME) necesita permiso de camara para escanear boletos o subir imagenes que tomes a tu foto de perfil."
       },
-      "buildNumber": "0.0.4",
+      "buildNumber": "0.0.5",
       "bitcode": "Debug",
       "config": {
         "googleMapsApiKey": "AIzaSyDce3_ZI_6A4tOwKjJFnlvv7WLLUUls7bw"
@@ -75,8 +75,10 @@
         {
           "savePhotosPermission": "$(PRODUCT_NAME) accede a las fotos que quieras para subirlas a la app o escribir y guardar tu boleto."
         }
-      ]
+      ],
+      ["@bugsnag/plugin-expo-eas-sourcemaps"]
     ],
+
     "extra": {
       "eas": {
         "projectId": "7b95f4ec-2ba2-4572-a5c3-d78d94e77689"

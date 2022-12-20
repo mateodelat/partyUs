@@ -303,7 +303,7 @@ export default function () {
                         fontSize: 20,
                       }}
                     >
-                      IMAGEN PRINCIPAL
+                      PRESIONA PARA IMAGEN PRINCIPAL
                     </Text>
                   </View>
                 </Pressable>

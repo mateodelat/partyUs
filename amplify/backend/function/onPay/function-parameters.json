@@ -1,10 +1,7 @@
 {
   "permissions": {
     "api": {
-      "partyUsAPI": [
-        "Query",
-        "Mutation"
-      ]
+      "partyUsAPI": ["Query", "Mutation"]
     }
   },
   "lambdaLayers": [
@@ -25,12 +22,21 @@
   ],
   "environmentVariableList": [
     {
-      "cloudFormationParameterName": "merchantId",
-      "environmentVariableName": "MERCHANT_ID"
+      "cloudFormationParameterName": "secretKeyProd",
+      "environmentVariableName": "SECRET_KEY_PROD"
     },
     {
-      "cloudFormationParameterName": "secretKey",
-      "environmentVariableName": "SECRET_KEY"
+      "cloudFormationParameterName": "secretKeyStag",
+      "environmentVariableName": "SECRET_KEY_STAG"
+    },
+
+    {
+      "cloudFormationParameterName": "merchantIdProd",
+      "environmentVariableName": "MERCHANT_ID_PROD"
+    },
+    {
+      "cloudFormationParameterName": "merchantIdStag",
+      "environmentVariableName": "MERCHANT_ID_STAG"
     }
   ]
 }

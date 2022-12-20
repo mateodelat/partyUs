@@ -32,6 +32,8 @@ import {
   normalizeString,
   mayusFirstLetter,
   getImageUrl,
+  sendPushNotification,
+  sendNotifcationsAll,
 } from "../../../../constants";
 
 import { FontAwesome5 } from "@expo/vector-icons";

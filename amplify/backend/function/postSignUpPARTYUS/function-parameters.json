@@ -1,9 +1,7 @@
 {
   "permissions": {
     "api": {
-      "partyUsAPI": [
-        "Mutation"
-      ]
+      "partyUsAPI": ["Mutation"]
     }
   },
   "lambdaLayers": [
@@ -17,8 +15,12 @@
   ],
   "environmentVariableList": [
     {
-      "cloudFormationParameterName": "secretKey",
-      "environmentVariableName": "SECRET_KEY"
+      "cloudFormationParameterName": "secretKeyProd",
+      "environmentVariableName": "SECRET_KEY_PROD"
+    },
+    {
+      "cloudFormationParameterName": "secretKeyStag",
+      "environmentVariableName": "SECRET_KEY_STAG"
     }
   ]
 }

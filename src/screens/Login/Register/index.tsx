@@ -2,6 +2,8 @@ import { useState } from "react";
 import {
   Button,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -122,69 +124,74 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <Pressable onPress={Keyboard.dismiss} style={styles.inputContainer}>
-        <LoginHeader register />
-        <AnimatedInput
-          placeholder="Nickname"
-          prefix="@"
-          valid={!errorNombre}
-          autoCapitalize={"none"}
-          errorText={errorNombre}
-          onChangeText={(text) => {
-            setNombre(text);
-            clearError();
-          }}
-          value={nombre}
-          styleLabel={{ fontWeight: "600" }}
-        />
-        <AnimatedInput
-          placeholder="Email"
-          autoCapitalize={"none"}
-          valid={!errorEmail}
-          errorText={errorEmail}
-          onChangeText={(text) => {
-            setEmail(text);
-            clearError();
-          }}
-          value={email}
-          styleLabel={{ fontWeight: "600" }}
-        />
-        <View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Pressable onPress={Keyboard.dismiss} style={styles.inputContainer}>
+          <LoginHeader register />
           <AnimatedInput
-            placeholder="Contraseña"
-            valid={!errorPassword}
+            placeholder="Nickname"
+            prefix="@"
+            valid={!errorNombre}
             autoCapitalize={"none"}
-            secureTextEntry={hidePassword}
-            errorText={errorPassword}
+            errorText={errorNombre}
             onChangeText={(text) => {
-              setPassword(text);
+              setNombre(text);
               clearError();
             }}
-            value={password}
+            value={nombre}
             styleLabel={{ fontWeight: "600" }}
           />
-
-          <HidePassword
-            setHidePassword={setHidePassword}
-            hidePassword={hidePassword}
+          <AnimatedInput
+            placeholder="Email"
+            autoCapitalize={"none"}
+            valid={!errorEmail}
+            errorText={errorEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              clearError();
+            }}
+            value={email}
+            styleLabel={{ fontWeight: "600" }}
           />
-        </View>
-      </Pressable>
-      <Boton
-        loading={buttonLoading}
-        onPress={handleRegistrarse}
-        style={{ marginHorizontal: 30, marginBottom: 20 }}
-        titulo="Registrarse"
-      />
+          <View>
+            <AnimatedInput
+              placeholder="Contraseña"
+              valid={!errorPassword}
+              autoCapitalize={"none"}
+              secureTextEntry={hidePassword}
+              errorText={errorPassword}
+              onChangeText={(text) => {
+                setPassword(text);
+                clearError();
+              }}
+              value={password}
+              styleLabel={{ fontWeight: "600" }}
+            />
 
-      <TouchableOpacity onPress={navigateLogin}>
-        <Text style={{ ...styles.forget, marginBottom: 20 }}>
-          ¿Ya tienes cuenta?{" "}
-          <Text style={{ color: "blue" }}>Inicia sesion</Text>
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+            <HidePassword
+              setHidePassword={setHidePassword}
+              hidePassword={hidePassword}
+            />
+          </View>
+        </Pressable>
+        <Boton
+          loading={buttonLoading}
+          onPress={handleRegistrarse}
+          style={{ marginHorizontal: 30, marginBottom: 20 }}
+          titulo="Registrarse"
+        />
+
+        <TouchableOpacity onPress={navigateLogin}>
+          <Text style={{ ...styles.forget, marginBottom: 20 }}>
+            ¿Ya tienes cuenta?{" "}
+            <Text style={{ color: "blue" }}>Inicia sesion</Text>
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
