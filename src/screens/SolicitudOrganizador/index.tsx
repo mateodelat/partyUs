@@ -56,7 +56,15 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
         titularCuenta,
         phoneCode,
         phoneNumber,
+        rfc,
       } = usuario;
+
+      // Extraer ciudad y datos de direccion si se guardaron en el usuario
+
+      const city = (usuario.direccion as any)?.city as string;
+      const line1 = (usuario.direccion as any)?.line1 as string;
+      const postal_code = (usuario.direccion as any)?.postal_code as string;
+      const state = (usuario.direccion as any)?.state as string;
 
       const key = "usr-" + usuario.id + "|id.jpg";
 
@@ -97,6 +105,15 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
             ne.idKey = key;
             ne.idData = idData;
+
+            ne.direccion = {
+              city,
+              line1,
+              postal_code,
+              state,
+            } as any;
+
+            ne.rfc = rfc;
 
             ne.nombre = nombre;
             ne.paterno = paterno;

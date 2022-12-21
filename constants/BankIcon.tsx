@@ -8,7 +8,6 @@ export default function (code: string, ...props: UriProps[]) {
         "https://bancanet.banamex.com/JFP/regional/images/layout/full-color-reversed.svg";
 
     case "012":
-      break;
       uri = "https://cdn.worldvectorlogo.com/logos/bbva-23894.svg";
 
       break;

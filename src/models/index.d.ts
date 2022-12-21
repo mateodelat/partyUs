@@ -95,6 +95,7 @@ type EagerUsuario = {
   readonly cuentaBancaria?: string | null;
   readonly titularCuenta?: string | null;
   readonly receiveNewReservations?: boolean | null;
+  readonly rfc?: string | null;
   readonly imagenFondo?: string | null;
   readonly direccion?: string | null;
   readonly phoneNumber?: string | null;
@@ -108,7 +109,8 @@ type EagerUsuario = {
   readonly calificacion?: number | null;
   readonly numResenas?: number | null;
   readonly notificationToken?: string | null;
-  readonly userPaymentID?: string | null;
+  readonly paymentClientID?: string | null;
+  readonly paymentAccountID?: string | null;
   readonly verified?: boolean | null;
   readonly owner?: string | null;
   readonly Eventos?: (Evento | null)[] | null;
@@ -128,6 +130,7 @@ type LazyUsuario = {
   readonly cuentaBancaria?: string | null;
   readonly titularCuenta?: string | null;
   readonly receiveNewReservations?: boolean | null;
+  readonly rfc?: string | null;
   readonly imagenFondo?: string | null;
   readonly direccion?: string | null;
   readonly phoneNumber?: string | null;
@@ -141,7 +144,8 @@ type LazyUsuario = {
   readonly calificacion?: number | null;
   readonly numResenas?: number | null;
   readonly notificationToken?: string | null;
-  readonly userPaymentID?: string | null;
+  readonly paymentClientID?: string | null;
+  readonly paymentAccountID?: string | null;
   readonly verified?: boolean | null;
   readonly owner?: string | null;
   readonly Eventos: AsyncCollection<Evento>;
@@ -174,6 +178,7 @@ type EagerEvento = {
   readonly personasMax?: number | null;
   readonly precioMin?: number | null;
   readonly precioMax?: number | null;
+  readonly paymentProductID?: string | null;
   readonly CreatorID?: string | null;
   readonly creator?: Usuario | null;
   readonly Boletos?: (Boleto | null)[] | null;
@@ -200,6 +205,7 @@ type LazyEvento = {
   readonly personasMax?: number | null;
   readonly precioMin?: number | null;
   readonly precioMax?: number | null;
+  readonly paymentProductID?: string | null;
   readonly CreatorID?: string | null;
   readonly creator: AsyncItem<Usuario | undefined>;
   readonly Boletos: AsyncCollection<Boleto>;
@@ -221,6 +227,7 @@ type EagerBoleto = {
   readonly cantidad?: number | null;
   readonly personasReservadas?: number | null;
   readonly precio?: number | null;
+  readonly paymentPriceID?: string | null;
   readonly eventoID?: string | null;
   readonly Reservas?: (ReservasBoletos | null)[] | null;
   readonly createdAt?: string | null;
@@ -234,6 +241,7 @@ type LazyBoleto = {
   readonly cantidad?: number | null;
   readonly personasReservadas?: number | null;
   readonly precio?: number | null;
+  readonly paymentPriceID?: string | null;
   readonly eventoID?: string | null;
   readonly Reservas: AsyncCollection<ReservasBoletos>;
   readonly createdAt?: string | null;

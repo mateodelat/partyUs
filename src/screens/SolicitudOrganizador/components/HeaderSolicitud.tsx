@@ -8,7 +8,7 @@ export default function ({
   textStyle,
 }: {
   titulo: string;
-  subTitulo: string;
+  subTitulo?: string;
   style?: ViewStyle;
   textStyle?: TextStyle;
 }) {

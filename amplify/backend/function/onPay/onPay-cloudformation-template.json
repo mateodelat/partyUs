@@ -36,13 +36,7 @@
       "Type": "String",
       "Default": "functionpartyusgraphqlOperationsArn"
     },
-    "merchantIdProd": {
-      "Type": "String"
-    },
     "secretKeyProd": {
-      "Type": "String"
-    },
-    "merchantIdStag": {
       "Type": "String"
     },
     "secretKeyStag": {
@@ -111,14 +105,8 @@
             "API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT": {
               "Ref": "apipartyUsAPIGraphQLAPIKeyOutput"
             },
-            "MERCHANT_ID_PROD": {
-              "Ref": "merchantIdProd"
-            },
             "SECRET_KEY_PROD": {
               "Ref": "secretKeyProd"
-            },
-            "MERCHANT_ID_STAG": {
-              "Ref": "merchantIdStag"
             },
             "SECRET_KEY_STAG": {
               "Ref": "secretKeyStag"
@@ -135,9 +123,6 @@
         "Layers": [
           {
             "Ref": "functionpartyusgraphqlOperationsArn"
-          },
-          {
-            "Ref": "functionpartyuslayerArn"
           }
         ],
         "Timeout": 25

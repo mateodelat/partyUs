@@ -18,6 +18,7 @@ export default function () {
       style={{ flex: 1 }}
     >
       <Stack.Navigator
+        initialRouteName="Step3"
         screenOptions={{
           animationEnabled: false,
           header: ({

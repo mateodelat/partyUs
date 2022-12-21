@@ -75,12 +75,15 @@ export default function ({
       return;
     }
 
+    // Eliminar los espacios
+    const numero = phoneNumber.replace(/ /g, "");
+
     navigation.navigate("Step2", {
       nombre,
       paterno,
       materno,
       phoneCode,
-      phoneNumber,
+      phoneNumber: numero,
     });
   }
 

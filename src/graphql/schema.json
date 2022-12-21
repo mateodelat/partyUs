@@ -2083,7 +2083,7 @@
           "interfaces": null,
           "enumValues": [
             {
-              "name": "REGGETON",
+              "name": "REGGAETON",
               "description": null,
               "isDeprecated": false,
               "deprecationReason": null
@@ -2095,7 +2095,7 @@
               "deprecationReason": null
             },
             {
-              "name": "TECNO",
+              "name": "TECHNO",
               "description": null,
               "isDeprecated": false,
               "deprecationReason": null

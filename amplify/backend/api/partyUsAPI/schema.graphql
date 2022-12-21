@@ -25,6 +25,8 @@ type Usuario
 
   receiveNewReservations: Boolean
 
+  rfc: String
+
   imagenFondo: String
   direccion: AWSJSON
     @auth(rules: [{ allow: owner }, { allow: groups, groups: ["Admin"] }])
@@ -55,7 +57,8 @@ type Usuario
   calificacion: Float
   numResenas: Int
   notificationToken: String
-  userPaymentID: String
+  paymentClientID: String
+  paymentAccountID: String
   verified: Boolean
     @auth(
       rules: [
@@ -111,6 +114,9 @@ type Evento
 
   precioMin: Int
   precioMax: Int
+
+  # Crear un producto por cada evento
+  paymentProductID: String
 
   CreatorID: ID @index(name: "byUsuario")
   creator: Usuario @belongsTo
@@ -173,6 +179,9 @@ type Boleto
   cantidad: Int
   personasReservadas: Int
   precio: Float
+
+  # Crear un precio por cada boleto en evento
+  paymentPriceID: String
 
   eventoID: ID @index(name: "byEvento")
   Reservas: [ReservasBoletos] @hasMany(indexName: "byBoletos", fields: ["id"])

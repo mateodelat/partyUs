@@ -9,7 +9,6 @@ import { TipoNotificacion, Usuario } from "../src/models";
 
 import base64 from "react-native-base64";
 import awsmobile from "../src/aws-exports";
-import { errorOpenPay } from "../types/openpay";
 import { Notificacion } from "../src/models";
 import {
   AndroidNotificationPriority,
@@ -17,6 +16,8 @@ import {
 } from "expo-notifications";
 
 import { clabe } from "./ClabeValidator";
+import { STRIPE_PUBLISHABLE_KEY } from "../keys";
+import { logger } from "react-native-logs";
 
 export const rojo = "#f01829";
 export const rojoClaro = "#f34856";
@@ -61,6 +62,7 @@ export function formatMoney(num?: number | null, showCents?: boolean) {
   );
 }
 export const partyusPhone = "+5213312897347";
+export const partyusEmail = "partyus_mx@outlook.com";
 
 export async function sendNotifcationsAll({
   titulo,
@@ -512,6 +514,57 @@ export function generarCurp(
   }
 }
 
+// Funcion que manda una solicitud a stripe con llave publica o privada dependiendo
+export async function fetchFromStripe<T>({
+  path,
+  type,
+  input,
+  secretKey,
+}: {
+  path: string;
+  type: "POST" | "CREATE" | "DELETE" | "GET";
+  input?: Object;
+  secretKey?: string;
+}) {
+  const encodedData = new URLSearchParams();
+
+  // Funcion que codifica objectos nesteados en tipo www-url-formencoded
+  function nestedObjEncode(prevKey: string, nestedObj: Object) {
+    for (const [key, value] of Object.entries(nestedObj)) {
+      const actualKey = `${prevKey ? prevKey : ""}[${key}]`;
+
+      // Funcion recursiva si es objeto se llama con la key actual
+      if (typeof value === "object") {
+        nestedObjEncode(actualKey, value);
+      } else {
+        encodedData.append(actualKey, value);
+      }
+    }
+  }
+  nestedObjEncode(null, input);
+
+  const requestOptions = {
+    method: type,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization:
+        "Bearer " + (secretKey ? secretKey : STRIPE_PUBLISHABLE_KEY),
+      Accept: "application/json",
+    },
+    body: encodedData.toString(),
+  };
+
+  const url = "https://api.stripe.com";
+  return fetch(url + path, requestOptions).then(async (res: any) => {
+    res = await res.json();
+
+    if (res.error) {
+      throw new Error(res.error.message);
+    }
+    return res as T;
+  });
+}
+
 export async function fetchFromOpenpay<T>({
   path,
   type,
@@ -600,17 +653,29 @@ export async function fetchFromAPI<T>(
 
   return fetch(url, requestOptions).then(async (res: any) => {
     res = await res.json();
+    const log = logger.createLogger();
+    log.debug(res);
+
     if (res.error) {
+      res.error = res.body;
       throw res as {
-        error: errorOpenPay | null;
+        error: null;
         body: T | null;
       };
     }
+
     return res;
   }) as Promise<{
-    error: errorOpenPay | null;
+    error: null;
     body: T | null;
   }>;
+}
+export function validateRFC(rfc: string) {
+  const regexp = new RegExp(
+    /^([A-Z,Ñ,&]{3,4}([0-9]{2})(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])[A-Z|\d]{3})$/
+  );
+
+  return regexp.exec(rfc);
 }
 
 export function normalizeCardType(tipo: string) {

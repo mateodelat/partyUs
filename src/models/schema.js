@@ -73,6 +73,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "rfc": {
+                    "name": "rfc",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "imagenFondo": {
                     "name": "imagenFondo",
                     "isArray": false,
@@ -164,8 +171,15 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "userPaymentID": {
-                    "name": "userPaymentID",
+                "paymentClientID": {
+                    "name": "paymentClientID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "paymentAccountID": {
+                    "name": "paymentAccountID",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -431,6 +445,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "paymentProductID": {
+                    "name": "paymentProductID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "CreatorID": {
                     "name": "CreatorID",
                     "isArray": false,
@@ -619,6 +640,13 @@ export const schema = {
                     "name": "precio",
                     "isArray": false,
                     "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "paymentPriceID": {
+                    "name": "paymentPriceID",
+                    "isArray": false,
+                    "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -1750,5 +1778,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.3.2",
-    "version": "186a0549df851277e571dc92ae2e07a3"
+    "version": "8fee12386cc2799c5a6d231ae0693a1f"
 };

@@ -32,6 +32,10 @@
       "Type": "String",
       "Default": "functionpartyuslayerArn"
     },
+    "functionpartyuslambdaDependenciesArn": {
+      "Type": "String",
+      "Default": "functionpartyuslambdaDependenciesArn"
+    },
     "secretKeyProd": {
       "Type": "String"
     },
@@ -118,7 +122,7 @@
         "Runtime": "nodejs14.x",
         "Layers": [
           {
-            "Ref": "functionpartyuslayerArn"
+            "Ref": "functionpartyuslambdaDependenciesArn"
           }
         ],
         "Timeout": 25

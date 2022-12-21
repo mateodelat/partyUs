@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   Image,
@@ -15,7 +14,6 @@ import {
 import { Entypo } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-import { FontAwesome5 } from "@expo/vector-icons";
 
 import ElementoPersonas from "./ElementoPersonas";
 
@@ -29,13 +27,11 @@ import {
   formatMoney,
   getCardIcon,
   getUserSub,
-  msInDay,
   precioConComision,
   rojo,
   shadowMedia,
   rojoClaro,
   azulClaro,
-  comisionApp,
   AsyncAlert,
   vibrar,
   VibrationType,
@@ -47,7 +43,7 @@ import {
 
 import { BoletoType } from "../Boletos";
 import { EventoType } from "../Home";
-import { Boleto, Cupon, Evento, Usuario } from "../../../models";
+import { Cupon, Usuario } from "../../../models";
 
 import Header from "../../../navigation/components/Header";
 import uuid from "react-native-uuid";
@@ -60,7 +56,6 @@ import { DataStore } from "aws-amplify";
 import { TipoNotificacion } from "../../../models";
 import { Notificacion } from "../../../models";
 import { notificacionesRecordatorio } from "../Notifications/functions";
-import RadioButton from "../../../components/RadioButton";
 import { TipoPago } from "../../../models";
 import WebView from "react-native-webview";
 
@@ -109,8 +104,6 @@ export default function ({
   const [editing, setEditing] = useState(false);
 
   const [tipoPago, setTipoPago] = useState<"EFECTIVO" | number>();
-
-  const [termsAceptance, setTermsAceptance] = useState(false);
 
   // UI del boton
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -192,9 +185,9 @@ export default function ({
   }
 
   function getUserCards() {
-    if (usuario.userPaymentID) {
+    if (usuario.paymentAccountID) {
       fetchFromAPI<cardType[]>("/payments/card", "GET", undefined, {
-        customer_id: usuario.userPaymentID,
+        customer_id: usuario.paymentAccountID,
       }).then(({ body }) => {
         if (body) {
           body = body.map((card) => {
@@ -598,7 +591,7 @@ export default function ({
               source={{
                 uri: imagenes[imagenPrincipalIDX ? imagenPrincipalIDX : 0].uri,
               }}
-              style={styles.imgAventura}
+              style={styles.imgLogo}
             />
 
             <View style={styles.adventureTextContainer}>
@@ -896,11 +889,12 @@ export default function ({
                   }}
                   style={styles.metodoDePago}
                 >
-                  <View style={{ ...styles.iconoIzquierda }}>
-                    <FontAwesome5
-                      name="money-bill-wave-alt"
-                      size={24}
-                      color={azulClaro}
+                  <View
+                    style={{ ...styles.iconoIzquierda, overflow: "hidden" }}
+                  >
+                    <Image
+                      style={{ height: 30, resizeMode: "contain", width: 40 }}
+                      source={require("../../../../assets/IMG/Oxxo_Logo.png")}
                     />
                   </View>
 
@@ -1030,11 +1024,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 
-  imgAventura: {
+  imgLogo: {
     flex: 2,
     height: "100%",
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
+    resizeMode: "contain",
   },
 
   adventureTextContainer: {

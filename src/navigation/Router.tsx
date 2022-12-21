@@ -83,7 +83,7 @@ export default function () {
   return (
     <NavigationContainer linking={linking} fallback={<Loading indicator />}>
       <Stack.Navigator
-        // initialRouteName="AdminStack"
+        initialRouteName="DatosPersonales"
         screenOptions={{
           header: ({
             route: { name, params },

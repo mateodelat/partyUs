@@ -16,6 +16,7 @@ import { Feather } from "@expo/vector-icons";
 import {
   AsyncAlert,
   azulClaro,
+  partyusEmail,
   partyusPhone,
   verde,
 } from "../../../../constants";
@@ -43,7 +44,7 @@ export default function () {
     ).then((r) => {
       if (!r) return;
       Linking.openURL(
-        "mailto: Partyus_mx@outlook.com?subject=SOPORTE PARTYUS"
+        "mailto: " + partyusEmail + "?subject=SOPORTE PARTYUS"
       ).catch((e) => {
         Alert.alert("Error", "Es probable que no tengas whatsapp instalado");
       });

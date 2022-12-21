@@ -32,16 +32,11 @@
       "Type": "String",
       "Default": "apipartyUsAPIGraphQLAPIKeyOutput"
     },
-    "secretKeyProd": {
-      "Type": "String"
+    "functionpartyuslambdaDependenciesArn": {
+      "Type": "String",
+      "Default": "functionpartyuslambdaDependenciesArn"
     },
     "secretKeyStag": {
-      "Type": "String"
-    },
-    "merchantIdProd": {
-      "Type": "String"
-    },
-    "merchantIdStag": {
       "Type": "String"
     }
   },
@@ -107,17 +102,8 @@
             "API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT": {
               "Ref": "apipartyUsAPIGraphQLAPIKeyOutput"
             },
-            "SECRET_KEY_PROD": {
-              "Ref": "secretKeyProd"
-            },
             "SECRET_KEY_STAG": {
               "Ref": "secretKeyStag"
-            },
-            "MERCHANT_ID_PROD": {
-              "Ref": "merchantIdProd"
-            },
-            "MERCHANT_ID_STAG": {
-              "Ref": "merchantIdStag"
             }
           }
         },
@@ -130,7 +116,7 @@
         "Runtime": "nodejs14.x",
         "Layers": [
           {
-            "Ref": "functionpartyuslayerArn"
+            "Ref": "functionpartyuslambdaDependenciesArn"
           }
         ],
         "Timeout": 25

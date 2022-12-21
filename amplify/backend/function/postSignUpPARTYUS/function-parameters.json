@@ -1,16 +1,18 @@
 {
   "permissions": {
     "api": {
-      "partyUsAPI": ["Mutation"]
+      "partyUsAPI": [
+        "Mutation"
+      ]
     }
   },
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
-      "resourceName": "partyuslayer",
+      "resourceName": "partyuslambdaDependencies",
+      "env": "staging",
       "version": "Always choose latest version",
-      "isLatestVersionSelected": true,
-      "env": "production"
+      "isLatestVersionSelected": true
     }
   ],
   "environmentVariableList": [

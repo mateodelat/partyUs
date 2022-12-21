@@ -48,33 +48,52 @@ type input = {
 };
 
 export type saveParams = {
-  number: string; //"4242 4242"
-  expiry: { month: string; year: string }; //"06/19"
-  cvv: string; //"300",
-  icon: NodeRequire; // Icono de la tarjeta
-  name: string; //"Sam",
+  number?: string; //"4242 4242"
+  expiry?: { month: string; year: string }; //"06/19"
+  cvv?: string; //"300",
+  icon?: NodeRequire; // Icono de la tarjeta
+  name?: string; //"Sam",
   type?: cardBrand_type;
-  saveCard: boolean;
+  saveCard?: boolean;
 };
 
 export default function ({
   onAdd,
   setModalVisible,
-  comprasFuturasEnabled,
+  comprasFuturasDisabled,
+  prevCard,
 }: {
   onAdd: (params: saveParams) => void;
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  comprasFuturasEnabled?: boolean;
+  comprasFuturasDisabled?: boolean;
+  prevCard?: saveParams;
 }) {
+  const prevCvv = prevCard?.cvv ? prevCard?.cvv : "";
+  const prevExpiry = prevCard?.expiry
+    ? prevCard?.expiry.month + "/" + prevCard.expiry.year
+    : "";
+  const prevNumber = prevCard?.number ? prevCard?.number : "";
+  const prevName = prevCard?.name ? prevCard?.name : "";
+
   const [innerModal, setInnerModal] = useState(false);
 
-  const [cvv, setCvv] = useState<input>();
+  const cvvValidation = valid.cvv(prevCvv);
 
-  const [expiry, setExpiry] = useState<input>();
+  const [cvv, setCvv] = useState<input>({
+    value: prevCvv,
+    validation: cvvValidation,
+  });
 
-  const [number, setNumber] = useState<input>();
+  const [expiry, setExpiry] = useState<input>({ value: prevExpiry });
 
-  const [name, setName] = useState("");
+  const numberValidation = valid.number(prevNumber);
+
+  const [number, setNumber] = useState<input>({
+    value: prevNumber,
+    validation: numberValidation,
+  });
+
+  const [name, setName] = useState(prevName);
 
   const [saveCard, setSaveCard] = useState(true);
 
@@ -86,7 +105,12 @@ export default function ({
   >(null);
 
   const handleCloseModal = async () => {
-    if (name || number || expiry || cvv) {
+    if (
+      (!!name && name !== prevName) ||
+      (!!number?.value && number.value !== prevNumber) ||
+      (!!expiry?.value && expiry.value !== prevExpiry) ||
+      (!!cvv?.value && cvv.value !== prevCvv)
+    ) {
       await AsyncAlert("Atencion", "Se perderan los datos de la tarjeta").then(
         (r) => {
           if (r) {
@@ -104,32 +128,32 @@ export default function ({
   useEffect(() => {
     setInnerModal(true);
 
-    // setNumber({
-    //   value: "370000000000002",
-    //   validation: {
-    //     card: {
-    //       cvv: 3,
-    //       type: "visa",
-    //     },
-    //     isPotentiallyValid: true,
-    //     isValid: true,
-    //   },
-    // });
-    // setName("Test name");
-    // setExpiry({
-    //   value: "02/24",
-    //   validation: {
-    //     isPotentiallyValid: true,
-    //     isValid: true,
-    //   },
-    // });
-    // setCvv({
-    //   value: "022",
-    //   validation: {
-    //     isPotentiallyValid: true,
-    //     isValid: true,
-    //   },
-    // });
+    setNumber({
+      value: "4000056655665556",
+      validation: {
+        card: {
+          cvv: 3,
+          type: "visa",
+        },
+        isPotentiallyValid: true,
+        isValid: true,
+      },
+    });
+    setName("Test name");
+    setExpiry({
+      value: "02/24",
+      validation: {
+        isPotentiallyValid: true,
+        isValid: true,
+      },
+    });
+    setCvv({
+      value: "022",
+      validation: {
+        isPotentiallyValid: true,
+        isValid: true,
+      },
+    });
   }, []);
 
   function handleSave() {
@@ -412,12 +436,12 @@ export default function ({
             />
 
             <Text style={styles.infoTxt}>
-              Al momento de crear la tarjeta se hara un cargo de 10$ para
+              Al momento de crear la tarjeta se realiza un cargo de 1$ para
               verificar que es valida y se devolvera al instante
             </Text>
 
             {/* Guardar tarjeta para compras futuras */}
-            {!comprasFuturasEnabled ? (
+            {!comprasFuturasDisabled ? (
               <Pressable
                 onPress={() => {
                   setSaveCard(!saveCard);
@@ -451,7 +475,7 @@ export default function ({
                 </Text>
               </Pressable>
             ) : (
-              <View style={{ marginTop: 20 }} />
+              <View style={{ marginTop: 40 }} />
             )}
 
             <Boton

@@ -87,18 +87,22 @@ export default function ({
   }
   async function registerForPushNotificationsAsync(usuario: Usuario) {
     let token: string;
-    const { status: existingStatus } =
+    const { status: existingStatus, ios } =
       await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
-    console.log({ existingStatus });
+    // Si es IOS son permisos distintos
+
     if (existingStatus !== "granted") {
+      // Si estamos en un dispositivo ios ver si el usuario explicitamente denego las notificaciones para no mandarle el permiso
+      if (ios?.status === Notifications.IosAuthorizationStatus.DENIED) {
+        return;
+      }
+
       const { status } = await Notifications.requestPermissionsAsync();
-      console.log({ status });
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
-      console.log("Failed to get push token for push notification!");
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync())?.data;

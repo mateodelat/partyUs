@@ -104,6 +104,7 @@ const clabe = {
       //    https://es.wikipedia.org/wiki/CLABE#C.C3.B3digo_de_banco
       //    http://omawww.sat.gob.mx/fichas_tematicas/buzon_tributario/Documents/catalogo_bancos.pdf
       //    https://frbservices.org/assets/financial-services/ach/global-service-orig-manual.pdf
+      0: { tag: 'STRIPE', name: 'Prueba stripe' },
       1: { tag: 'BANXICO', name: 'Banco de México' },
       2: { tag: 'BANAMEX', name: 'Banco Nacional de México' },
       6: { tag: 'BANCOMEXT', name: 'Banco Nacional de Comercio Exterior' },
@@ -235,6 +236,7 @@ const clabe = {
       // Sources:
       //    https://en.wikipedia.org/wiki/Template:Mexico_State-Abbreviation_CodesMX
       //    https://es.wikipedia.org/wiki/CLABE#C.C3.B3digo_de_plaza
+      [0, '', ''],
       [10, 'Aguascalientes', 'MX-AGU'],
       [11, 'Asientos', 'MX-AGU'],
       [12, 'Calvillo', 'MX-AGU'],

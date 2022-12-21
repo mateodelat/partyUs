@@ -20,6 +20,7 @@ import { StatusBar, StatusBarStyle } from "expo-status-bar";
 import moment from "moment";
 
 import Bugsnag from "@bugsnag/expo";
+import { STRIPE_PUBLISHABLE_KEY } from "./keys";
 
 // LogBox.ignoreAllLogs();
 moment.locale("es");

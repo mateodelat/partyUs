@@ -1,25 +1,13 @@
 {
   "permissions": {
     "api": {
-      "partyUsAPI": ["Query", "Mutation"]
+      "partyUsAPI": [
+        "Query",
+        "Mutation"
+      ]
     }
   },
-  "lambdaLayers": [
-    {
-      "type": "ProjectLayer",
-      "resourceName": "partyusgraphqlOperations",
-      "version": "Always choose latest version",
-      "isLatestVersionSelected": true,
-      "env": "production"
-    },
-    {
-      "type": "ProjectLayer",
-      "resourceName": "partyuslayer",
-      "version": "Always choose latest version",
-      "isLatestVersionSelected": true,
-      "env": "production"
-    }
-  ],
+  "lambdaLayers": [],
   "environmentVariableList": [
     {
       "cloudFormationParameterName": "secretKeyProd",
@@ -28,15 +16,6 @@
     {
       "cloudFormationParameterName": "secretKeyStag",
       "environmentVariableName": "SECRET_KEY_STAG"
-    },
-
-    {
-      "cloudFormationParameterName": "merchantIdProd",
-      "environmentVariableName": "MERCHANT_ID_PROD"
-    },
-    {
-      "cloudFormationParameterName": "merchantIdStag",
-      "environmentVariableName": "MERCHANT_ID_STAG"
     }
   ]
 }

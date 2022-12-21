@@ -2,25 +2,13 @@
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
-      "resourceName": "partyuslayer",
+      "resourceName": "partyuslambdaDependencies",
+      "env": "staging",
       "version": "Always choose latest version",
-      "isLatestVersionSelected": true,
-      "env": "production"
+      "isLatestVersionSelected": true
     }
   ],
   "environmentVariableList": [
-    {
-      "cloudFormationParameterName": "merchantIdProd",
-      "environmentVariableName": "MERCHANT_ID_PROD"
-    },
-    {
-      "cloudFormationParameterName": "merchantIdStag",
-      "environmentVariableName": "MERCHANT_ID_STAG"
-    },
-    {
-      "cloudFormationParameterName": "secretKeyProd",
-      "environmentVariableName": "SECRET_KEY_PROD"
-    },
     {
       "cloudFormationParameterName": "secretKeyStag",
       "environmentVariableName": "SECRET_KEY_STAG"
@@ -28,7 +16,10 @@
   ],
   "permissions": {
     "api": {
-      "partyUsAPI": ["Query", "Mutation"]
+      "partyUsAPI": [
+        "Query",
+        "Mutation"
+      ]
     }
   }
 }
