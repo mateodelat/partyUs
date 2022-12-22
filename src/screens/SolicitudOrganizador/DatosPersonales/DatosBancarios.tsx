@@ -63,6 +63,7 @@ export default function ({ route }: { route: any }) {
 
     prevRfc = prevRfc ? prevRfc : "XAXX010101000";
     tit = tit ? tit : "NOMBRE PRUEBA";
+    c = c ? c : "000000001234567897";
   }
 
   const [cuentaBancaria, setCuentaBancaria] = useState(

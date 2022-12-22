@@ -17,8 +17,9 @@ import {
 } from "expo-notifications";
 
 import { clabe } from "./ClabeValidator";
-import { STRIPE_PUBLISHABLE_KEY } from "../keys";
+import { STRIPE_FILES_KEY, STRIPE_PUBLISHABLE_KEY } from "../keys";
 import { logger } from "react-native-logs";
+import Stripe from "stripe";
 
 export const rojo = "#f01829";
 export const rojoClaro = "#f34856";
@@ -173,41 +174,53 @@ export async function timer(time: number) {
 export const randomImageUri = () =>
   "https://picsum.photos/300/200?random=" + Math.floor(1000 * Math.random());
 
-export async function uploadImageToStripe(uri: string) {
-  // Check selected image is not null
-  if (!!uri) {
-    const data = new FormData();
-    data.append("purpose", "identity_document");
-    data.append("file", {
-      name: "image",
-      type: "image/jpg",
-      uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
-    } as any);
+export async function uploadImageToStripe({
+  uri,
+  purpose,
+  name,
+  getLink,
+}: {
+  uri: string;
+  purpose: string;
+  name: string;
+  getLink?: boolean;
+}) {
+  const i = new Date();
+  const data = new FormData();
+  data.append("purpose", purpose);
+  // Obtener link de stripe
+  getLink && data.append("file_link_data[create]", "true");
+  data.append("file", {
+    name: name,
+    type: "image/jpg",
+    uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
+  } as any);
 
-    // Change file upload URL
-    var url = "https://files.stripe.com/v1/files";
+  // Change file upload URL
+  var url = "https://files.stripe.com/v1/files";
 
-    let res = await fetch(url, {
-      method: "POST",
-      body: data,
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Accept: "application/json",
-        Authorization: "Bearer " + STRIPE_PUBLISHABLE_KEY,
-      },
-    });
-    let responseJson = await res.json();
-    const log = logger.createLogger();
+  let res = await fetch(url, {
+    method: "POST",
+    body: data,
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Accept: "application/json",
+      Authorization: "Bearer " + STRIPE_FILES_KEY,
+    },
+  });
+  let responseJson = await res.json();
+  const log = logger.createLogger();
 
-    if (!responseJson?.error) {
-      return responseJson.id;
-    } else {
-      console.log(responseJson);
-      throw new Error(responseJson);
-    }
+  if (!responseJson?.error) {
+    let res = responseJson as Stripe.File;
+
+    // Si se pidio el link, devolver link de la imagen
+    res.url = res.links?.data.length ? res.links?.data[0].url : res.url;
+
+    return res;
   } else {
-    // Validation Alert
-    console.log("Selecciona una imagen");
+    console.log(responseJson);
+    throw new Error(responseJson);
   }
 }
 
@@ -294,6 +307,11 @@ export const formatDateShort = (
     return ddInicial + " " + meses[mmInicial as any];
   }
 };
+
+/**
+ * Moneda a utilizar en todas las operaciones con stripe
+ */
+export const currency = "mxn";
 
 export const meses = [
   "ene",
@@ -1575,7 +1593,7 @@ export const openCameraPickerAsync = async (
     return false;
   }
 
-  let camResult;
+  let camResult: ImagePicker.ImagePickerResult;
 
   // Si se le paso un aspect ratio, respetarlo
   if (aspect) {
@@ -1591,12 +1609,12 @@ export const openCameraPickerAsync = async (
     });
   }
 
-  if (camResult.cancelled === true) {
+  if (camResult.canceled === true) {
     return false;
   } else {
     // Comprimir la imagen
-    camResult = await ImageManipulator.manipulateAsync(
-      camResult.uri,
+    return await ImageManipulator.manipulateAsync(
+      camResult.assets[0].uri,
       [
         {
           resize: {
@@ -1606,8 +1624,6 @@ export const openCameraPickerAsync = async (
       ],
       { compress: quality }
     );
-
-    return camResult;
   }
 };
 
@@ -1627,7 +1643,7 @@ export const openImagePickerAsync = async (
     return false;
   }
 
-  let pickerResult;
+  let pickerResult: ImagePicker.ImagePickerResult;
   if (aspect) {
     pickerResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: denyVideos
@@ -1645,14 +1661,14 @@ export const openImagePickerAsync = async (
     });
   }
 
-  if (pickerResult.cancelled === true) {
+  if (pickerResult.canceled === true) {
     return false;
   } else {
     // Si se le paso un modificador a la calidad se comprime la imagen
 
     if (!!quality && quality > 0 && quality < 1) {
-      pickerResult = await ImageManipulator.manipulateAsync(
-        pickerResult.uri,
+      return await ImageManipulator.manipulateAsync(
+        pickerResult.assets[0].uri,
         [
           {
             resize: {

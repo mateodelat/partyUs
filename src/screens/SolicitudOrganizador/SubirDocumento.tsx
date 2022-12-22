@@ -75,7 +75,11 @@ export default function SubirDocumento({
 
   async function scanImage(base64: string | ArrayBuffer | null, idURI: string) {
     try {
-      const imagePromise = uploadImageToStripe(idURI);
+      const imagePromise = uploadImageToStripe({
+        purpose: "identity_document",
+        name: "imagen",
+        uri: idURI,
+      }).then((r) => r.id);
 
       // Llamar a google vision y subir imagen a stripe
 
@@ -246,7 +250,11 @@ export default function SubirDocumento({
       // Estado en estatus de escaneo
       setEstado(estadoDocumento.DETALLESEGUNDAFOTO);
 
-      const stripeIdBackKey = await uploadImageToStripe(uri);
+      const stripeIdBackKey = await uploadImageToStripe({
+        purpose: "",
+        name: "imagen",
+        uri: uri,
+      }).then((r) => r.id);
       // Actualizar la llave de stripe y la direccion local de la imagen
       setUsuario({
         ...usuario,

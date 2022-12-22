@@ -3,7 +3,7 @@
 import { PUBLIC_KEY } from "@env";
 import { logger } from "react-native-logs";
 import Stripe from "stripe";
-import { fetchFromAPI } from ".";
+import { currency, fetchFromAPI } from ".";
 import { bankExternalType, cardExternalType } from "../types/stripe";
 
 const log = logger.createLogger();
@@ -182,7 +182,7 @@ export default async function (
     object: "bank_account",
 
     country: "MX",
-    currency: "mxn",
+    currency,
 
     account_holder_name: bank_account?.accountHolderName
       ? bank_account.accountHolderName
@@ -208,7 +208,7 @@ export default async function (
     address_state: address.state,
     address_zip: address.postal_code,
 
-    currency: "mxn",
+    currency,
   };
 
   // Llenar sus datos

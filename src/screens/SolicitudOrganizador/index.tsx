@@ -12,6 +12,7 @@ import {
 import { AntDesign } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 
 import { NavigationProp } from "../../shared/interfaces/navigation.interface";
 
@@ -238,15 +239,9 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
               color={azulClaro}
             />
           ) : (
-            <AntDesign
-              style={{
-                width: 25,
-                marginLeft: 10,
-              }}
-              name="checkcircleo"
-              size={24}
-              color={azulClaro}
-            />
+            <View style={styles.checkContainer}>
+              <Feather name="check" size={18} color={"#fff"} />
+            </View>
           )}
         </Pressable>
 
@@ -287,15 +282,9 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
                 color={azulClaro}
               />
             ) : (
-              <AntDesign
-                style={{
-                  marginLeft: 10,
-                  width: 25,
-                }}
-                name="checkcircleo"
-                size={24}
-                color={azulClaro}
-              />
+              <View style={styles.checkContainer}>
+                <Feather name="check" size={18} color={"#fff"} />
+              </View>
             ))}
         </Pressable>
       </View>
@@ -319,6 +308,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     flex: 1,
     padding: 20,
+  },
+
+  checkContainer: {
+    backgroundColor: azulClaro,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 28,
+    height: 28,
+    marginLeft: 10,
+    borderRadius: 20,
   },
 
   buttonContainer: {

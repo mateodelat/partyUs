@@ -118,6 +118,9 @@ type Evento
   comodities: [comoditiesEnum]
   musOtra: String
 
+  # Permitir pagos en el lugar
+  allowPaymentsInPlace: Boolean
+
   personasReservadas: Int
   personasMax: Int
 
@@ -366,7 +369,7 @@ enum placeEnum {
 enum musicEnum {
   REGGAETON
   POP
-  TECHNO
+  TECNO
   RAP
   BANDA
   ROCK

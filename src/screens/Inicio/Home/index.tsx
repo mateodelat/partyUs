@@ -73,6 +73,7 @@ export type EventoType = Evento & {
   creator?: Usuario;
   comodities?: ComoditiesEnum[];
   ubicacion: locationType;
+  stripeFileImagenPrincipal?: Promise<string>;
 };
 
 export async function queryNewNotifications() {
@@ -662,6 +663,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
               if (!item) return <View />;
               return (
                 <View
+                  key={index}
                   style={{
                     marginBottom:
                       index === eventosFiltrados.length - 1 ? 100 : 0,
