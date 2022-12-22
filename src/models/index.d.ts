@@ -2,6 +2,11 @@ import { ModelInit, MutableModel } from "@aws-amplify/datastore";
 // @ts-ignore
 import { LazyLoading, LazyLoadingDisabled, AsyncCollection, AsyncItem } from "@aws-amplify/datastore";
 
+export enum TipoDocumento {
+  PASAPORTE = "PASAPORTE",
+  INE = "INE"
+}
+
 export enum PlaceEnum {
   EXTERIOR = "EXTERIOR",
   INTERIOR = "INTERIOR",
@@ -104,7 +109,9 @@ type EagerUsuario = {
   readonly admin?: boolean | null;
   readonly idUploaded?: boolean | null;
   readonly idData?: string | null;
-  readonly idKey?: string | null;
+  readonly idFrontKey?: string | null;
+  readonly idBackKey?: string | null;
+  readonly tipoDocumento?: TipoDocumento | keyof typeof TipoDocumento | null;
   readonly fechaNacimiento?: string | null;
   readonly calificacion?: number | null;
   readonly numResenas?: number | null;
@@ -139,7 +146,9 @@ type LazyUsuario = {
   readonly admin?: boolean | null;
   readonly idUploaded?: boolean | null;
   readonly idData?: string | null;
-  readonly idKey?: string | null;
+  readonly idFrontKey?: string | null;
+  readonly idBackKey?: string | null;
+  readonly tipoDocumento?: TipoDocumento | keyof typeof TipoDocumento | null;
   readonly fechaNacimiento?: string | null;
   readonly calificacion?: number | null;
   readonly numResenas?: number | null;

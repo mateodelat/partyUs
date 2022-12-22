@@ -50,9 +50,18 @@ type Usuario
       ]
     )
   idUploaded: Boolean
+
+  # Data extraida de la imagen a texto
   idData: AWSJSON
     @auth(rules: [{ allow: owner }, { allow: groups, groups: ["Admin"] }])
-  idKey: String
+
+  # Ids de llaves de S3 para las imagenes de los documentos
+  idFrontKey: String
+  idBackKey: String
+
+  # Tipo del documento de identidad (INE o Pasaporte)
+  tipoDocumento: tipoDocumento
+
   fechaNacimiento: String
   calificacion: Float
   numResenas: Int
@@ -362,6 +371,11 @@ enum musicEnum {
   BANDA
   ROCK
   OTRO
+}
+
+enum tipoDocumento {
+  PASAPORTE
+  INE
 }
 
 enum comoditiesEnum {

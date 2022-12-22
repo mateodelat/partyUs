@@ -32,281 +32,15 @@ app.use(function (req, res, next) {
 
 
 
-
-// /******************************
-//  * GET obtener cuenta cliente *
-//  *****************************/
-// app.get('/payments/clientInfo', async function (req, res) {
-//   try {
-//     const id = req.query.id
-//     const external_id = req.query.external_id
-
-
-//     // Si tengo id de cliente devolerlo
-//     if (id) {
-//       openpay.customers.get(id, function (error, body, response) {
-//         if (error?.http_code) {
-//           res.status(error?.http_code)
-//         }
-
-//         res.json({
-//           error,
-//           body
-//         })
-//       })
-//     } else if (external_id) {
-//       openpay.customers.list({
-//         external_id
-//       }, function (error, body, response) {
-//         if (error?.http_code) {
-//           res.status(error?.http_code)
-//         }
-
-//         // Si la lista esta vacia es porque no hay datos
-//         if (!body.length) {
-//           res.status(404)
-//           error = {
-//             "error_code": 1005, "category": "request", "description": `The customer with id '${external_id}' does not exist`
-//           }
-//           body = null
-
-//         }
-
-//         if (body) {
-//           body = body[0]
-//         }
-
-//         res.json({
-//           error,
-//           body
-//         })
-//       })
-
-//     }
-//     else {
-//       res.json({
-//         error: "Error, no se recibio id de customer o external_id",
-//       })
-
-//     }
-//   }
-//   catch (e) {
-
-//     console.log(e)
-//     res.status(500)
-//     res.json({
-//       error: "Hubo un error",
-//       body: JSON.stringify(e)
-//     })
-//   }
-
-// });
-
-// /******************************************
-//  * GET obtener transferencias del usuario *
-//  ******************************************/
-// app.get('/payments/getClientTransfers', async function (req, res) {
-//   try {
-//     const id = req.query.id
-//     const limit = req.query.limit
-//     const offset = req.query.offset
-
-//     var searchParams = {
-//       limit,
-//       offset
-//     };
-
-//     openpay.customers.transfers.list(id, searchParams, function (error, body, response) {
-//       if (error?.http_code) {
-//         res.status(error?.http_code)
-//       }
-
-//       res.json({
-//         error,
-//         body
-//       })
-//     })
-//   }
-//   catch (e) {
-
-//     console.log(e)
-//     res.status(500)
-//     res.json({
-//       error: "Hubo un error",
-//       body: JSON.stringify(e)
-//     })
-//   }
-
-// });
-
-// /******************************************
-//  * GET obtener cargos del usuario *
-//  ******************************************/
-// app.get('/payments/getClientCharges', async function (req, res) {
-//   try {
-//     const id = req.query.id
-//     const limit = req.query.limit
-//     const offset = req.query.offset
-
-//     var searchParams = {
-//       limit,
-//       offset
-//     };
-
-//     openpay.customers.charges.list(id, searchParams, function (error, body, response) {
-//       if (error?.http_code) {
-//         res.status(error?.http_code)
-//       }
-
-//       res.json({
-//         error,
-//         body
-//       })
-//     })
-//   }
-//   catch (e) {
-
-//     console.log(e)
-//     res.status(500)
-//     res.json({
-//       error: "Hubo un error",
-//       body: JSON.stringify(e)
-//     })
-//   }
-
-// });
-
-
-
-// /*******************************
-//  * GET listar tarjetas cliente *
-//  ******************************/
-
-// app.get('/payments/card', async function (req, res) {
-//   try {
-//     const customer_id = req.query.customer_id
-
-//     if (!customer_id) {
-//       res.status(404)
-//       res.json({
-//         error: "Error, no se recibio customer_id",
-//         body: req.body
-//       })
-//     }
-
-//     openpay.customers.cards.list(customer_id, function (error, body, response) {
-//       if (error?.http_code) {
-//         res.status(error?.http_code)
-//       }
-
-//       res.json({
-//         error,
-//         body
-//       })
-//     })
-//   }
-//   catch (e) {
-
-//     console.log(e)
-//     res.status(500)
-//     res.json({
-//       error: "Hubo un error",
-//       body: JSON.stringify(e)
-//     })
-//   }
-
-// });
-
-// /****************************************
-//  * GET listar cuentas bancarias cliente *
-//  ***************************************/
-
-// app.get('/payments/bankaccount', async function (req, res) {
-//   try {
-//     const customer_id = req.query.customer_id
-
-//     if (!customer_id) {
-//       res.status(404)
-//       res.json({
-//         error: "Error, no se recibio customer_id",
-//         body: req.body
-//       })
-//     }
-
-//     openpay.customers.bankaccounts.list(customer_id, function (error, body, response) {
-//       if (error?.http_code) {
-//         res.status(error?.http_code)
-//       }
-
-//       res.json({
-//         error,
-//         body
-//       })
-//     })
-//   }
-//   catch (e) {
-
-//     console.log(e)
-//     res.status(500)
-//     res.json({
-//       error: "Hubo un error",
-//       body: JSON.stringify(e)
-//     })
-//   }
-
-// });
-
-
-
-// /****************************
-// * POST Crear tarjeta con token *
-// ****************************/
-
-// app.post('/payments/card', function (req, res) {
-//   // Add your code here
-//   try {
-//     const token_id = req.body.token_id
-//     const device_session_id = req.body.device_session_id
-//     const customer_id = req.body.customer_id
-
-//     if (!customer_id || !token_id || !device_session_id) {
-//       res.status(404)
-//       res.json({
-//         error: "Error, no se recibio customer_id, token_id o device_session_id",
-//         body: req.body
-//       })
-//     }
-
-//     openpay.customers.cards.create(customer_id, {
-//       device_session_id,
-//       token_id
-//     }, function (error, body, response) {
-//       if (error?.http_code) {
-//         res.status(error?.http_code)
-//       }
-
-//       res.json({
-//         error,
-//         body
-//       })
-//     })
-//   }
-//   catch (e) {
-//     console.log(e)
-//     res.status(500)
-//     res.json({
-//       error: "Hubo un error",
-//       body: e.message
-//     })
-//   }
-// });
-
+/***************************************************
+******************** ACCOUNTS **********************
+***************************************************/
 
 /*****************************************
-* POST Crear cuenta de cliente en stripe *
+* POST Crear account de cliente en stripe *
 *****************************************/
 
-app.post('/payments/createAccount', async function (req, res) {
+async function createAccount(req, res) {
   try {
 
     if (!req || !req.body) {
@@ -333,11 +67,86 @@ app.post('/payments/createAccount', async function (req, res) {
     })
   }
   catch (e) {
-    console.log(e)
+    const mes = e?.Error ? e.Error : e?.code ? (e.code + "\n" + e.message) : JSON.stringify(e)
     res.status(500)
     res.json({
       error: "Hubo un error",
-      body: e.code + "\n" + e.message
+      body: mes
+    })
+  }
+}
+app.post('/payments/createAccount', createAccount)
+
+
+/***********************************************
+* POST Actualizar account de cliente en stripe *
+***********************************************/
+app.post('/payments/updateAccount', async function (req, res) {
+
+  // Validar que existan los parametros de body y accountID
+  if (!req || !req.body) {
+    res.status(404)
+    res.json({
+      error: "Error, no se recibio cuerpo de peticion",
+      body: req.body
+    })
+    return
+  }
+  const accountID = req.body?.accountID
+
+  if (!accountID) {
+    res.status(404)
+    res.json({
+      error: "Error, no se accountID",
+      body: req.body
+    })
+    return
+  }
+
+
+  let input = req.body
+  delete input.accountID
+
+  try {
+
+    // Intentar crear la cuenta con el account id
+    let account = await stripe.accounts.update(accountID, input);
+    let error = undefined
+
+
+    if (account.error) {
+      error = account.error
+      res.status(error?.code)
+    }
+
+    res.json({
+      error,
+      body: account
+    })
+  }
+  catch (e) {
+    console.log(e)
+    const mes = e?.errorMessage ? e?.errorMessage : e.Errore?.Error ? e.Error : e?.code ? (e.code + "\n" + e.message) : JSON.stringify(e)
+
+    // Si nos da error de tipo accountInvalid, es porque no existe la cuenta, crearla
+    if (e.code === "account_invalid") {
+      createAccount({
+        body: {
+          ...input,
+          type: "custom",
+          country: "MX",
+
+        }
+      }
+        , res)
+      return
+    }
+
+    const statusCode = e?.statusCode ? e.statusCode : 500
+
+    res.status(statusCode)
+    res.json({
+      error: mes,
     })
   }
 });

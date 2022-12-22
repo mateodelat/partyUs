@@ -112,6 +112,8 @@ export default function ({ navigation }) {
       case TipoNotificacion.ADMIN:
         navigation.navigate("AdminStack");
         break;
+      case TipoNotificacion.BIENVENIDA:
+        break;
 
       default:
         Alert.alert("Error", "Tipo de notificacion no programado");

@@ -10,7 +10,12 @@ import React, { useState } from "react";
 import HeaderSolicitud from "../components/HeaderSolicitud";
 import AnimatedInput from "../../../components/AnimatedInput";
 import Boton from "../../../components/Boton";
-import { azulClaro, formatTelefono } from "../../../../constants";
+import {
+  azulClaro,
+  formatTelefono,
+  isEmulator,
+  produccion,
+} from "../../../../constants";
 import { useNavigation } from "@react-navigation/native";
 import useUser from "../../../Hooks/useUser";
 import { CountryList } from "react-native-country-codes-picker";
@@ -23,10 +28,11 @@ export default function ({
     nombre: string;
     paterno: string;
     materno: string;
-  }) => any;
+  }) => Promise<any>;
 }) {
   const navigation = useNavigation<any>();
-  const {
+  let {
+    setLoading,
     usuario: {
       materno: m,
       paterno: p,
@@ -35,6 +41,15 @@ export default function ({
       phoneNumber: phn,
     },
   } = useUser();
+
+  // Si estamos en desarrollo, poner nombres de prueba
+  if (!produccion) {
+    m = m ? m : "Margarita";
+    p = p ? p : "Gomez";
+    n = n ? n : "Velazquez";
+
+    phn = phn ? phn : "3344443343";
+  }
 
   // Nombre y apellidos
   const [materno, setMaterno] = useState(m ? m : "");
@@ -164,7 +179,13 @@ export default function ({
         }}
         titulo="Guardar informacion"
         onPress={
-          onPress ? () => onPress({ nombre, paterno, materno }) : handleSaveInfo
+          onPress
+            ? async () => {
+                setLoading(true);
+                await onPress({ nombre, paterno, materno });
+                setLoading(false);
+              }
+            : handleSaveInfo
         }
       />
 

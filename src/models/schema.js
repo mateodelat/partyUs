@@ -136,10 +136,26 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "idKey": {
-                    "name": "idKey",
+                "idFrontKey": {
+                    "name": "idFrontKey",
                     "isArray": false,
                     "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "idBackKey": {
+                    "name": "idBackKey",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "tipoDocumento": {
+                    "name": "tipoDocumento",
+                    "isArray": false,
+                    "type": {
+                        "enum": "TipoDocumento"
+                    },
                     "isRequired": false,
                     "attributes": []
                 },
@@ -1713,6 +1729,13 @@ export const schema = {
         }
     },
     "enums": {
+        "TipoDocumento": {
+            "name": "TipoDocumento",
+            "values": [
+                "PASAPORTE",
+                "INE"
+            ]
+        },
         "PlaceEnum": {
             "name": "PlaceEnum",
             "values": [
@@ -1778,5 +1801,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.3.2",
-    "version": "8fee12386cc2799c5a6d231ae0693a1f"
+    "version": "3a1ea1c26226e9b59af395a4d1cb41d9"
 };

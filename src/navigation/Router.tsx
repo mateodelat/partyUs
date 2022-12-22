@@ -36,11 +36,15 @@ import Loading from "../components/Loading";
 
 import AdminStack from "./AdminStack";
 import JSONVisualizer from "../components/JSONVisualizer";
+import stripeAccountOperations from "../../constants/stripeAccountOperations";
+import Stripe from "stripe";
+import { fetchFromAPI } from "../../constants";
+import { logger } from "react-native-logs";
 
 function NombreApellidosOnPress({ navigation }: any) {
   const { setUsuario, usuario } = useUser();
 
-  function handleContinuar({
+  async function handleContinuar({
     nombre,
     paterno,
     materno,
@@ -55,6 +59,42 @@ function NombreApellidosOnPress({ navigation }: any) {
       nombre,
       paterno,
     }));
+    try {
+      // Si se activa al cambiar nombre y apellido, cambiarlos tambien en stripe
+      const res = await fetchFromAPI<Stripe.Account>(
+        "/payments/updateAccount",
+        "POST",
+        {
+          accountID: usuario.paymentAccountID,
+
+          // Actualizar informacion del individuo dueño de la cuenta
+          individual: {
+            first_name: nombre,
+            last_name: paterno + " " + materno,
+          },
+        }
+      );
+
+      if (res?.error) {
+        throw new Error(res as any);
+      }
+    } catch (error) {
+      const log = logger.createLogger();
+      log.debug(error);
+
+      error = error.message
+        ? error.message
+        : error?.error
+        ? error.error
+        : error;
+
+      Alert.alert(
+        "Error",
+        "Ocurrio un error guardando la informacion para pagos:\n" + error
+      );
+      return;
+    }
+
     Alert.alert("Exito", "Nombre actualizado con exito");
     navigation.pop();
   }
@@ -83,7 +123,6 @@ export default function () {
   return (
     <NavigationContainer linking={linking} fallback={<Loading indicator />}>
       <Stack.Navigator
-        initialRouteName="DatosPersonales"
         screenOptions={{
           header: ({
             route: { name, params },

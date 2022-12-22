@@ -14,6 +14,8 @@ import Boton from "../../../components/Boton";
 import {
   azulClaro,
   formatCuentaCLABE,
+  isEmulator,
+  produccion,
   shadowMedia,
   validateClabe,
   validateRFC,
@@ -25,67 +27,43 @@ import { AntDesign } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 
-import TopBarSelector from "../../../components/TopBarSelector";
 import CardInput, { saveParams } from "../../../components/CardInput";
-import { cardType } from "../../../../types/openpay";
 import CardElement from "../../../components/CardElement";
-import crearStripeAccount from "../../../../constants/crearStripeAccount";
+import stripeAccountOperations from "../../../../constants/stripeAccountOperations";
 import { logger } from "react-native-logs";
-import Line from "../../../components/Line";
 import { DataStore } from "aws-amplify";
 import { Usuario } from "../../../models";
-import Stripe from "stripe";
 
 export default function ({ route }: { route: any }) {
-  route.params = {
-    admin: null,
-    calificacion: null,
-    createdAt: "2022-12-20T12:12:58.158Z",
-    cuentaBancaria: "",
-    direccion: {
-      city: "Guadalajara",
-      line1: "partia 878",
-      postal_code: "45027",
-      state: "Jalisco",
-    },
-    email: "mateodelat@gmail.com",
-    fechaNacimiento: "2002-12-30T00:00:00.000Z",
-    foto: "https://ui-avatars.com/api/?name=mateodelat&bold=true&background=ffbf5e&color=000&length=1",
-    id: "f4b90a2f-e6c4-4f98-926e-9ffb20358f91",
-    idData: null,
-    idKey: null,
-    idUploaded: null,
-    imagenFondo: null,
-    materno: "Hernandez Urtiz",
-    nickname: "mateodelat",
-    nombre: "Mateo",
-    notificationToken: null,
-    numResenas: null,
-    organizador: null,
-    owner: "f4b90a2f-e6c4-4f98-926e-9ffb20358f91",
-    paterno: "De La Torre",
-    paymentAccountID: null,
-    paymentClientID: "cus_N16uHJ1KXKrPvF",
-    phoneCode: "+52",
-    phoneNumber: "332 496 3705",
-    receiveNewReservations: null,
-    rfc: "TOHM020830S45",
-    titularCuenta: "",
-    updatedAt: "2022-12-20T12:12:58.158Z",
-    verified: null,
-  };
-
   // Notas, por ahora tenemos una opcion de pagar con tarjeta pero no se permite por los instant payouts
-
   const log = logger.createLogger();
 
   const navigation = useNavigation<any>();
   const { usuario, setUsuario, setLoading } = useUser();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const { cuentaBancaria: c, titularCuenta: tit } = usuario;
+  let { cuentaBancaria: c, titularCuenta: tit, rfc: prevRfc } = usuario;
 
   const [ip, setIp] = useState("8.8.8.8");
+  let prevDireccion =
+    usuario.direccion && typeof usuario.direccion === "object"
+      ? usuario.direccion
+      : undefined;
+
+  // Si estamos en desarrollo poner cuenta de prueba
+  if (!produccion) {
+    prevDireccion = prevDireccion
+      ? prevDireccion
+      : ({
+          city: "Guadalajara",
+          line1: "Patria",
+          postal_code: "43020",
+          state: "Jalisco",
+        } as any);
+
+    prevRfc = prevRfc ? prevRfc : "XAXX010101000";
+    tit = tit ? tit : "NOMBRE PRUEBA";
+  }
 
   const [cuentaBancaria, setCuentaBancaria] = useState(
     c ? formatCuentaCLABE(c) : ""
@@ -97,13 +75,7 @@ export default function ({ route }: { route: any }) {
 
   const [clabeData, setClabeData] = useState(validateClabe(c));
 
-  const prevDireccion = route.params.direccion
-    ? route.params.direccion
-    : usuario.direccion
-    ? (usuario.direccion as any)
-    : undefined;
-
-  const [rfc, setRfc] = useState(usuario.rfc);
+  const [rfc, setRfc] = useState(prevRfc);
   const [direccion, setDireccion] = useState<{
     // Address
     city?: string;
@@ -117,7 +89,6 @@ export default function ({ route }: { route: any }) {
   const [card, setCard] = useState<saveParams>();
 
   useEffect(() => {
-    setUsuario({ ...route.params });
     // Pedir la ip para aceptar terminos y condiciones
     (async () =>
       setIp(
@@ -140,6 +111,12 @@ export default function ({ route }: { route: any }) {
   const [error, setError] = useState("");
 
   async function handleSaveInfo() {
+    // Crear un usuario local para agregarle todo
+    const localUsr = {
+      ...usuario,
+      ...route.params,
+    };
+
     // Detectar el tipo de pago
     if (accountType === "card") {
       if (!card) {
@@ -165,6 +142,12 @@ export default function ({ route }: { route: any }) {
       }
     }
 
+    // Validar datos
+    if (!localUsr.fechaNacimiento) {
+      Alert.alert("Error", "No se encontro fecha de nacimiento");
+      return;
+    }
+
     // Si hay rfc, validarlo
 
     if (rfc && !validateRFC(rfc)) {
@@ -179,73 +162,126 @@ export default function ({ route }: { route: any }) {
     const date = Math.round((new Date().getTime() - 1) / 1000);
 
     // Sacar la fecha de nacimiento en dia mes año
-    const fechaNac = new Date(usuario.fechaNacimiento);
+    const fechaNac = new Date(localUsr.fechaNacimiento);
 
     const day = fechaNac.getUTCDate();
-    const month = fechaNac.getUTCMonth();
+    // Agregar 1 pues es 0 index based
+    const month = fechaNac.getUTCMonth() + 1;
     const year = fechaNac.getUTCFullYear();
+    let paymentAccountID = localUsr.paymentAccountID;
+    const status: "update" | "create" = paymentAccountID ? "update" : "create";
 
     setLoading(true);
     try {
-      let paymentAccountID = "";
-      console.log(usuario.paymentAccountID);
       // Si no hay cuenta en el usuario se crea
-      if (usuario.paymentAccountID) {
-        const paymentAccountID = await crearStripeAccount({
-          email: usuario.email,
-          accountType,
-          bank_account: {
-            accountNumber: clabe,
-            accountHolderName: titularCuenta,
+      if (status === "create") {
+        paymentAccountID = await stripeAccountOperations(
+          {
+            email: localUsr.email,
+            accountType,
+            bank_account: {
+              accountNumber: clabe,
+              accountHolderName: titularCuenta,
+            },
+            card: {
+              number: card?.number,
+              cvc: card?.cvv,
+              exp_month: card?.expiry.month,
+              exp_year: card?.expiry.year,
+            },
+
+            phone: localUsr.phoneCode + localUsr.phoneNumber?.replace(/ /g, ""),
+
+            first_name: localUsr.nombre,
+            paterno: localUsr.paterno,
+            materno: localUsr.materno,
+
+            userSub: localUsr.id,
+
+            // Fecha nacimiento persona / representante legal
+            day,
+            month,
+            year,
+
+            // Direccion del representante/empresa o personal
+            city: direccion?.city,
+            country: "MX",
+            line1: direccion?.line1,
+            postal_code: direccion?.postal_code,
+            state: direccion?.state,
+
+            // IP y fecha de terminos y condiciones
+            date,
+            ip,
+
+            rfc,
           },
-          card: {
-            number: card?.number,
-            cvc: card?.cvv,
-            exp_month: card?.expiry.month,
-            exp_year: card?.expiry.year,
-          },
-
-          phone: usuario.phoneCode + usuario.phoneNumber?.replace(/ /g, ""),
-
-          first_name: usuario.nombre,
-          paterno: usuario.paterno,
-          materno: usuario.materno,
-
-          userSub: usuario.id,
-
-          // Fecha nacimiento persona / representante legal
-          day,
-          month,
-          year,
-
-          // Direccion del representante/empresa o personal
-          city: direccion?.city,
-          country: "MX",
-          line1: direccion?.line1,
-          postal_code: direccion?.postal_code,
-          state: direccion?.state,
-
-          // IP y fecha de terminos y condiciones
-          date,
-          ip,
-
-          rfc,
-        }).then(async (r) => {
+          "create"
+        ).then(async (r) => {
           log.debug(r.body);
 
           return r.body.id;
         });
+      } else {
+        console.log("El localUsr tiene ID de stripe, actualizando...");
 
-        const r = await DataStore.query(Usuario, usuario.id);
-        // Actualizar solo el cliente de stripe
-        await DataStore.save(
-          Usuario.copyOf(r, (ne) => {
-            ne.paymentAccountID = paymentAccountID;
-          })
-        );
+        // Actualizar datos actualizados en el perfil en stripe
+        paymentAccountID = await stripeAccountOperations(
+          {
+            accountID: paymentAccountID,
+            email: localUsr.email,
+            accountType,
+            bank_account: {
+              accountNumber: clabe,
+              accountHolderName: titularCuenta,
+            },
+            card: {
+              number: card?.number,
+              cvc: card?.cvv,
+              exp_month: card?.expiry.month,
+              exp_year: card?.expiry.year,
+            },
+
+            phone: localUsr.phoneCode + localUsr.phoneNumber?.replace(/ /g, ""),
+
+            first_name: localUsr.nombre,
+            paterno: localUsr.paterno,
+            materno: localUsr.materno,
+
+            userSub: usuario.id,
+
+            // Fecha nacimiento persona / representante legal
+            day,
+            month,
+            year,
+
+            // Direccion del representante/empresa o personal
+            city: direccion?.city,
+            country: "MX",
+            line1: direccion?.line1,
+            postal_code: direccion?.postal_code,
+            state: direccion?.state,
+
+            // IP y fecha de terminos y condiciones
+            date,
+            ip,
+
+            rfc,
+          },
+          "update"
+        ).then(async (r) => {
+          return r.body.id;
+        });
       }
 
-      // Si ya hay cuenta, actualizar valores en stripe por los nuevos, si es que se cambiaron
+      const r = await DataStore.query(Usuario, usuario.id);
+      // Actualizar datos agregados en base de datos
+      await DataStore.save(
+        Usuario.copyOf(r, (ne) => {
+          ne.cuentaBancaria = clabe;
+          ne.paymentAccountID = paymentAccountID;
+        })
+      );
 
       // Actualizar el usuario localmente para guardar datos que hayan puesto
       setUsuario({
@@ -256,18 +292,21 @@ export default function ({ route }: { route: any }) {
 
         rfc,
         direccion,
-
         paymentAccountID,
       });
-
+      Alert.alert("Atencion", "La cuenta bancaria se guardo con exito.");
       setLoading(false);
 
-      Alert.alert("Exito", "Cuenta bancaria creada con exito!!");
       navigation.navigate("SolicitudOrganizador");
     } catch (error) {
       setLoading(false);
+      log.debug(error);
 
-      error = error?.error ? error.error : error;
+      error = error.message
+        ? error.message
+        : error?.error
+        ? error.error
+        : error;
 
       Alert.alert("Error", "Ocurrio un error: " + error);
     }
@@ -305,7 +344,7 @@ export default function ({ route }: { route: any }) {
         />
 
         {/* Seleccionar entre cuenta CLABE o tarjeta para payouts */}
-        <TopBarSelector
+        {/* <TopBarSelector
           data={[
             {
               title: "CLABE",
@@ -325,7 +364,7 @@ export default function ({ route }: { route: any }) {
               },
             },
           ]}
-        />
+        /> */}
 
         {accountType === "bank_account" ? (
           <>

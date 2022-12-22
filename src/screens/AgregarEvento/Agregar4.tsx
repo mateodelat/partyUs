@@ -24,6 +24,7 @@ import {
   isUrl,
   mayusFirstLetter,
   sendAdminNotification,
+  subirImagen,
   vibrar,
   VibrationType,
 } from "../../../constants";
@@ -180,7 +181,7 @@ export default function Agregar2({
         if (!isUrl(e.uri)) {
           const key = "evento-" + evento.id + "|" + count + ".jpg";
           getBlob(e?.uri).then((r) => {
-            promises.push(Storage.put(key, r));
+            promises.push(subirImagen(key, r));
           });
           url = key;
           count++;

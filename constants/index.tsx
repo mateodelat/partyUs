@@ -2,8 +2,9 @@ import * as Location from "expo-location";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
+import * as Device from "expo-device";
 
-import { Alert, Linking } from "react-native";
+import { Alert, Linking, Platform } from "react-native";
 import { API, Auth, DataStore, Storage } from "aws-amplify";
 import { TipoNotificacion, Usuario } from "../src/models";
 
@@ -171,6 +172,44 @@ export async function timer(time: number) {
 
 export const randomImageUri = () =>
   "https://picsum.photos/300/200?random=" + Math.floor(1000 * Math.random());
+
+export async function uploadImageToStripe(uri: string) {
+  // Check selected image is not null
+  if (!!uri) {
+    const data = new FormData();
+    data.append("purpose", "identity_document");
+    data.append("file", {
+      name: "image",
+      type: "image/jpg",
+      uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
+    } as any);
+
+    // Change file upload URL
+    var url = "https://files.stripe.com/v1/files";
+
+    let res = await fetch(url, {
+      method: "POST",
+      body: data,
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Accept: "application/json",
+        Authorization: "Bearer " + STRIPE_PUBLISHABLE_KEY,
+      },
+    });
+    let responseJson = await res.json();
+    const log = logger.createLogger();
+
+    if (!responseJson?.error) {
+      return responseJson.id;
+    } else {
+      console.log(responseJson);
+      throw new Error(responseJson);
+    }
+  } else {
+    // Validation Alert
+    console.log("Selecciona una imagen");
+  }
+}
 
 /**
  * Funcion que devuelve una cadena de texto a partir de una imagen
@@ -513,8 +552,12 @@ export function generarCurp(
     return dv == 0 ? 0 : 10 - dv;
   }
 }
-
-// Funcion que manda una solicitud a stripe con llave publica o privada dependiendo
+/**
+ * Funcion que manda una solictud a la api de stripe
+ * @param type `POST`,`CREATE`,`DELETE`,`GET`,
+ * @param path Ruta a enviar de stripe
+ * @returns Cadena sin acentos y en mayusculas
+ */
 export async function fetchFromStripe<T>({
   path,
   type,
@@ -565,57 +608,6 @@ export async function fetchFromStripe<T>({
   });
 }
 
-export async function fetchFromOpenpay<T>({
-  path,
-  type,
-  input,
-  secretKey,
-}: {
-  path: string;
-  type: "POST" | "CREATE" | "DELETE" | "GET";
-  input?: Object;
-  secretKey?: string;
-}) {
-  let myHeaders = new Headers();
-  myHeaders.append(
-    "Authorization",
-    "Basic " + base64.encode((secretKey ? secretKey : PUBLIC_KEY) + ":")
-  );
-  myHeaders.append("Content-Type", "application/json");
-
-  const raw = JSON.stringify(input);
-
-  const requestOptions = {
-    method: type,
-    headers: myHeaders,
-    body: raw,
-  };
-
-  const url = produccion
-    ? "https://api.openpay.mx/v1/"
-    : "https://sandbox-api.openpay.mx/v1/";
-  return fetch(url + MERCHANT_ID + path, requestOptions).then(
-    async (res: any) => {
-      res = await res.json();
-
-      if (res.error_code) {
-        // Alert.alert(
-        //   "Error",
-        //   res.description ? res.description : JSON.stringify(res)
-        // );
-
-        throw {
-          ...res,
-          error: new Error(
-            res.description ? res.description : JSON.stringify(res)
-          ),
-        };
-      }
-      return res as T;
-    }
-  );
-}
-
 export async function fetchFromAPI<T>(
   path: string,
   type: "POST" | "CREATE" | "DELETE" | "GET",
@@ -651,20 +643,18 @@ export async function fetchFromAPI<T>(
         .join("&");
   }
 
-  return fetch(url, requestOptions).then(async (res: any) => {
-    res = await res.json();
+  return fetch(url, requestOptions).then(async (res) => {
     const log = logger.createLogger();
-    log.debug(res);
+    const json = await res.json();
 
-    if (res.error) {
-      res.error = res.body;
-      throw res as {
+    if (json.error || !res.ok) {
+      throw json as {
         error: null;
         body: T | null;
       };
     }
 
-    return res;
+    return json;
   }) as Promise<{
     error: null;
     body: T | null;
@@ -677,6 +667,10 @@ export function validateRFC(rfc: string) {
 
   return regexp.exec(rfc);
 }
+
+export const isEmulator = !Device.isDevice;
+
+export const log = logger.createLogger();
 
 export function normalizeCardType(tipo: string) {
   switch (tipo) {
@@ -798,14 +792,7 @@ export const shadowMedia = {
   elevation: 4,
 };
 
-export const produccion = true;
-
-export const MERCHANT_ID = produccion
-  ? "m1qt7k7zcarncm0jkvrp"
-  : "mcwffetlymvvcqthcdxu";
-const PUBLIC_KEY = produccion
-  ? "pk_dced8b24006d4a74bd3efd5158f58d15"
-  : "pk_69d96c0ed3bd4ea8a6956d8e51867876";
+export const produccion = false;
 
 export const shadowBaja = {
   shadowColor: "#000",

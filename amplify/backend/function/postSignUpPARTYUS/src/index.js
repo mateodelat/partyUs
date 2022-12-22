@@ -35,7 +35,8 @@ function generateProfilePicture(nombre) {
     "F4F6F8",
     "cccccc",
   ];
-  const randomColor = Math.round(Math.random() * listaColores.length - 1);
+  const randomColor = Math.round(Math.random() * (listaColores.length - 1))
+  const randomLenght = Math.round(Math.random()) + 1
   let bgc = listaColores[randomColor];
 
 
@@ -43,12 +44,12 @@ function generateProfilePicture(nombre) {
 
   // Si no hay color de fondo seleccionar blanco y negro
   if (!bgc || !color) {
-    bgc = "#fff"
-    color = "#000"
+    bgc = "fff"
+    color = "000"
   }
 
 
-  return `https://ui-avatars.com/api/?name=${nombre}&bold=true&background=${bgc}&color=${color}&length=1`;
+  return `https://ui-avatars.com/api/?name=${nombre}&bold=true&background=${bgc}&color=${color}&length=${randomLenght}`;
 }
 
 async function createCustomer({

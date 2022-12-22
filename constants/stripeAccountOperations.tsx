@@ -3,67 +3,74 @@
 import { PUBLIC_KEY } from "@env";
 import { logger } from "react-native-logs";
 import Stripe from "stripe";
-import { fetchFromAPI, fetchFromStripe, partyusEmail, partyusPhone } from ".";
+import { fetchFromAPI } from ".";
 import { bankExternalType, cardExternalType } from "../types/stripe";
 
 const log = logger.createLogger();
 
-export default async function (params: {
-  // Email que se asignara a compañia y persona
-  email: string;
-  phone: string;
+export default async function (
+  params: {
+    // Id en caso de ser actualizacion de docs
+    accountID?: string;
+    // Email que se asignara a compañia y persona
+    email?: string;
+    phone?: string;
 
-  // Nombre persona
-  first_name: string;
-  paterno: string;
-  materno: string;
+    // Nombre persona
+    first_name?: string;
+    paterno?: string;
+    materno?: string;
 
-  //
-  // Cuenta bancaria
-  bank_account:
-    | undefined
-    | {
-        accountNumber: string;
-        accountHolderName?: string;
-      };
-  // Tarjeta
-  card:
-    | undefined
-    | {
-        number: string;
-        exp_month: string;
-        exp_year: string;
-        cvc: string;
-      };
-  accountType: "card" | "bank_account";
-  //
+    //
+    // Cuenta bancaria
+    bank_account?:
+      | undefined
+      | {
+          accountNumber?: string;
+          accountHolderName?: string;
+        };
+    // Tarjeta
+    card?:
+      | undefined
+      | {
+          number: string;
+          exp_month: string;
+          exp_year: string;
+          cvc: string;
+        };
+    accountType?: "card" | "bank_account";
+    //
 
-  // Sub del usuario para la metadata
-  userSub: string;
+    // Sub del usuario para la metadata
+    userSub?: string;
 
-  // Documento de identidad
-  documentIdBack?: string;
-  documentIdFront?: string;
+    // Documento de identidad
+    documentIdBack?: string;
+    documentIdFront?: string;
 
-  // Fecha nacimiento
-  day: number;
-  month: number;
-  year: number;
+    // Fecha nacimiento
+    day?: number;
+    month?: number;
+    year?: number;
 
-  // Address
-  city?: string;
-  country?: string;
-  line1?: string;
-  postal_code?: string;
-  state?: string;
+    // Address
+    city?: string;
+    country?: string;
+    line1?: string;
+    postal_code?: string;
+    state?: string;
 
-  // Terms of service
-  ip: string;
-  date: number;
+    // Terms of service
+    ip?: string;
+    date?: number;
 
-  rfc?: string;
-}) {
+    rfc?: string;
+  },
+  opType: "create" | "update"
+) {
   const {
+    accountID,
+
     // Email que se asignara a compañia y persona
     email,
     phone,
@@ -102,8 +109,8 @@ export default async function (params: {
     state,
   } = params;
 
-  // Obtener los RFC's y si no poner por defecto el mio
-  rfc = rfc ? rfc : "TOHM020830S45";
+  // Obtener los RFC's y si no poner por defecto el generico
+  rfc = rfc ? rfc : "XAXX010101000";
 
   // Nombre de la cuenta o empresa
   const name = first_name + " " + paterno + " " + materno;
@@ -151,8 +158,8 @@ export default async function (params: {
     mcc: "7922",
 
     name,
-    support_email: partyusEmail,
-    support_phone: partyusPhone.slice(4),
+    support_email: email,
+    support_phone: phone,
 
     product_description: "Tickets",
   };
@@ -204,20 +211,8 @@ export default async function (params: {
     currency: "mxn",
   };
 
-  // Datos para crear una persona
-  // // Subir su ID de documento
-  // const verification = {
-  //   document: {
-  //     front: documentIdFront,
-  //     back: documentIdBack,
-  //   },
-  // };
-
-  const accountCreate = new Stripe.AccountsResource();
-
   // Llenar sus datos
   const individual = {
-    // verification,
     id_number: rfc,
     first_name,
     last_name: paterno + " " + materno,
@@ -255,13 +250,16 @@ export default async function (params: {
     tos_acceptance,
   };
 
-  // return await fetchFromStripe({
-  //   path: "/v1/accounts",
-  //   type: "POST",
-  //   input: accountObject,
-  // });
-  const res = await fetchFromAPI<Stripe.Response<Stripe.Account>>(
-    "/payments/createAccount",
+  // Si es actualizar, agregar id de cuenta
+  if (opType === "update") {
+    (accountObject as any).accountID = accountID;
+    delete accountObject.country;
+    delete accountObject.type;
+  }
+
+  // Si se elige actualizar se manda a otra direccion
+  const res = await fetchFromAPI<Stripe.Account>(
+    "/payments/" + (opType === "create" ? "createAccount" : "updateAccount"),
     "POST",
     accountObject
   );
