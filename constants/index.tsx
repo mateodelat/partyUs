@@ -590,15 +590,21 @@ export async function fetchFromStripe<T>({
 }) {
   const encodedData = new URLSearchParams();
 
+  // Limpiar valores inexistentes
+  Object.keys(input).forEach((key) => (!input[key] ? delete input[key] : null));
+
   // Funcion que codifica objectos nesteados en tipo www-url-formencoded
   function nestedObjEncode(prevKey: string, nestedObj: Object) {
+    if (!nestedObj) return;
     for (const [key, value] of Object.entries(nestedObj)) {
       const actualKey = `${prevKey ? prevKey : ""}[${key}]`;
 
       // Funcion recursiva si es objeto se llama con la key actual
       if (typeof value === "object") {
         nestedObjEncode(actualKey, value);
-      } else {
+        // Si el valor es null o undefined, no ponerlo
+      } else if (!value) return;
+      else {
         encodedData.append(actualKey, value);
       }
     }
@@ -669,12 +675,23 @@ export async function fetchFromAPI<T>({
   }
 
   return fetch(url, requestOptions).then(async (res) => {
-    let json = await res.json();
+    let json;
+    try {
+      json = await res.json();
+    } catch (error) {
+      log(res);
+      json = res.body;
+    }
 
     if (json.error) {
-      log(json);
-      throw json.error;
+      throw json.error?.error ? json.error.error : json.error;
     }
+
+    if (!res.ok)
+      throw {
+        error: json,
+        body: null,
+      };
 
     // Si hay body.data, formatearlo para que sea directo en body y evitar seccion de pagination
     if (json.body?.data) {
@@ -711,7 +728,7 @@ export function normalizeCardType(tipo: string) {
 
 export const getCardIcon = (type?: cardBrand_type) => {
   // Estandarizar tipo quitando espacios, mayusculas o guiones bajos
-  type = type.toLowerCase().replace(/ |_/g, "") as any;
+  type = type.toLowerCase().replace(/ |_|-/g, "") as any;
   // Estandarizar dinners
   if (type === ("dinners" as any)) type = "dinersclub";
 
@@ -1511,6 +1528,14 @@ export const getWeekDay = (d: Date | undefined | number) => {
 };
 
 export const comisionApp = 0.15;
+
+export function getIpAddress() {
+  return fetch("https://api.ipify.org?format=json").then((r) =>
+    r.json().then((r) => {
+      return r.ip as string;
+    })
+  );
+}
 
 /**
  * Toma el tiempo en hora UTC

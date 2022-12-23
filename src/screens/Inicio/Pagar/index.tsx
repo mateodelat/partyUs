@@ -17,6 +17,8 @@ import { AntDesign } from "@expo/vector-icons";
 
 import ElementoPersonas from "./ElementoPersonas";
 
+import NetInfo from "@react-native-community/netinfo";
+
 import Boton from "../../../components/Boton";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import {
@@ -42,6 +44,7 @@ import {
   log,
   mayusFirstLetter,
   currency,
+  getIpAddress,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
@@ -50,7 +53,7 @@ import { Cupon, Usuario } from "../../../models";
 
 import Header from "../../../navigation/components/Header";
 import uuid from "react-native-uuid";
-import { saveParams } from "../../../components/CardInput/SecureCardInput";
+import { saveParams } from "../../../components/CardInput";
 
 import useUser from "../../../Hooks/useUser";
 import { DataStore } from "aws-amplify";
@@ -68,7 +71,12 @@ import StripeRN, {
 import { cardBrand_type } from "../../../../types/stripe";
 import ModalBottom from "../../../components/ModalBottom";
 import SecureCardInput from "../../../components/CardInput/SecureCardInput";
-import { STRIPE_SECRET_KEY } from "../../../../constants/keys";
+import {
+  STRIPE_PUBLISHABLE_KEY,
+  STRIPE_SECRET_KEY,
+} from "../../../../constants/keys";
+import createPaymentIntent from "./createPaymentIntent";
+import CardInput from "../../../components/CardInput";
 export default function Pagar({
   route,
   navigation,
@@ -256,6 +264,8 @@ export default function Pagar({
     CreatorID,
   } = route.params;
 
+  type cardType = Omit<Stripe.Card, "id"> & { id: Promise<string> };
+
   const boletos = route.params.boletos.filter((e: any) => e.quantity);
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -265,7 +275,7 @@ export default function Pagar({
   const { setNewNotifications, usuario, setLoading, setUsuario } = useUser();
 
   // Opciones que se llenan cuando damos agregar tarjeta
-  const [tarjetasGuardadas, setTarjetasGuardadas] = useState<Stripe.Card[]>([]);
+  const [tarjetasGuardadas, setTarjetasGuardadas] = useState<cardType[]>([]);
 
   // Borrar metodos de pago
   const [editing, setEditing] = useState(false);
@@ -281,14 +291,10 @@ export default function Pagar({
   // La pongo en estado para evitar que se cambie al actualizar
   const [reservaID, setReservaID] = useState(res);
 
-  const precioTotalSinComision = boletos.reduce(
-    (prev, bol) => precioConComision(bol.precio) * (bol as any).quantity,
-    0
-  );
-  const comisionTotal = total - precioTotalSinComision;
-
   useEffect(() => {
     getUserSub().then(setSub);
+
+    // Obtener tarjetas del cliente guardadas desde backend
     getUserCards();
     setReservaID(res);
 
@@ -360,38 +366,64 @@ export default function Pagar({
   }
 
   function getUserCards() {
-    return;
     if (usuario.paymentClientID) {
-      fetchFromAPI<Stripe.Card[]>({
-        path: "/payments/getClientCards/" + usuario.paymentClientID,
+      fetchFromAPI<Stripe.PaymentMethod[]>({
+        path: "/payments/card/" + usuario.paymentClientID,
         type: "GET",
-      }).then((r) => {
-        if (r.error) {
-          log(r);
+      })
+        .then((r) => {
+          if (r.error) {
+            throw r;
+          } else {
+            //  Mapear atributos para transformar a tipo Stripe.Card solo con lo que lee el cliente
+            const cards = r.body.map((e) => {
+              const {
+                id,
+                billing_details: { name },
+              } = e;
+
+              const { brand, exp_year, exp_month, last4 } = e.card;
+
+              return {
+                id,
+                brand,
+                exp_month,
+                exp_year,
+                last4,
+                name,
+              } as any;
+            });
+
+            setTarjetasGuardadas(cards);
+          }
+        })
+        .catch((e) => {
+          log(e);
           Alert.alert(
             "Error",
             "Hubo un error obteniendo las tarjetas guardadas del cliente"
           );
-        } else {
-          setTarjetasGuardadas(r.body);
-        }
-      });
+        });
     }
   }
 
   function getClientSecret() {
     // Recibimos eventoID, reservaID (para guardar en metadata) y descuento en caso de haber para poner el precio del PI
 
-    fetchFromStripe<Stripe.PaymentIntent>({
-      path: "/payments/createPaymentIntent",
-      type: "GET",
-      secretKey: STRIPE_SECRET_KEY,
-      input: {},
-    })
-      .then((r) => {
-        log(r);
-      })
-      .catch(log);
+    // fetchFromStripe<Stripe.PaymentIntent>({
+    //   path: "/payments/createPaymentIntent",
+    //   type: "GET",
+    //   secretKey: STRIPE_SECRET_KEY,
+    //   input: {},
+    // })
+    //   .then((r) => {
+    //     log(r);
+    //   })
+    //   .catch(log);
+
+    // log(createPaymentIntent(
+
+    // ))
 
     return;
     fetchFromStripe<Stripe.PaymentIntent>({
@@ -649,6 +681,9 @@ export default function Pagar({
   async function handleAddCard(r: saveParams) {
     setEditing(false);
 
+    // Sacar el index a donde se agrega la tarjeta por si no es valida
+    const idx = tarjetasGuardadas.length;
+
     try {
       setButtonLoading(true);
       setLoading(true);
@@ -682,50 +717,127 @@ export default function Pagar({
       setTipoPago(
         tarjetasGuardadas.length !== 0 ? tarjetasGuardadas.length : 0
       );
-      const { last4 } = r;
+      const len = r.number.length;
+      const last4 = r.number.slice(len - 4, len);
 
-      // // Si tenemos la direccion del usuario, ponerla en la tarjeta
-      // const { direccion } = usuario;
+      // Si tenemos la direccion del usuario, ponerla en la tarjeta
+      const { direccion } = usuario;
 
-      // // No guardar la tarjeta hasta que se confirme el payment intent por seguridad de Stripe
-      // const cardID = await fetchFromAPI<Stripe.Card>({
-      //   path: "/payments/saveCard",
-      //   type: "POST",
-      //   query: { clientID: usuario.paymentClientID },
-      //   input: {
-      //     object: "card",
-      //     name: r.name,
-      //     number: r.number,
-      //     exp_month: r.expiry.month,
-      //     exp_year: r.expiry.year,
-      //     cvc: r.cvv,
-      //     address_zip: r.postalCode,
-      //     address_state: (direccion as any)?.state,
-      //     address_line1: (direccion as any)?.line1,
-      //     address_city: (direccion as any)?.city,
-      //     address_country: "MX",
-      //   },
-      // })
-      //   .then((c) => {
-      //     log(c);
-      //     return c.body.id;
-      //   })
-      //   .catch((e) => {
-      //     log(e);
-      //     Alert.alert("Error", "Error guardando tarjeta: " + e);
-      //   });
+      // Obtener informacion de la direccion
+      const state = (direccion as any)?.state
+        ? (direccion as any)?.state
+        : undefined;
+      const city = (direccion as any)?.city
+        ? (direccion as any)?.city
+        : undefined;
+      const line1 = (direccion as any)?.line1
+        ? (direccion as any)?.line1
+        : undefined;
+
+      const numeroCompleto =
+        usuario.phoneCode && usuario.phoneNumber
+          ? usuario.phoneCode + usuario.phoneNumber
+          : undefined;
+
+      // Guardar el token de la tarjeta en stripe directo con la Publisable key
+      const paymentMethodID = fetchFromStripe<Stripe.Token>({
+        path: "/v1/tokens",
+        type: "POST",
+        input: {
+          card: {
+            object: "card",
+
+            name: r.name,
+            number: r.number,
+            exp_month: r.expiry.month,
+            exp_year: r.expiry.year,
+            cvc: r.cvv,
+            address_zip: r.postalCode,
+            address_state: state,
+            address_line1: line1,
+            address_city: city,
+            address_country: "MX",
+
+            currency,
+          },
+        } as Stripe.TokenCreateParams,
+      })
+        .then(async (c) => {
+          const tokenID = c.id;
+
+          // Guardar token como metodo de pago en stripe con la publishable key
+          const paymentMethodID = await fetchFromStripe<Stripe.PaymentMethod>({
+            path: "/v1/payment_methods",
+            type: "POST",
+            input: {
+              type: "card",
+              card: { token: tokenID },
+              billing_details: {
+                address: {
+                  postal_code: r.postalCode,
+                  state: state,
+                  line1: line1,
+                  city: city,
+                  country: "MX",
+                },
+                email: usuario.email,
+                name: r.name,
+                phone: numeroCompleto,
+              },
+            } as Stripe.PaymentMethodCreateParams,
+          }).then((r) => {
+            return r.id;
+          });
+
+          // Attachear metodo de pago al cliente si se pone guardar para compras futuras sin esperar que se resuelva
+          if (r.saveCard) {
+            fetchFromAPI<Stripe.PaymentMethod>({
+              path: "/payments/card",
+              type: "POST",
+              input: {
+                customerID: usuario.paymentClientID,
+                paymentMethodID,
+              },
+            }).catch((e) => {
+              log(e);
+              // Si el error viene de stripe, eliminarla
+              Alert.alert("Error", "Error guardando tarjeta: " + e);
+
+              // Borrar de la lista
+              setTarjetasGuardadas((prev) => {
+                let neCards = [...prev];
+
+                neCards.splice(idx, 1);
+                return neCards;
+              });
+            });
+          }
+
+          return paymentMethodID;
+        })
+        .catch((e) => {
+          log(e);
+          Alert.alert("Error", "Error guardando tarjeta: " + e);
+
+          // Borrar de la lista
+          setTarjetasGuardadas((prev) => {
+            let neCards = [...prev];
+
+            neCards.splice(idx, 1);
+            return neCards;
+          });
+        });
 
       setButtonLoading(false);
       setLoading(false);
-
-      if (!cardID) {
+      if (!paymentMethodID) {
         return;
       }
 
       setTarjetasGuardadas([
         ...tarjetasGuardadas,
         {
-          id: cardID,
+          id: paymentMethodID,
           name: r.name,
           last4,
           brand: r.type,
@@ -747,35 +859,43 @@ export default function Pagar({
   }
 
   async function handleRemovePayment(idx: number) {
-    const tarjetaID = await tarjetasGuardadas[idx].id;
-    setTarjetasGuardadas(() => {
-      if (tarjetaID) {
-        if (!usuario.paymentClientID) {
-          console.log("No hay payment ID para ese usuario");
-          return;
+    const card = tarjetasGuardadas[idx];
+    const cardID = await card.id;
+    try {
+      setTarjetasGuardadas(() => {
+        if (cardID) {
+          if (!usuario.paymentClientID) {
+            console.log("No hay payment ID para ese usuario");
+            return;
+          } else {
+            fetchFromAPI({
+              path: "/payments/card/" + cardID,
+              type: "DELETE",
+            }).catch((e) => {
+              console.log(e);
+              Alert.alert("Error", "Error borrando tarjeta");
+            });
+          }
         } else {
-          fetchFromAPI({
-            path: "/payments/card/" + tarjetaID,
-            type: "DELETE",
-            input: {
-              customer_id: usuario.paymentClientID,
-            },
-          }).catch((e) => {
-            console.log(e);
-            Alert.alert(
-              "Error",
-              "Error borrando tarjeta: " + e?.error?.description
-            );
-          });
+          console.log("No hay tarjeta ID");
         }
-      } else {
-        console.log("No hay tarjeta ID");
-      }
 
-      let neCards = [...tarjetasGuardadas];
-      neCards.splice(idx, 1);
-      return [...neCards];
-    });
+        let neCards = [...tarjetasGuardadas];
+        neCards.splice(idx, 1);
+        return [...neCards];
+      });
+    } catch (error) {
+      log(error);
+      Alert.alert("Error", "Ocurrio un error guardando la tarjeta");
+
+      // Volver a poner la tarjeta en la lista
+      setTarjetasGuardadas((prev) => {
+        let neCards = [...prev];
+        neCards.push(card);
+
+        return neCards;
+      });
+    }
   }
 
   let { height, width } = Dimensions.get("screen");
@@ -1199,11 +1319,7 @@ export default function Pagar({
           setModalVisible(false);
         }}
       >
-        <SecureCardInput
-          clientSecret={clientSecret}
-          onAdd={handleAddCard}
-          setModalVisible={setModalVisible}
-        />
+        <CardInput onAdd={handleAddCard} setModalVisible={setModalVisible} />
       </Modal>
     </View>
   );

@@ -161,7 +161,7 @@ app.post('/payments/createPaymentIntent', async (req, res) => {
 /**************************************
 * GET Obtener tarjetas de un cliente  *
 **************************************/
-app.get('/payments/getClientCards/:clientID', async (req, res) => {
+app.get('/payments/card/:clientID', async (req, res) => {
   try {
     const { clientID } = req.params
 
@@ -176,8 +176,8 @@ app.get('/payments/getClientCards/:clientID', async (req, res) => {
       return
     }
 
-    let cards = await stripe.customers.listSources(clientID,
-      { object: 'card' });
+    let cards = await stripe.customers.listPaymentMethods(clientID,
+      { type: 'card' });
 
     return handleResponse(res, cards);
   } catch (e) {
@@ -185,52 +185,91 @@ app.get('/payments/getClientCards/:clientID', async (req, res) => {
   }
 });
 
-/**************************************
-* POST Crear tarjeta de un cliente  *
-**************************************/
-app.post('/payments/saveCard', async (req, res) => {
+/******************************************
+* GET Agregar tipo de pago a un cliente  *
+******************************************/
+app.post('/payments/card', async (req, res) => {
   try {
-    const { query, body } = req
-    const { clientID } = req.query
+    const { body } = req
 
     console.log({
-      body, query
+      body
     })
 
-    // Validar que existan los parametros clientID y body
-    if (!clientID) {
-      res.status(404)
-      res.json({
-        error: "Error, no se recibio clientID en el query",
-        body: query
-      })
-      return
-    }
     if (!body) {
       res.status(404)
       res.json({
-        error: "Error, no se recibio body en la solicitud POST",
-        body
+        error: "Error, no se recibio body en la solicitud GET",
+        body: body
 
       })
       return
+    }
+    if (!body.customerID) {
+      res.status(404)
+      res.json({
+        error: "Error, no se customerID en body de solicitud GET",
+        body: body
 
+      })
+      return
+    }
+    if (!body.paymentMethodID) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio paymentMethodID en la solicitud GET",
+        body: body
+
+      })
+      return
+    }
+    const { customerID, paymentMethodID } = body
+
+    let result = await stripe.paymentMethods.attach(
+      paymentMethodID,
+      { customer: customerID }
+    );
+
+
+    return handleResponse(res, result);
+  } catch (e) {
+    handleError(res, e)
+  }
+});
+
+/******************************************************
+* DELETE Borrar tipo de pago (tarjeta) de un cliente  *
+******************************************************/
+app.delete('/payments/card/:id', async (req, res) => {
+  try {
+    console.log(req.params)
+
+    const { id } = req?.params
+
+
+    if (!id) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio ruta del cliente a borrar en solicitud DELETE",
+      })
+      return
     }
 
-    let tok = await stripe.tokens.create(
-      {
-        card: body,
-        customer: clientID
-      });
+    let result = await stripe.paymentMethods.detach(
+      id,
+    );
 
 
-    return handleResponse(res, tok.card);
+    return handleResponse(res, "Deleted sucessfull");
   } catch (e) {
     handleError(res, e)
   }
 });
 
 
+/***********************************************************************************************************************************
+************************************************* RESPONSE HANDLERS *****************************************************************
+************************************************************************************************************************************/
 
 // Estandarizar respuestas exitosas y errores
 function handleResponse(res, input) {

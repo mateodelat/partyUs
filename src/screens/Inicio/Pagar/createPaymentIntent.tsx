@@ -1,5 +1,7 @@
 import { API } from "aws-amplify";
-import { log } from "../../../../constants";
+import Stripe from "stripe";
+import { fetchFromStripe, log } from "../../../../constants";
+import { TipoPago } from "../../../models";
 
 // /**
 //  * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
@@ -105,8 +107,19 @@ function formatResponse({
   return r;
 }
 
-exports.handler = async (event) => {
-  event.body = JSON.parse(event.body);
+export default async (event: {
+  body: {
+    receipt_email?: string;
+    boletos: { quantity: number; id: string }[];
+    cuponID: string | null;
+    eventoID: string;
+    usuarioID: string;
+    reservaID: string;
+    total: number;
+    comisionTotal: number;
+  };
+}) => {
+  //   event.body = JSON.parse(event.body);
   if (!event?.body) {
     return formatResponse({
       statusCode: 400,
@@ -128,16 +141,16 @@ exports.handler = async (event) => {
     total,
     cuponID,
     eventoID,
-    organizadorID,
     reservaID,
-    tipoPago,
-    sourceID,
     usuarioID,
-    device_session_id,
     boletos,
+    receipt_email,
   } = event.body;
   try {
     log(event.body);
+
+    // Ojo pagos en oxxo solo se permiten 1 dia antes y calcular fecha de expiracion dependiendo
+    // Si faltan 2 dias
 
     ////////////////////////////////////////////////////////////////////////
     /////////////////////////Verificaciones previas/////////////////////////
@@ -163,13 +176,6 @@ exports.handler = async (event) => {
       });
     }
 
-    if (!organizadorID) {
-      return formatResponse({
-        statusCode: 400,
-        error: "Error no se recibio ID de organizador",
-      });
-    }
-
     if (total !== 0 && !total) {
       return formatResponse({
         statusCode: 400,
@@ -184,40 +190,8 @@ exports.handler = async (event) => {
       });
     }
 
-    if (!device_session_id) {
-      return formatResponse({
-        statusCode: 400,
-        error: "Error no se recibio id de sesion para pagar",
-      });
-    }
-
-    if (tipoPago !== "TARJETA" && tipoPago !== "EFECTIVO") {
-      return formatResponse({
-        statusCode: 400,
-        error: "Error el tipo de pago debe ser TARJETA O EFECTIVO",
-      });
-    }
-
-    if (!sourceID && tipoPago === "TARJETA") {
-      return formatResponse({
-        statusCode: 400,
-        error: "Error no se recibio source id",
-      });
-    }
-
-    // No permitir operaciones de mas de 2000 pesos en efectivo
-    if (tipoPago === "EFECTIVO" && total > 2000) {
-      return formatResponse({
-        statusCode: 400,
-        error: "No se permiten pagos mayores a 2000 pesos en efectivo",
-      });
-    }
-
     // Funcion para sacar el query a mandar con filtro de boletosID
-    const query = (
-      boletosID
-      // : string[]
-    ) => {
+    const query = (boletosID: string[]) => {
       let string = "";
       boletosID.map((id, idx) => {
         string += `{id:{eq:"${id}"}},`;
@@ -253,11 +227,11 @@ exports.handler = async (event) => {
 
               }
               cliente:getUsuario(id:$usuarioID){
-                userPaymentID,
+                paymentClientID,
                 nickname
               }
               owner:getUsuario(id:$organizadorID){
-                userPaymentID
+                paymentAccountID
               }
               listBoletos(filter:{or:[${string}]}) {
                 items{
@@ -296,12 +270,12 @@ exports.handler = async (event) => {
           `;
     };
 
-    /*////////////////////////////////////////
-          Pedir todos los datos con id recibidos
-          ////////////////////////////////////////*/
-    /* Primero hay que verificar que haya lugares disponibles en los boletos
-             y ver que el precio corresponda al dado por el cliente
-             */
+    //////////////////////////////////////////
+    //Pedir todos los datos con id recibidos//
+    //////////////////////////////////////////
+
+    // Primero hay que verificar que haya lugares disponibles en los boletos
+    //  y ver que el precio total corresponda al dado por el cliente
 
     const response = await graphqlRequest({
       query: query(boletos.map((e) => e.id)),
@@ -317,7 +291,7 @@ exports.handler = async (event) => {
             usuarioID,
             organizadorID,
           },
-    }).then((r) => {
+    }).then((r: any) => {
       if (r.errors) {
         throw new Error("Error obteniendo datos: " + r.errors);
       }
@@ -329,37 +303,13 @@ exports.handler = async (event) => {
         personasReservadas: 0,
       }));
 
-      // Si hay mas reservas en efectivo por el mismo usuario dar error para evitar fraudes
-
-      if (tipoPago === "EFECTIVO" && total !== 0) {
-        const efectivoDeny = !!r.listReservas.items.find((e) => {
-          // Si el evento ya fue pagado o borrado o la fecha de expiracion es menor a la del dioa de hoy da falso para ese item
-          if (
-            e.pagado ||
-            e.fechaExpiracionUTC < new Date().toISOString() ||
-            e._deleted
-          )
-            return false;
-          else return true;
-        });
-
-        if (efectivoDeny) {
-          console.log({
-            Reservas: r.listReservas.items,
-          });
-          throw new Error(
-            "Solo se permite tener una reserva en efectivo por evento."
-          );
-        }
-      }
-
       let personasEnEvento = 0;
 
-      // Calcular personas reservadas en el evento a partir de las reservas validas
+      // Calcular personas reservadas en el evento y personas reservadas en boletos a partir de las reservas validas
       r.getEvento.Reservas.items.map((res) => {
         if (res._deleted) return false;
-        // Si esta pagada o aun no ha expirado, ES VALIDA
         else if (
+          // Si esta pagada o aun no ha expirado, ES VALIDA
           res.pagado ||
           res.fechaExpiracionUTC > new Date().toISOString()
         ) {
@@ -377,10 +327,9 @@ exports.handler = async (event) => {
             );
 
             if (idx < 0) {
-              // Si el cliente solo busca un boleto, no hay nececidad de ver mas
               return;
             } else {
-              // Sumarle la cantidad del boleto asociado a el boleto maestro encontrado
+              // Sumarle la cantidad del boleto asociado a los boletos filtrados (por evento)
               boletosFiltrados[idx].personasReservadas =
                 boletosFiltrados[idx].personasReservadas + bol.quantity;
             }
@@ -391,8 +340,6 @@ exports.handler = async (event) => {
           return false;
         }
       });
-
-      // Calcular personas reservadas en el boleto a partir de las reservas validas
 
       return {
         cupon: r.getCupon,
@@ -411,17 +358,26 @@ exports.handler = async (event) => {
       evento,
       cupon,
 
-      // Obtener id de pago de OPENPAY
+      // Obtener id de pago del organizador Y cliente
       client: {
-        userPaymentID: clientPaymentIDFetched,
+        // Parametro de stripe customer
+        paymentClientID: clientPaymentIDFetched,
         nickname: nicknameCliente,
       },
-      owner: { userPaymentID: ownerPaymentIDFetched },
+      // Parametro de stripe account
+      owner: { paymentAccountID: ownerPaymentIDFetched },
     } = response;
+    // Obtener organizador desde evento
+    const { creatorID: organizadorID } = evento;
 
     clientPaymentID = clientPaymentIDFetched;
     ownerPaymentID = ownerPaymentIDFetched;
-    // const ownerPaymentID = "ammifkd5zensfos9ypjw";
+
+    const porcentajeDescuento = cupon?.porcentajeDescuento;
+    const cantidadDescuento = cupon?.cantidadDescuento;
+    const totalPersonasReservadas = boletos
+      .map((e) => e.quantity)
+      .reduce((prev, a) => prev + a);
 
     // Verificacion de validez del cupon si se ingresa
     if (cupon?.vencimiento < new Date().getTime()) {
@@ -431,18 +387,14 @@ exports.handler = async (event) => {
       });
     }
 
-    if (cupon?.restantes <= 0) {
+    if (cupon?.restantes - totalPersonasReservadas <= 0) {
+      // Si los restantes por cupon mas los que quiere pagar el cliente exeden a las personas maximas
       return formatResponse({
         statusCode: 400,
-        error: "No hay personas disponibles para ese cupon",
+        error:
+          "Ya no hay cupo de personas para ese codigo de cupon. Intenta poner otro o eliminarlo",
       });
     }
-
-    const porcentajeDescuento = cupon?.porcentajeDescuento;
-    const cantidadDescuento = cupon?.cantidadDescuento;
-    const totalPersonasReservadas = boletos
-      .map((e) => e.quantity)
-      .reduce((prev, a) => prev + a);
 
     const description =
       "Pago " +
@@ -452,32 +404,18 @@ exports.handler = async (event) => {
       " en " +
       evento.titulo;
 
-    //////////////////////////////////////////////////////////////////
-    // Verificar que el usuario a pagarle sea el creador del evento //
-    //////////////////////////////////////////////////////////////////
-
-    if (evento.CreatorID !== organizadorID) {
-      return formatResponse({
-        statusCode: 400,
-        error:
-          "El creador del evento: " +
-          eventoID +
-          " recibido no coincide con el usuario a pagar recibido: " +
-          organizadorID,
-      });
-    }
-
     if (!clientPaymentID) {
       return formatResponse({
         statusCode: 400,
-        error: "no se encontro id de pago para el cliente ",
+        error: "no se encontro id de customer para tu cuenta de pagos",
       });
     }
 
     if (!ownerPaymentID) {
       return formatResponse({
         statusCode: 400,
-        error: "no se encontro id de pago para el creador del evento ",
+        error:
+          "no se encontro id de account para la cuenta de pagos del creador del evento ",
       });
     }
 
@@ -485,7 +423,7 @@ exports.handler = async (event) => {
     if (ownerPaymentID === clientPaymentID && total !== 0) {
       return formatResponse({
         statusCode: 409,
-        error: "el creador del evento tiene el mismo id de pago que el cliente",
+        error: "no puedes registrarte en tu mismo evento",
       });
     }
 
@@ -495,9 +433,9 @@ exports.handler = async (event) => {
 
     let comision = 0;
 
-    //////////////////////////////////////////////////////////
-    // Verificar que el precio total coincida con el pasado //
-    //////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Verificar que el precio total coincida con el recibido en la funcion //
+    //////////////////////////////////////////////////////////////////////////
     let totalFetched = boletosFetched
       .map((e) => {
         let {
@@ -544,6 +482,7 @@ exports.handler = async (event) => {
       })
       .reduce((partialSum, a) => partialSum + a, 0);
 
+    // Quitar del precio total el descuento aplicable
     totalFetched -= porcentajeDescuento
       ? totalFetched * porcentajeDescuento
       : cantidadDescuento
@@ -563,8 +502,8 @@ exports.handler = async (event) => {
           totalFetched,
       });
     }
-    //
-    // Verificar que el total de personas en el evento sea menor al sumado hasta ahorita
+
+    // Dar error si el total de personas en el evento calculado exede a las personas maximas del mismo
     if (reservadosEvento > evento.personasMax) {
       return formatResponse({
         statusCode: 400,
@@ -576,9 +515,11 @@ exports.handler = async (event) => {
       });
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Confirmar cargo, crear transaccion hacia el guia y comision de partyus //
-    ////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // Crear el payment intent para este evento seleccionado y confirmarlo en otra funcion  //
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    // Calcular fecha de expiracion
     let limitDate = new Date(evento.fechaFinal);
     // Si la fecha final es menor a un dia se pone la fecha final como limite de pago
     limitDate =
@@ -586,305 +527,99 @@ exports.handler = async (event) => {
         ? limitDate
         : new Date(new Date().getTime() + msInDay);
 
-    let body = {
-      tipoPago,
-    };
-    if (total !== 0) {
-      // Si hay un total cobrarlo de lo contrario solo actualizar la reservacion nueva
-      // Crear el payment intent con los datos de la tarjeta y confirmarlo aqui mismo
-      // input: {
-      //     amount: total * 100,
-      //     currency,
-      //     // Permitir pagos de otros metodos (supongo que de oxxo)
-      //     automatic_payment_methods: {
-      //       enabled: true,
-      //     },
-      //     // Podemos poner el total aqui pues despues cuando se crea el create reserva y confirmar el pago de dar precios diferentes no se hace nada
-      //     application_fee_amount: precioTotalSinComision,
-      //     metadata: {
-      //       eventoID,
-      //       usuarioID: usuario.id,
-      //       reservaID,
-      //       boletosID: JSON.stringify(boletos.map((e) => e.id)),
-      //     },
-      //     payment_method_types: ["card", "oxxo"],
-      //     // Guardar pagos en la tarjeta
-      //     setup_future_usage: "off_session",
-      //     // Cliente al quien guardarle los datos de tarjeta
-      //     customer: usuario.paymentClientID,
-      //     // Descripcion en stripe y extracto bancario
-      //     description: route.params.detalles,
-      //     statement_descriptor:
-      //       "PARTYUS--" + mayusFirstLetter(route.params.titulo.slice(0, 10)),
-      //     // If the payment requires any follow-up actions from the
-      //     // customer, like two-factor authentication, Stripe will error
-      //     // and you will need to prompt them for a new payment method.>
-      //     error_on_requires_action: true,
-      //     transfer_data: {
-      //       destination: creator.paymentAccountID,
-      //     },
-      //   }
-      //   await new Promise((res, rej) => {
-      //     // Pago hacia la cuenta del cliente comprador del producto
-      //     openpay.customers.charges.create(
-      //       clientPaymentID,
-      //       {
-      //         device_session_id: device_session_id,
-      //         method: tipoPago === "EFECTIVO" ? "store" : "card",
-      //         source_id: sourceID,
-      //         amount: total,
-      //         description,
-      //         redirect_url: "https://www.partyusmx.com",
-      //         order_id: "charge>>>" + reservaID,
-      //         capture: true,
-      //         due_date: tipoPago === "EFECTIVO" ? limitDate : undefined,
-      //       },
-      //       async function (error, e) {
-      //         console.log({
-      //           resultadoCrearCargo: e,
-      //         });
-      //         if (error) {
-      //           rej(error);
-      //         }
-      //         body.paymentID = e.id;
-      //         chargeID = e.id;
-      //         if (tipoPago === "EFECTIVO") {
-      //           if (!e.payment_method) {
-      //             rej("No se recibio url del voucher de la api de pagos");
-      //           }
-      //           const { barcode_url, reference } = e.payment_method;
-      //           body.voucher = {
-      //             barcode_url,
-      //             reference,
-      //             limitDate: limitDate.getTime(),
-      //           };
-      //           res();
-      //         } else {
-      //           // Verificar si no hay field de authorization, no esta autorizada con openpay
-      //           if (!e.authorization) {
-      //             rej(
-      //               "por el momento no podemos procesar ese tipo de tarjeta. Intenta con otra o pagando en efectivo en una tienda."
-      //             );
-      //             return;
-      //           }
-      //           await Promise.all([
-      //             new Promise((res, rej) => {
-      //               // Cargo comision al comprador
-      //               openpay.fees.create(
-      //                 {
-      //                   amount: comision,
-      //                   description:
-      //                     "Reserva: " + reservaID + " comision partyus.",
-      //                   order_id: "fee>>>" + reservaID,
-      //                   customer_id: clientPaymentID,
-      //                 },
-      //                 function (error, fee) {
-      //                   feeID = fee.id;
-      //                   if (error) {
-      //                     rej(error);
-      //                     return;
-      //                   }
-      //                   console.log("\nFEE RESULT:\n");
-      //                   console.log(fee);
-      //                   res();
-      //                 }
-      //               );
-      //             }),
-      //             new Promise((res, rej) => {
-      //               // Transferencia del comprador al organizador
-      //               openpay.customers.transfers.create(
-      //                 clientPaymentID,
-      //                 {
-      //                   customer_id: ownerPaymentID,
-      //                   amount: enviarACreador,
-      //                   description:
-      //                     "cardtransfer>>>" + reservaID + "><" + description,
-      //                   order_id: "cardtransfer>>>" + reservaID,
-      //                 },
-      //                 (error, r) => {
-      //                   transactionID = r.id;
-      //                   if (error) {
-      //                     rej(error);
-      //                     return;
-      //                   }
-      //                   console.log("\nTRANSFER RESULT:\n");
-      //                   console.log(r);
-      //                   res();
-      //                 }
-      //               );
-      //             }),
-      //           ])
-      //             .then(() => {
-      //               res();
-      //             })
-      //             .catch((e) => {
-      //               console.log(e);
-      //               rej(e);
-      //               return;
-      //             });
-      //         }
-      //       }
-      //     );
-      //   });
-    }
+    let statement_descriptor_suffix = "";
+    let statement_descriptor = "";
 
-    const reservaInput = {
-      cantidad: totalPersonasReservadas,
-      comision,
-      cuponID,
-      eventoID,
-      id: reservaID,
-      organizadorID,
-      pagadoAlOrganizador: enviarACreador,
-      chargeID: body.paymentID,
-      transactionID,
-      feeID,
-      total,
-      pagado: tipoPago === "EFECTIVO" && total !== 0 ? false : true,
-      usuarioID,
-      fechaExpiracionUTC: new Date(limitDate).toISOString(),
-      cashBarcode: body?.voucher?.barcode_url,
-      cashReference: body?.voucher?.reference,
-      tipoPago,
-      paymentTime: new Date().toISOString(),
-    };
+    // Funcion para calcular el extrato bancario
+    (() => {
+      //////////////////////////////////////////////////////////////////////////////
+      ///////////////////////////////Extracto bancario//////////////////////////////
+      //////////////////////////////////////////////////////////////////////////////
+      statement_descriptor_suffix = "PARTYUS";
 
-    console.log(`
-        mutation myMutation($reservaInput:CreateReservaInput!) {
-          ${boletosFetched.map((e, idx) => {
-            // Actualizar personas reservadas por boleto
+      // Calcular la longitud maxima del evento
+      const lenEvento =
+        22 -
+        (statement_descriptor_suffix.length +
+          2 + //"* "
+          +1 + //"-"
+          String(totalPersonasReservadas).length);
 
-            const boletoCliente = boletos.find((cli) => cli.id === e.id);
-            if (!boletoCliente) {
-              throw new Error(
-                "Ocurrio un error con los boletos obtenidos de la base de datos no se encotro el que coincida con " +
-                  e.id
-              );
-            }
+      let { titulo } = evento;
+      // Poner el titulo del evento con mayuscula primera letra y eliminar espacios
+      // para despues truncarlo a 10-len(personasReservadas) que son los caracteres restantes
+      titulo = (titulo.charAt(0).toUpperCase() + titulo.slice(1).toLowerCase())
+        .replace(/ /, "")
+        .slice(0, lenEvento);
+      // Para mostrar en el extracto bancario de la forma PARTYUS* evento-20 recortado a 22 caracteres
+      // Recortar el evento a maximo 9 caracteres sin espacio
+      statement_descriptor = titulo + "-" + totalPersonasReservadas;
 
-            const personasReservadas =
-              (e.personasReservadas ? e.personasReservadas : 0) +
-              boletoCliente.quantity;
-
-            return `
-            bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
-                ${updateBoletoReturns}
-            }
-            bol${idx}rel: createReservasBoletos(input:{
-              boletoID:"${e.id}",
-              reservaID:"${reservaID}",
-              quantity:${boletoCliente.quantity},
-            }){
-                ${createReservasBoletosReturns}
-                }
-            `;
-          })}
-  
-                updateEvento(input:{id:"${
-                  evento.id
-                }", personasReservadas:${reservadosEvento}, _version:${
-      evento._version
-    }}){
-                ${updateEventoReturns}                    
-            }
-
-          ${
-            // Restar de cupon si existe ID
-            cuponID
-              ? `updateCupon(input: {id: "${cuponID}", restantes: ${
-                  cupon.restantes ? cupon.restantes - 1 : 0
-                },_version:${cupon._version}}) {
-                    ${updateCuponReturns}
-              }`
-              : ``
-          }
-  
-
-            
-        createReserva(input: $reservaInput) {
-            ${reservaReturns}
-        }
-        }
-      `);
-    const q = `
-        mutation myMutation($reservaInput:CreateReservaInput!) {
-          ${boletosFetched.map((e, idx) => {
-            // Actualizar personas reservadas por boleto
-
-            const boletoCliente = boletos.find((cli) => cli.id === e.id);
-            if (!boletoCliente) {
-              throw new Error(
-                "Ocurrio un error con los boletos obtenidos de la base de datos no se encotro el que coincida con " +
-                  e.id
-              );
-            }
-
-            const personasReservadas =
-              (e.personasReservadas ? e.personasReservadas : 0) +
-              boletoCliente.quantity;
-
-            return `
-            bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
-                ${updateBoletoReturns}
-            }
-            bol${idx}rel: createReservasBoletos(input:{
-              boletoID:"${e.id}",
-              reservaID:"${reservaID}",
-              quantity:${boletoCliente.quantity},
-            }){
-                ${createReservasBoletosReturns}
-                }
-            `;
-          })}
-  
-                updateEvento(input:{id:"${
-                  evento.id
-                }", personasReservadas:${reservadosEvento}, _version:${
-      evento._version
-    }}){
-                ${updateEventoReturns}                    
-            }
-
-          ${
-            // Restar de cupon si existe ID
-            cuponID
-              ? `updateCupon(input: {id: "${cuponID}", restantes: ${
-                  cupon.restantes ? cupon.restantes - 1 : 0
-                },_version:${cupon._version}}) {
-                    ${updateCuponReturns}
-              }`
-              : ``
-          }
-  
-
-            
-        createReserva(input: $reservaInput) {
-            ${reservaReturns}
-        }
-        }
-      `;
-
-    // Mutacion para actualizar los boletos, el evento, crear reservacion y restar el personas disponibles de cupon
-    await graphqlRequest({
-      query: q,
-      variables: {
-        reservaInput,
-      },
-    }).then((r) => {
-      console.log(r);
-      body = {
-        ...body,
-        reservaID: r.data?.createReserva?.id,
-      };
-      if (r.errors)
-        throw new Error(
-          "Hubo un error actualizando los datos del evento: " + r
+      // Si por algo fallaron las cuentas y el descriptor mas el titulo mas "* " es mayor a 22, reducir
+      if (
+        (statement_descriptor_suffix + "* " + statement_descriptor).length > 22
+      ) {
+        console.log(
+          "El extracto bancario fallo, cayendo a " + statement_descriptor
         );
+        statement_descriptor = statement_descriptor.slice(
+          0,
+          22 - (statement_descriptor_suffix + "* ").length
+        );
+      }
+    })();
+
+    const res = await fetchFromStripe({
+      path: "/v1/payment_intents",
+      type: "POST",
+      input: {
+        // Multiplicar precio por 100 pues es en centavos
+        amount: total * 100,
+        currency: "mxn",
+        // Multiplicar comision por 100 pues es en centavos
+        application_fee_amount: comision * 100,
+
+        metadata: {
+          usuarioID,
+          reservaID,
+          eventoID,
+          cuponID,
+          boletos: JSON.stringify(boletos),
+        },
+
+        // Tiempo de expiracion del codigo oxxo en 1 dia
+        payment_method_options: {
+          oxxo: {
+            expires_after_days: 1,
+          },
+        },
+
+        // Aceptar automaticamente todos los tipos de pago autorizados en Dashboard
+        automatic_payment_methods: { enabled: true },
+
+        // Cliente a quien asociar el cargo
+        customer: clientPaymentID,
+
+        // Descripcion en stripe y extracto bancario
+        description: description,
+
+        // Descripcion del extracto bancario
+        statement_descriptor,
+        statement_descriptor_suffix,
+
+        // Mandar correo de recibo si se ingreso desde el cliente
+        receipt_email,
+
+        // Transferir dinero al organizador el evento
+        transfer_data: {
+          destination: ownerPaymentID,
+        },
+      } as Stripe.PaymentIntentCreateParams,
     });
 
     return formatResponse({
-      statusCode: 200,
-      body,
+      statusCode: 500,
+      body: res,
     });
   } catch (error) {
     console.log(error);
@@ -895,61 +630,6 @@ exports.handler = async (event) => {
       : error.errorMessage
       ? error.errorMessage
       : error;
-
-    // Cancelar el cargo en caso de error en la funcion
-    // if (tipoPago !== "EFECTIVO" && chargeID) {
-    //     // Primer esperar a que se devuelvan transaccion y fee
-    //     await Promise.all([
-    //         new Promise((res, rej) => {
-    //             // Regresar comision del comprador
-    //             openpay.fees.refund(
-    //                 feeID, {
-    //                 description: "Fallo al crear reserva, comision devuelta"
-    //             },
-    //                 function (error, fee) {
-    //                     feeID = fee.id
-
-    //                     if (error) {
-    //                         rej("Error cancelando el fee sobre el cargo");
-    //                     }
-
-    //                     res();
-    //                 }
-    //             );
-    //         }),
-    //         new Promise((res, rej) => {
-    //             // Devolver del organizador al comprador
-    //             openpay.customers.transfers.create(
-    //                 ownerPaymentID,
-    //                 {
-    //                     customer_id: clientPaymentID,
-    //                     amount: enviarACreador,
-    //                     order_id: "transferRefund>>>" + reservaID,
-    //                 },
-    //                 (error, r) => {
-    //                     transactionID = r.id
-
-    //                     if (error) {
-    //                         rej("Error creando la transferencia sobre el cargo");
-    //                     }
-
-    //                     console.log("\nTRANSFER RESULT:\n");
-    //                     console.log(r);
-    //                     res();
-    //                 }
-    //             );
-    //         }),
-    //     ]).then(r => {
-    //         msg = "Fallo en crear la reserva, cargos devueltos"
-    //         return openpay.customers.charges.refund(clientPaymentID, chargeID, {
-    //             description: "Fallo en crear la reserva, cargo devuelto"
-    //         }, (err, charge) => {
-    //             console.log("Cargo cancelado con exito: " + charge)
-    //         })
-
-    //     })
-
-    // }
 
     return formatResponse({
       statusCode: 500,

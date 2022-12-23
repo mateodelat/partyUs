@@ -14,6 +14,7 @@ import Boton from "../../../components/Boton";
 import {
   azulClaro,
   formatCuentaCLABE,
+  getIpAddress,
   isEmulator,
   produccion,
   shadowMedia,
@@ -91,14 +92,7 @@ export default function ({ route }: { route: any }) {
 
   useEffect(() => {
     // Pedir la ip para aceptar terminos y condiciones
-    (async () =>
-      setIp(
-        await fetch("https://api.ipify.org?format=json").then((r) =>
-          r.json().then((r) => {
-            return r.ip;
-          })
-        )
-      ))();
+    (async () => setIp(await getIpAddress()))();
   }, []);
 
   const nombreCompleto =

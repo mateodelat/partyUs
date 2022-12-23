@@ -21,6 +21,7 @@ import {
   fetchFromStripe,
   formatDiaMesCompleto,
   getBlob,
+  getIpAddress,
   getUserSub,
   graphqlRequest,
   isUrl,
@@ -97,11 +98,11 @@ export default function Agregar2({
     | false
   >(evento.tosAceptance ? (evento.tosAceptance as any) : false);
 
-  const [ip, setIp] = useState("");
+  const [ip, setIp] = useState("8.8.8.8");
   useEffect(() => {
-    NetInfo.fetch().then((state: any) => {
-      setIp(state?.details?.ipAddress);
-    });
+    (async () => {
+      setIp(await getIpAddress());
+    })();
   });
 
   async function handleGuardar() {

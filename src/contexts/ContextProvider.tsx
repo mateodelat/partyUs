@@ -79,7 +79,7 @@ export default function Context({
           }
         }
 
-        Bugsnag.setUser(sub, r.email, r.nickname);
+        // Bugsnag.setUser(sub, r.email, r.nickname);
 
         setUsuario(r);
       });
@@ -180,7 +180,7 @@ export default function Context({
 
           setLoading(false);
           // cancelAllScheduledNotificationsAsync();
-          Bugsnag.setUser("", "", "");
+          // Bugsnag.setUser("", "", "");
           break;
 
         case "signUp":
