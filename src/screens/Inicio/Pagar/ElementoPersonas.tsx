@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { formatMoney } from "../../../../constants";
 
-export default ({
+export default function Elemento({
   cantidad,
   precio,
 
@@ -11,7 +11,7 @@ export default ({
   cantidad: number;
   precio: number;
   titulo: string;
-}) => {
+}) {
   return (
     <View style={{ ...styles.container }}>
       {/* Titulos */}
@@ -33,7 +33,7 @@ export default ({
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

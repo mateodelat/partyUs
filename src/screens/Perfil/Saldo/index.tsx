@@ -56,11 +56,10 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { clabe } from "../../../../constants/ClabeValidator";
+import { clabe } from "../../../components/ClabeValidator";
 
 import Logo from "../../../components/Logo";
 import CardInput, { saveParams } from "../../../components/CardInput";
-import OpenPay from "../../../components/OpenPay";
 import { logger } from "react-native-logs";
 import ClabeInput, {
   saveParamsClabeInput,
@@ -139,168 +138,167 @@ export default function ({ navigation, route }) {
 
   let alertRetirosShown = false;
 
-  async function fetchData({
-    offset,
-    type,
-    addToData,
-  }: {
-    offset?: number;
-    type: resource_type;
-    addToData?: boolean;
-  }) {
-    // Detectar que tipo de operacion se esta solicitando
-    try {
-      console.log(type);
-      switch (type) {
-        case "charges":
-          setRefreshingCharges(true);
+  //   async function fetchData({
+  //     offset,
+  //     type,
+  //     addToData,
+  //   }: {
+  //     offset?: number;
+  //     type: resource_type;
+  //     addToData?: boolean;
+  //   }) {
+  //     // Detectar que tipo de operacion se esta solicitando
+  //     try {
+  //       console.log(type);
+  //       switch (type) {
+  //         case "charges":
+  //           setRefreshingCharges(true);
 
-          return await fetchFromAPI<chargeType[]>(
-            `/payments/getClientCharges?id=${usuario.userPaymentID}&limit=${LIMIT}&offset=${offset}`,
-            "GET"
-          )
-            // Poner limit reached
-            .then(({ body }) => {
-              let r = body;
-              // Si se llego al limite ponerlo
-              if (r?.length < LIMIT) {
-                setLimitChargesReached(true);
-              } else {
-                setLimitChargesReached(false);
-              }
-              setRefreshingCharges(false);
+  //           return await fetchFromAPI<chargeType[]>(
+  //             `/payments/getClientCharges?id=${usuario.userPaymentID}&limit=${LIMIT}&offset=${offset}`,
+  //             "GET"
+  //           )
+  //             // Poner limit reached
+  //             .then(({ body }) => {
+  //               let r = body;
+  //               // Si se llego al limite ponerlo
+  //               if (r?.length < LIMIT) {
+  //                 setLimitChargesReached(true);
+  //               } else {
+  //                 setLimitChargesReached(false);
+  //               }
+  //               setRefreshingCharges(false);
 
-              // Si hay que agregar a la anterior data (pagination)
-              if (addToData) {
-                setCharges((prev) => [...prev, ...r]);
-              } else {
-                setCharges(r);
-              }
-            });
+  //               // Si hay que agregar a la anterior data (pagination)
+  //               if (addToData) {
+  //                 setCharges((prev) => [...prev, ...r]);
+  //               } else {
+  //                 setCharges(r);
+  //               }
+  //             });
 
-        // Transaciones
-        case "transactions":
-          setRefreshingTransfers(true);
-          return await fetchFromAPI<transaction_type[]>(
-            `/payments/getClientTransfers?id=${usuario.userPaymentID}&limit=${LIMIT}&offset=${offset}`,
-            "GET"
-          )
-            // Poner limit reached
-            .then(({ body }) => {
-              let r = body;
-              if (r?.length < LIMIT) {
-                setLimitTransfersReached(true);
-              } else {
-                setLimitTransfersReached(false);
-              }
-              if (addToData) {
-                setTransfersOffset([...transfers, ...r].length);
-              } else {
-                setTransfersOffset(r.length);
-              }
+  //         // Transaciones
+  //         case "transactions":
+  //           setRefreshingTransfers(true);
+  //           return await fetchFromAPI<transaction_type[]>(
+  //             `/payments/getClientTransfers?id=${usuario.userPaymentID}&limit=${LIMIT}&offset=${offset}`,
+  //             "GET"
+  //           )
+  //             // Poner limit reached
+  //             .then(({ body }) => {
+  //               let r = body;
+  //               if (r?.length < LIMIT) {
+  //                 setLimitTransfersReached(true);
+  //               } else {
+  //                 setLimitTransfersReached(false);
+  //               }
+  //               if (addToData) {
+  //                 setTransfersOffset([...transfers, ...r].length);
+  //               } else {
+  //                 setTransfersOffset(r.length);
+  //               }
 
-              // Filtrar por transacciones que no sean de cobro en la app o tipo cancelada
-              r = r.filter((e) => {
-                const des = e.description;
+  //               // Filtrar por transacciones que no sean de cobro en la app o tipo cancelada
+  //               r = r.filter((e) => {
+  //                 const des = e.description;
 
-                const transferLabelIDX = des.search(/transfer>>>|retiro>>>/);
+  //                 const transferLabelIDX = des.search(/transfer>>>|retiro>>>/);
 
-                let tipo: "cash" | "card" | "cancel" | "retiro" = des.slice(
-                  0,
-                  transferLabelIDX
-                ) as any;
+  //                 let tipo: "cash" | "card" | "cancel" | "retiro" = des.slice(
+  //                   0,
+  //                   transferLabelIDX
+  //                 ) as any;
 
-                // Si es retiro
-                if (des.search(/retiro>>>/) > 0) {
-                  tipo = "retiro";
-                }
+  //                 // Si es retiro
+  //                 if (des.search(/retiro>>>/) > 0) {
+  //                   tipo = "retiro";
+  //                 }
 
-                // Si es una transferencia entre clientes y no es retiro eliminar
-                if (
-                  tipo !== "cancel" &&
-                  e.operation_type === "out" &&
-                  des.search("retiro") < 0
-                ) {
-                  console.log(
-                    "Se elimino una transaccion de movimiento de dinero por cargo"
-                  );
-                  return false;
-                } else return true;
-              });
+  //                 // Si es una transferencia entre clientes y no es retiro eliminar
+  //                 if (
+  //                   tipo !== "cancel" &&
+  //                   e.operation_type === "out" &&
+  //                   des.search("retiro") < 0
+  //                 ) {
+  //                   console.log(
+  //                     "Se elimino una transaccion de movimiento de dinero por cargo"
+  //                   );
+  //                   return false;
+  //                 } else return true;
+  //               });
 
-              // Si hay que agregar a la anterior data (pagination)
-              if (addToData) {
-                setTransfers((prev) => {
-                  const arr = [...prev, ...r];
+  //               // Si hay que agregar a la anterior data (pagination)
+  //               if (addToData) {
+  //                 setTransfers((prev) => {
+  //                   const arr = [...prev, ...r];
 
-                  return arr;
-                });
-              } else {
-                setTransfers(r);
-              }
+  //                   return arr;
+  //                 });
+  //               } else {
+  //                 setTransfers(r);
+  //               }
 
-              setRefreshingTransfers(false);
-            });
+  //               setRefreshingTransfers(false);
+  //             });
 
-        // Pedir al cliente desde openpay
-        case "client":
-          return await fetchFromAPI<customer_type>(
-            `/payments/clientInfo?id=${usuario.userPaymentID}`,
-            "GET"
-          ).then(({ body }) => {
-            if (!!body?.balance && !alertRetirosShown) {
-              alertRetirosShown = true;
+  //         // Pedir al cliente desde openpay
+  //         case "client":
+  //           return await fetchFromAPI<customer_type>(
+  //             `/payments/clientInfo?id=${usuario.userPaymentID}`,
+  //             "GET"
+  //           ).then(({ body }) => {
+  //             if (!!body?.balance && !alertRetirosShown) {
+  //               alertRetirosShown = true;
 
-              // Si el cliente tiene fondos mandar alerta de contactarnos para retiro de fondos, fue una cancelacion de evento
-              if (!usuario.organizador) {
-                Alert.alert("Atencion", "Contactanos para retirar tus fondos");
-              } else {
-                Alert.alert(
-                  "Atencion",
-                  "Ingresa tu cuenta bancaria para retirar los fondos"
-                );
-              }
-            }
-            setCustomer(body);
-          });
+  //               // Si el cliente tiene fondos mandar alerta de contactarnos para retiro de fondos, fue una cancelacion de evento
+  //               if (!usuario.organizador) {
+  //                 Alert.alert("Atencion", "Contactanos para retirar tus fondos");
+  //               } else {
+  //                 Alert.alert(
+  //                   "Atencion",
+  //                   "Ingresa tu cuenta bancaria para retirar los fondos"
+  //                 );
+  //               }
+  //             }
+  //             setCustomer(body);
+  //           });
 
-        case "cards":
-          return await fetchFromAPI<cardType[]>(
-            "/payments/card",
-            "GET",
-            undefined,
-            {
-              customer_id: usuario.userPaymentID,
-            }
-          ).then(({ body }) => {
-            if (body) {
-              body = body.map((card) => {
-                return {
-                  ...card,
-                  icon: getCardIcon(card.brand),
-                };
-              });
+  //         case "cards":
+  //           return await fetchFromAPI<cardType[]>({
+  //             path:"/payments/card",
+  //             type:"GET",
+  // query:{
+  //               customer_id: usuario.userPaymentID,
+  //             }
+  //           }).then(({ body }) => {
+  //             if (body) {
+  //               body = body.map((card) => {
+  //                 return {
+  //                   ...card,
+  //                   icon: getCardIcon(card.brand),
+  //                 };
+  //               });
 
-              setTarjetasGuardadas(body);
-              return body;
-            }
-          });
+  //               setTarjetasGuardadas(body);
+  //               return body;
+  //             }
+  //           });
 
-        default:
-          Alert.alert("Error", "No se recibio tipo para pedir los datos");
-          return null;
-      }
-    } catch (error) {
-      console.log(error);
-      setRefreshingCharges(false);
-      setRefreshingTransfers(false);
+  //         default:
+  //           Alert.alert("Error", "No se recibio tipo para pedir los datos");
+  //           return null;
+  //       }
+  //     } catch (error) {
+  //       console.log(error);
+  //       setRefreshingCharges(false);
+  //       setRefreshingTransfers(false);
 
-      Alert.alert(
-        "Error," +
-          (error.description ? error.description : JSON.stringify(error))
-      );
-    }
-  }
+  //       Alert.alert(
+  //         "Error," +
+  //           (error.description ? error.description : JSON.stringify(error))
+  //       );
+  //     }
+  //   }
 
   async function onRefresh(type: "charges" | "transactions") {
     // Pedir datos cargos/transferencias y datos del cliente
@@ -422,7 +420,11 @@ export default function ({ navigation, route }) {
         device_session_id: sesionId,
         customer_id: usuario.userPaymentID,
       };
-      await fetchFromAPI<cardType>("/payments/card", "POST", input)
+      await fetchFromAPI<cardType>({
+        path: "/payments/card",
+        type: "POST",
+        input,
+      })
         .then((e) => {
           const r = e.body;
           setAddingCard(false);
@@ -459,32 +461,32 @@ export default function ({ navigation, route }) {
     }
   }
 
-  async function handleRemoveCard(idx: number) {
-    const tarjetaID = await tarjetasGuardadas[idx].id;
-    setTarjetasGuardadas(() => {
-      if (tarjetaID) {
-        if (!usuario.userPaymentID) {
-          console.log("No hay payment ID para ese usuario");
-        } else {
-          fetchFromAPI("/payments/card/" + tarjetaID, "DELETE", undefined, {
-            customer_id: usuario.userPaymentID,
-          }).catch((e) => {
-            console.log(e);
-            Alert.alert(
-              "Error",
-              "Error borrando tarjeta: " + e?.error?.description
-            );
-          });
-        }
-      } else {
-        console.log("No hay tarjeta ID");
-      }
+  // async function handleRemoveCard(idx: number) {
+  //   const tarjetaID = await tarjetasGuardadas[idx].id;
+  //   setTarjetasGuardadas(() => {
+  //     if (tarjetaID) {
+  //       if (!usuario.userPaymentID) {
+  //         console.log("No hay payment ID para ese usuario");
+  //       } else {
+  //         fetchFromAPI("/payments/card/" + tarjetaID, "DELETE", undefined, {
+  //           customer_id: usuario.userPaymentID,
+  //         }).catch((e) => {
+  //           console.log(e);
+  //           Alert.alert(
+  //             "Error",
+  //             "Error borrando tarjeta: " + e?.error?.description
+  //           );
+  //         });
+  //       }
+  //     } else {
+  //       console.log("No hay tarjeta ID");
+  //     }
 
-      let neCards = [...tarjetasGuardadas];
-      neCards.splice(idx, 1);
-      return [...neCards];
-    });
-  }
+  //     let neCards = [...tarjetasGuardadas];
+  //     neCards.splice(idx, 1);
+  //     return [...neCards];
+  //   });
+  // }
 
   // Estado de la app para ver si ya se mando la notificacion
   let adminRememberSent = false;

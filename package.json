@@ -20,6 +20,7 @@
     "@react-navigation/bottom-tabs": "^6.4.0",
     "@react-navigation/native": "^6.0.13",
     "@react-navigation/stack": "^6.3.3",
+    "@stripe/stripe-react-native": "0.19.0",
     "@types/react-native-base64": "^0.2.0",
     "@types/react-native-dotenv": "^0.2.0",
     "@types/sprintf-js": "^1.1.2",

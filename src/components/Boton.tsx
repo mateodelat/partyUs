@@ -10,7 +10,7 @@ import {
 import { Entypo } from "@expo/vector-icons";
 import { rojo } from "../../constants";
 
-export default ({
+const f = ({
   onPress,
   titulo,
   loading,
@@ -83,3 +83,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
+export default f;

@@ -17,7 +17,6 @@ import Boton from "../Boton";
 import {
   AsyncAlert,
   azulClaro,
-  azulFondo,
   getCardIcon,
   normalizeCardType,
 } from "../../../constants";
@@ -30,6 +29,7 @@ import { Feather } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 import { cardBrand_type } from "../../../types/openpay";
+import { produccion } from "../../../constants/keys";
 
 enum cardType {
   "visa" = "visa",
@@ -55,6 +55,7 @@ export type saveParams = {
   name?: string; //"Sam",
   type?: cardBrand_type;
   saveCard?: boolean;
+  postalCode?: string;
 };
 
 export default function ({
@@ -74,6 +75,7 @@ export default function ({
     : "";
   const prevNumber = prevCard?.number ? prevCard?.number : "";
   const prevName = prevCard?.name ? prevCard?.name : "";
+  const prevPostalCode = prevCard?.postalCode ? prevCard?.postalCode : "";
 
   const [innerModal, setInnerModal] = useState(false);
 
@@ -93,6 +95,7 @@ export default function ({
     validation: numberValidation,
   });
 
+  const [postalCode, setPostalCode] = useState(prevPostalCode);
   const [name, setName] = useState(prevName);
 
   const [saveCard, setSaveCard] = useState(true);
@@ -100,9 +103,8 @@ export default function ({
   const numberRef = useRef<{ _inputElement: TextInputMask & TextInput }>(null);
   const expiryRef = useRef<{ _inputElement: TextInputMask & TextInput }>(null);
   const cvcRef = useRef<{ _inputElement: TextInputMask & TextInput }>(null);
-  const nameRef = useRef<
-    { _inputElement: TextInputMask & TextInput } & TextInput
-  >(null);
+  const postalCodeRef = useRef<TextInput>(null);
+  const nameRef = useRef<TextInput>(null);
 
   const handleCloseModal = async () => {
     if (
@@ -128,6 +130,11 @@ export default function ({
   useEffect(() => {
     setInnerModal(true);
 
+    assignDefaultValues();
+  }, []);
+
+  function assignDefaultValues() {
+    if (produccion) return;
     setNumber({
       value: "4000056655665556",
       validation: {
@@ -154,7 +161,9 @@ export default function ({
         isValid: true,
       },
     });
-  }, []);
+
+    setPostalCode("45500");
+  }
 
   function handleSave() {
     const exp = valid.expirationDate(expiry?.value);
@@ -175,6 +184,13 @@ export default function ({
       return;
     }
 
+    if (postalCode.length !== 5) {
+      Alert.alert("Error", "Codigo postal no valido");
+      return;
+    }
+
+    // No se realiza verificacion del codigo postal pues es opcional
+
     const tipoTarjeta = normalizeCardType(
       number.validation.card?.type as cardType
     );
@@ -186,6 +202,7 @@ export default function ({
       },
       number: number?.value,
       name,
+      postalCode,
       icon: getCardIcon(tipoTarjeta),
       type: normalizeCardType(number.validation.card?.type as cardType),
       saveCard,
@@ -424,6 +441,7 @@ export default function ({
               />
             </View>
 
+            {/* Nombre del tarjetahabiente */}
             <InputOnFocusV2
               titulo={"Nombre del tarjetahabiente"}
               placeholder={"Escribe el nombre completo"}
@@ -431,14 +449,35 @@ export default function ({
               onChangeText={setName}
               value={name}
               style={{ marginTop: 30 }}
-              onSubmitEditing={handleSave}
+              returnKeyType={"next"}
+              onSubmitEditing={() => {
+                postalCodeRef.current?.focus();
+              }}
               ref={nameRef}
             />
 
-            <Text style={styles.infoTxt}>
+            {/* Codigo postal */}
+            <InputOnFocusV2
+              titulo={"Codigo postal"}
+              ref={postalCodeRef}
+              placeholder={"45000"}
+              autoCapitalize={"characters"}
+              onChangeText={(r) => {
+                // Poner solo numeros
+                setPostalCode(r.replace(/\D/g, ""));
+              }}
+              value={postalCode}
+              returnKeyType={"done"}
+              keyboardType={"numeric"}
+              maxLength={5}
+              style={{ marginTop: 20 }}
+              onSubmitEditing={handleSave}
+            />
+
+            {/* <Text style={styles.infoTxt}>
               Al momento de crear la tarjeta se realiza un cargo de 1$ para
               verificar que es valida y se devolvera al instante
-            </Text>
+            </Text> */}
 
             {/* Guardar tarjeta para compras futuras */}
             {!comprasFuturasDisabled ? (

@@ -32,9 +32,9 @@ app.use(function (req, res, next) {
 
 
 
-/***************************************************
-******************** ACCOUNTS **********************
-***************************************************/
+/*******************************************************************************************************************************
+*************************************************** ACCOUNTS *******************************************************************
+********************************************************************************************************************************/
 
 /*****************************************
 * POST Crear account de cliente en stripe *
@@ -54,25 +54,12 @@ async function createAccount(req, res) {
     const input = req.body
 
     const account = await stripe.accounts.create(input);
-    let error = undefined
 
-    if (account.error) {
-      error = account.error
-      res.status(error?.code)
-    }
 
-    res.json({
-      error,
-      body: account
-    })
+    handleResponse(res, account)
   }
   catch (e) {
-    const mes = e?.Error ? e.Error : e?.code ? (e.code + "\n" + e.message) : JSON.stringify(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: mes
-    })
+    handleError(e)
   }
 }
 app.post('/payments/createAccount', createAccount)
@@ -88,7 +75,7 @@ app.post('/payments/updateAccount', async function (req, res) {
     res.status(404)
     res.json({
       error: "Error, no se recibio cuerpo de peticion",
-      body: req.body
+      body: null
     })
     return
   }
@@ -111,23 +98,11 @@ app.post('/payments/updateAccount', async function (req, res) {
 
     // Intentar crear la cuenta con el account id
     let account = await stripe.accounts.update(accountID, input);
-    let error = undefined
 
 
-    if (account.error) {
-      error = account.error
-      res.status(error?.code)
-    }
-
-    res.json({
-      error,
-      body: account
-    })
+    handleResponse(res, account)
   }
   catch (e) {
-    console.log(e)
-    const mes = e?.errorMessage ? e?.errorMessage : e.Errore?.Error ? e.Error : e?.code ? (e.code + "\n" + e.message) : JSON.stringify(e)
-
     // Si nos da error de tipo accountInvalid, es porque no existe la cuenta, crearla
     if (e.code === "account_invalid") {
       createAccount({
@@ -142,161 +117,109 @@ app.post('/payments/updateAccount', async function (req, res) {
       return
     }
 
-    const statusCode = e?.statusCode ? e.statusCode : 500
-
-    res.status(statusCode)
-    res.json({
-      error: mes,
-    })
+    // De lo contrario, enviar el error
+    handleError(res, e)
   }
 });
 
 
 
 
-// /******************************************
-// * POST Crear transferencia entre cuentas  *
-// ******************************************/
-// app.post('/payments/transfer', function (req, res) {
-//   // Add your code here
-//   try {
-//     const source_id = req.body.source_id
-//     const target_id = req.body.target_id
-//     const amount = req.body.amount
+/*******************************************************************************************************************************
+*********************************************** PAYMENT INTENT *****************************************************************
+********************************************************************************************************************************/
+
+/********************************************************
+* POST Crear payment intent y obtener el client secret  *
+********************************************************/
+app.post('/payments/createPaymentIntent', async (req, res) => {
+  try {
+    // Validar que existan los parametros de body y accountID
+    if (!req || !req.body) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio cuerpo de peticion",
+      })
+      return
+    }
+
+    let { body } = req
+
+    // Create the PaymentIntent
+    let intent = await stripe.paymentIntents.create(body);
+
+    return handleResponse(res, intent);
+  } catch (e) {
+    handleError(res, e)
+  }
+});
 
 
-//     const description = req.body.description
-//     const order_id = req.body.order_id
-
-//     if (!target_id || !source_id || !amount) {
-//       res.status(404)
-//       res.json({
-//         error: "Error, no se recibio target_id, source_id o amount",
-//         body: req.body
-//       })
-//     }
-
-//     openpay.customers.transfers.create(source_id, {
-//       customer_id: target_id,
-//       amount,
-//       description,
-//       order_id
-
-//     }, function (error, body) {
-//       if (error?.http_code) {
-//         res.status(error?.http_code)
-//       }
-
-//       res.json({
-//         error,
-//         body
-//       })
-//     })
-//   }
-//   catch (e) {
-//     console.log(e)
-//     res.status(500)
-//     res.json({
-//       error: "Hubo un error",
-//       body: e.message
-//     })
-//   }
-// });
+/**************************************
+* GET Obtener tarjetas de un cliente  *
+**************************************/
+app.post('/payments/getClientCards/:clientID', async (req, res) => {
+  try {
+    const { clientID } = req.params
 
 
+    // Validar que existan los parametros clientID
+    if (!clientID) {
+      console.log(req)
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio clientID",
+      })
+      return
+    }
+
+    // Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create(body)
+    console.log("Payment intent result: ", paymentIntent)
+
+    // Create the PaymentIntent
+    let intent = await stripe.paymentIntents.create(body);
+
+    return handleResponse(res, intent);
+  } catch (e) {
+    handleError(res, e)
+  }
+});
+
+// Estandarizar respuestas exitosas y errores
+function handleResponse(res, input) {
+  console.log("Repuesta exitosa")
+
+  res.status(200)
+  res.json({
+    error: null,
+    body: input
+  })
+}
+
+function handleError(res, e) {
+  console.log("Ocurrio un error")
 
 
+  const mes = e ? e.code ? (e.code + "\n" + e.message) : e.errorMessage ? e.errorMessage : e.Errore.Error ? e.Error : JSON.stringify(e) : ""
+  const statusCode = e?.statusCode ? e.statusCode : 500
 
-// /*******************************
-// * POST Crear fee sobre cuenta  *
-// *******************************/
-// app.post('/payments/fee', function (req, res) {
-//   // Add your code here
-//   try {
-//     const source_id = req.body.source_id
-//     const amount = req.body.amount
+  res.status(statusCode)
 
+  if (e.type === 'StripeCardError') {
+    // Display error on client
+    return res.json({
+      error: mes,
+    })
 
-//     const description = req.body.description
-//     const order_id = req.body.order_id
-
-//     if (!source_id || !amount) {
-//       res.status(404)
-//       res.json({
-//         error: "Error, no se recibio source_id o amount",
-//         body: req.body
-//       })
-//     }
-
-//     openpay.fees.create({
-//       customer_id: source_id,
-//       amount,
-//       description,
-//       order_id
-
-//     }, function (error, body) {
-//       if (error?.http_code) {
-//         res.status(error?.http_code)
-//       }
-
-//       res.json({
-//         error,
-//         body
-//       })
-//     })
-//   }
-//   catch (e) {
-//     console.log(e)
-//     res.status(500)
-//     res.json({
-//       error: "Hubo un error",
-//       body: e.message
-//     })
-//   }
-// });
-
-
-
-
-
-// /****************************
-// * Borrar tarjetas cliente *
-// ****************************/
-// app.delete('/payments/card/:card_id', function (req, res) {
-//   const { card_id } = req.params
-//   const { customer_id } = req.query
-
-//   if (!customer_id) {
-//     res.status(404)
-//     res.json({
-//       error: "Error, no se recibio customer_id",
-//       body: req.query
-//     })
-//   }
-
-//   if (!card_id) {
-//     res.status(404)
-//     res.json({
-//       error: "Error, no se recibio card_id",
-//       body: req.params
-//     })
-//   }
-
-
-
-//   openpay.customers.cards.delete(customer_id, card_id, function (error, body, response) {
-//     if (error?.http_code) {
-//       res.status(error?.http_code)
-//     }
-
-//     res.json({
-//       error,
-//       body
-//     })
-//   })
-
-// });
-
+  } else {
+    // Something else happened
+    return res.status(500).send({
+      error: mes,
+      body: e
+    });
+  }
+}
 
 
 app.listen(3000);

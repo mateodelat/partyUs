@@ -21,7 +21,6 @@ import Boton from "../../../components/Boton";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import {
   fetchFromAPI,
-  fetchFromOpenpay,
   formatAMPM,
   formatDateShort,
   formatMoney,
@@ -39,6 +38,9 @@ import {
   abrirTerminos,
   sendNotifications,
   sendAdminNotification,
+  fetchFromStripe,
+  log,
+  mayusFirstLetter,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
@@ -49,9 +51,7 @@ import Header from "../../../navigation/components/Header";
 import uuid from "react-native-uuid";
 import CardInput, { saveParams } from "../../../components/CardInput";
 
-import OpenPay from "../../../components/OpenPay";
 import useUser from "../../../Hooks/useUser";
-import { cardType, chargeType } from "../../../../types/openpay";
 import { DataStore } from "aws-amplify";
 import { TipoNotificacion } from "../../../models";
 import { Notificacion } from "../../../models";
@@ -59,7 +59,8 @@ import { notificacionesRecordatorio } from "../Notifications/functions";
 import { TipoPago } from "../../../models";
 import WebView from "react-native-webview";
 
-export default function ({
+import Stripe from "stripe";
+export default function Pagar({
   route,
   navigation,
 }: {
@@ -76,6 +77,163 @@ export default function ({
   };
   navigation: NavigationProp;
 }) {
+  route.params = {
+    id: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
+    imagenPrincipalIDX: 0,
+    titulo: "adsfa",
+    detalles: "asdf",
+    ubicacion: {
+      ubicacionNombre: " Hall, Hall",
+      longitudeDelta: 2,
+      latitudeDelta: 2,
+      latitude: 41.67858017474236,
+      longitude: -100.72023656219244,
+    },
+    fechaInicial: 1689973200000,
+    fechaFinal: 1689976800000,
+    tosAceptance: {
+      hora: "2022-12-22T09:28:50.741Z",
+    },
+    tipoLugar: "INTERIOR",
+    musica: "POP",
+    comodities: ["SEGURIDAD", "BARRALIBRE", "COMIDA"],
+    musOtra: null,
+    personasMax: 100,
+    precioMin: 50,
+    precioMax: 400,
+    paymentProductID: "prod_N1oj2JotnTBFbf",
+    CreatorID: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+    createdAt: "2022-12-22T09:29:49.770Z",
+    updatedAt: "2022-12-22T09:29:49.770Z",
+    _version: 1,
+    _lastChangedAt: 1671701389796,
+    _deleted: null,
+    imagenes: [
+      {
+        key: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
+        uri: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
+      },
+      {
+        key: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
+        uri: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
+      },
+    ],
+    creator: {
+      id: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+      nickname: "mateodelat",
+      nombre: "Velazquez",
+      materno: "Margarita",
+      paterno: "Gomez",
+      email: "mateodelat@gmail.com",
+      foto: "https://ui-avatars.com/api/?name=mateodelat&bold=true&background=fff&color=000&length=1",
+      cuentaBancaria: "000000001234567897",
+      titularCuenta: "NOMBRE PRUEBA",
+      receiveNewReservations: false,
+      rfc: "XAXX010101000",
+      imagenFondo: null,
+      direccion: {
+        postal_code: "45500",
+      },
+      phoneNumber: "3344443343",
+      phoneCode: "+52",
+      organizador: true,
+      admin: false,
+      idUploaded: true,
+      idData: {
+        detectedText:
+          '"222222\nppppp\nMEXICA\nMÉXICO\nINSTITUTO NACIONAL ELECTORAL\nCREDENCIAL PARA VOTAR\nNOMBRE\nGOMEZ\nVELAZQUEZ\nMARGARITA\nDOMICILIO\nINE\nC PITAGORAS 1253 INT. 4\nCOL. MORELOS 04800\nCUAJIMALPA DE MORELOS, D.F.\nCLAVE DE ELECTOR GMVLMR8007501M100\nGOVM800705MCLMLR01 AÑO DE REGISTRO 2008 02\nESTADO 09 MUNICIPIO 004 SECCIÓN 0747\nLOCALIDAD\nMISIÓN 2014 VIGENCIA 2024"',
+        tipoDocumento: "INE",
+        uri: "https://cdn.forbes.com.mx/2019/06/INE.jpg",
+        curp: "GOVM800705MCLMLR01",
+      },
+      idFrontKey: "usr-fe905dc2-97d2-4531-b018-fcd02aa534b8|id-front.jpg",
+      idBackKey: "usr-fe905dc2-97d2-4531-b018-fcd02aa534b8|id-back.jpg",
+      tipoDocumento: "INE",
+      fechaNacimiento: "2003-12-21T00:00:00.000Z",
+      calificacion: null,
+      numResenas: null,
+      notificationToken: null,
+      paymentClientID: "cus_N1l9LTBaAXHNjg",
+      paymentAccountID: "acct_1MHinBID9ekhSFzj",
+      verified: false,
+      owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+      createdAt: "2022-12-22T05:47:53.254Z",
+      updatedAt: "2022-12-22T20:59:17.925Z",
+      _version: 8,
+      _lastChangedAt: 1671742757970,
+      _deleted: null,
+    },
+    personasReservadas: 0,
+    boletos: [
+      {
+        id: "6c68e5f7-fb6c-4b66-8e2d-961b27953e3e",
+        titulo: "VIP",
+        descripcion: "Boleto VIP",
+        cantidad: 50,
+        precio: 400,
+        paymentPriceID: null,
+        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
+        createdAt: "2022-12-22T09:29:50.601Z",
+        updatedAt: "2022-12-22T09:29:50.601Z",
+        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+        _version: 1,
+        _lastChangedAt: 1671701390631,
+        _deleted: null,
+        personasReservadas: 0,
+      },
+      {
+        id: "c40da731-4cc2-4772-bd2d-d3214f070f05",
+        titulo: "VIP",
+        descripcion: "Boleto VIP",
+        cantidad: 50,
+        precio: 400,
+        paymentPriceID: null,
+        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
+        createdAt: "2022-12-22T09:30:42.018Z",
+        updatedAt: "2022-12-22T09:30:42.018Z",
+        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+        _version: 1,
+        _lastChangedAt: 1671701442044,
+        _deleted: null,
+        personasReservadas: 0,
+        quantity: 1,
+      },
+      {
+        id: "fb5ced93-0684-4007-a44d-ccf35fa969e1",
+        titulo: "Entrada normal",
+        descripcion: "dESCRIPCION del boleto noraml",
+        cantidad: 50,
+        precio: 50,
+        paymentPriceID: null,
+        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
+        createdAt: "2022-12-22T09:29:50.317Z",
+        updatedAt: "2022-12-22T09:29:50.317Z",
+        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+        _version: 1,
+        _lastChangedAt: 1671701390351,
+        _deleted: null,
+        personasReservadas: 0,
+      },
+      {
+        id: "5992138a-39b3-49f7-8d25-d65fb4ba7309",
+        titulo: "Entrada normal",
+        descripcion: "dESCRIPCION del boleto noraml",
+        cantidad: 50,
+        precio: 50,
+        paymentPriceID: null,
+        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
+        createdAt: "2022-12-22T09:30:41.555Z",
+        updatedAt: "2022-12-22T09:30:41.555Z",
+        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+        _version: 1,
+        _lastChangedAt: 1671701441583,
+        _deleted: null,
+        personasReservadas: 0,
+      },
+    ],
+    total: 460,
+  } as any;
+
   const {
     total,
     imagenes,
@@ -88,17 +246,17 @@ export default function ({
     id: eventoID,
     CreatorID,
   } = route.params;
+
   const boletos = route.params.boletos.filter((e: any) => e.quantity);
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [threeDsecure, setThreeDsecure] = useState("");
   const [sesionId, setSesionId] = useState<string>();
 
-  const { setNewNotifications, usuario, setLoading } = useUser();
+  const { setNewNotifications, usuario, setLoading, setUsuario } = useUser();
 
   // Opciones que se llenan cuando damos agregar tarjeta
-  const [tarjetasGuardadas, setTarjetasGuardadas] = useState<cardType[]>([]);
+  const [tarjetasGuardadas, setTarjetasGuardadas] = useState<Stripe.Card[]>([]);
 
   // Borrar metodos de pago
   const [editing, setEditing] = useState(false);
@@ -114,12 +272,19 @@ export default function ({
   // La pongo en estado para evitar que se cambie al actualizar
   const [reservaID, setReservaID] = useState(res);
 
-  const precioTotal = total;
+  const precioTotalSinComision = boletos.reduce(
+    (prev, bol) => precioConComision(bol.precio) * (bol as any).quantity,
+    0
+  );
+  const comisionTotal = total - precioTotalSinComision;
 
   useEffect(() => {
     getUserSub().then(setSub);
     getUserCards();
     setReservaID(res);
+
+    // Crear payment intent
+
     setButtonLoading(false);
     setLoading(false);
   }, []);
@@ -185,23 +350,59 @@ export default function ({
   }
 
   function getUserCards() {
-    if (usuario.paymentAccountID) {
-      fetchFromAPI<cardType[]>("/payments/card", "GET", undefined, {
-        customer_id: usuario.paymentAccountID,
-      }).then(({ body }) => {
-        if (body) {
-          body = body.map((card) => {
-            return {
-              ...card,
-              icon: getCardIcon(card.brand),
-            };
-          });
-
-          setTarjetasGuardadas(body);
-          return body;
-        } else return [];
+    console.log("Obtener tarjetas del cliente");
+    return;
+    if (usuario.paymentClientID) {
+      fetchFromAPI<Stripe.Card[]>({
+        path: "/payments/getClientCards/" + usuario.paymentClientID,
+        type: "GET",
+      }).then((r) => {
+        log(r);
       });
     }
+  }
+
+  function getClientSecret() {
+    fetchFromAPI<Stripe.PaymentIntent>({
+      path: "/payments/createPaymentIntent",
+      type: "POST",
+      input: {
+        amount: total * 100,
+        currency: "mxn",
+        // Podemos poner el total aqui pues despues cuando se crea el create reserva y confirmar el pago de dar precios diferentes no se hace nada
+        application_fee_amount: precioTotalSinComision,
+        metadata: {
+          eventoID,
+          usuarioID: usuario.id,
+          reservaID,
+          boletosID: JSON.stringify(boletos.map((e) => e.id)),
+        },
+
+        payment_method_types: ["card", "oxxo"],
+
+        // Guardar pagos en la tarjeta
+        setup_future_usage: "off_session",
+
+        // Cliente al quien guardarle los datos de tarjeta
+        customer: usuario.paymentClientID,
+
+        // Descripcion en stripe y extracto bancario
+        description: route.params.detalles,
+        statement_descriptor:
+          "PARTYUS--" + mayusFirstLetter(route.params.titulo.slice(0, 10)),
+
+        // If the payment requires any follow-up actions from the
+        // customer, like two-factor authentication, Stripe will error
+        // and you will need to prompt them for a new payment method.>
+        error_on_requires_action: true,
+
+        transfer_data: {
+          destination: creator.paymentAccountID,
+        },
+      } as Stripe.PaymentIntentCreateParams,
+    }).then((r) => {
+      log(r);
+    });
   }
 
   // Action tras darle click a agregar metodo de pago
@@ -302,7 +503,6 @@ export default function ({
         reservaID: reservaID,
         sourceID: tarjetaID,
         total,
-        device_session_id: sesionId,
       })) as any;
 
       if (!result) {
@@ -443,67 +643,35 @@ export default function ({
 
   async function handleAddCard(r: saveParams) {
     setEditing(false);
+
     try {
       setButtonLoading(true);
       setLoading(true);
-      const tokenID = await fetchFromOpenpay<cardType>({
-        path: "/tokens",
-        type: "POST",
-        input: {
-          holder_name: r.name,
-          card_number: r.number,
-          expiration_year: r.expiry.year,
-          expiration_month: r.expiry.month,
-          cvv2: r.cvv,
-        },
-      }).then((r) => r.id);
-      let cardID: Promise<string | undefined> | undefined;
 
-      // Si pide que se guarde para compras futuras agregar al usuario
-      if (r.saveCard) {
-        if (!tokenID) {
-          throw new Error("Falta el token ID");
-        }
-        if (!sesionId) {
-          Alert.alert(
-            "Error",
-            "Hubo un error obteninendo el identificador de tu dispositivo"
-          );
-          throw new Error("Falta el id de sesion");
-        }
-        if (!usuario.userPaymentID) {
-          Alert.alert("Error", "No se pudo guardar la tarjeta");
-          throw new Error("Usuario no tiene un id de cliente");
-        }
+      // Guardar el codigo postal del usuario si no tiene y se envio codigo postal de la tarjeta
+      if (!(usuario.direccion as any)?.postal_code && r.postalCode) {
+        console.log(
+          "El cliente no tiene codigo postal, agregando el de la tarjeta"
+        );
 
-        const input = {
-          token_id: tokenID,
-          device_session_id: sesionId,
-          customer_id: usuario.userPaymentID,
-        };
-        cardID = fetchFromAPI<cardType>("/payments/card", "POST", input)
-          .then((e) => {
-            const r = e.body?.id;
-            return r;
+        const direccion = {
+          ...(usuario.direccion as Object),
+          postal_code: r.postalCode,
+        } as any;
+
+        // Guardar en datastore
+        const us = await DataStore.query(Usuario, usuario.id);
+        DataStore.save(
+          Usuario.copyOf(us, (mut) => {
+            mut.direccion = direccion;
           })
-          .catch((e) => {
-            console.log(e.error);
-            Alert.alert(
-              "Error",
-              "Tarjeta no valida, hubo un error" + e.error.description
-            );
+        );
 
-            setTipoPago(undefined);
-
-            setTarjetasGuardadas((ol) => {
-              const idx = ol.findIndex((e) => e.tokenID === tokenID);
-              if (idx >= 0) {
-                ol.splice(idx, 1);
-              }
-              return [...ol];
-            });
-            return undefined;
-          });
+        // Guardar localmente
+        setUsuario({
+          ...usuario,
+          direccion,
+        });
       }
 
       setTipoPago(
@@ -525,6 +693,11 @@ export default function ({
     } catch (error: any) {
       setButtonLoading(false);
       setLoading(false);
+      Alert.alert(
+        "Error",
+        "Ocurrio un error guardando la tarjeta" +
+          (error.message ? error.message : "")
+      );
       console.log(error);
     }
 
@@ -697,7 +870,7 @@ export default function ({
               <Text style={{ ...styles.titulo, fontWeight: "bold" }}>
                 Total
               </Text>
-              <Text style={styles.precioTotal}>{formatMoney(precioTotal)}</Text>
+              <Text style={styles.precioTotal}>{formatMoney(total)}</Text>
             </View>
           </View>
 
@@ -966,7 +1139,7 @@ export default function ({
       >
         <CardInput onAdd={handleAddCard} setModalVisible={setModalVisible} />
       </Modal>
-      <Modal
+      {/* <Modal
         animationType={"none"}
         transparent={true}
         visible={!!threeDsecure}
@@ -991,8 +1164,7 @@ export default function ({
             flex: 1,
           }}
         />
-      </Modal>
-      <OpenPay onCreateSesionID={setSesionId} />
+      </Modal> */}
     </View>
   );
 }

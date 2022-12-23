@@ -33,8 +33,6 @@ import {
   normalizeString,
   mayusFirstLetter,
   getImageUrl,
-  sendPushNotification,
-  sendNotifcationsAll,
 } from "../../../../constants";
 
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -88,7 +86,7 @@ export async function queryNewNotifications() {
   });
 }
 
-export default function ({ navigation }: { navigation: NavigationProp }) {
+export default function Home({ navigation }: { navigation: NavigationProp }) {
   const {
     usuario: { foto },
     setUsuario,

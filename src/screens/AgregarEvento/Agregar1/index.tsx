@@ -49,7 +49,7 @@ enum enumModal {
   "SELECTIMAGE" = "SELECTIMAGE",
 }
 
-export default function () {
+export default function Agregar1() {
   const { evento, setEvento } = useEvento();
   const id = evento.id ? evento.id : uuid.v4().toString(); // ⇨ '11edc52b-2918-4d71-9058-f7285e29d894'
 

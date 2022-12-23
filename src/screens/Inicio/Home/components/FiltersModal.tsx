@@ -45,7 +45,7 @@ export type filterResult = {
   verified: boolean;
 };
 
-export default function ({
+export default function Filters({
   setModalVisible,
   modalVisible,
   maxPrice,

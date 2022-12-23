@@ -7,7 +7,6 @@ import {
   ViewStyle,
 } from "react-native";
 import React from "react";
-import { cardType } from "../../types/openpay";
 import { rojoClaro, shadowMedia } from "../../constants";
 
 import { Entypo } from "@expo/vector-icons";

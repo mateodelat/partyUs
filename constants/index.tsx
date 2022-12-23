@@ -8,7 +8,6 @@ import { Alert, Linking, Platform } from "react-native";
 import { API, Auth, DataStore, Storage } from "aws-amplify";
 import { TipoNotificacion, Usuario } from "../src/models";
 
-import base64 from "react-native-base64";
 import awsmobile from "../src/aws-exports";
 import { Notificacion } from "../src/models";
 import {
@@ -16,10 +15,12 @@ import {
   scheduleNotificationAsync,
 } from "expo-notifications";
 
-import { clabe } from "./ClabeValidator";
-import { STRIPE_FILES_KEY, STRIPE_PUBLISHABLE_KEY } from "../keys";
-import { logger } from "react-native-logs";
+import { clabe } from "../src/components/ClabeValidator";
+import { STRIPE_FILES_KEY, STRIPE_PUBLISHABLE_KEY } from "./keys";
 import Stripe from "stripe";
+import { logger } from "react-native-logs";
+
+export const log = logger.createLogger().debug;
 
 export const rojo = "#f01829";
 export const rojoClaro = "#f34856";
@@ -209,7 +210,6 @@ export async function uploadImageToStripe({
     },
   });
   let responseJson = await res.json();
-  const log = logger.createLogger();
 
   if (!responseJson?.error) {
     let res = responseJson as Stripe.File;
@@ -584,7 +584,7 @@ export async function fetchFromStripe<T>({
 }: {
   path: string;
   type: "POST" | "CREATE" | "DELETE" | "GET";
-  input?: Object;
+  input?: Object | undefined;
   secretKey?: string;
 }) {
   const encodedData = new URLSearchParams();
@@ -602,7 +602,7 @@ export async function fetchFromStripe<T>({
       }
     }
   }
-  nestedObjEncode(null, input);
+  input && nestedObjEncode(null, input);
 
   const requestOptions = {
     method: type,
@@ -616,6 +616,7 @@ export async function fetchFromStripe<T>({
   };
 
   const url = "https://api.stripe.com";
+
   return fetch(url + path, requestOptions).then(async (res: any) => {
     res = await res.json();
 
@@ -626,12 +627,17 @@ export async function fetchFromStripe<T>({
   });
 }
 
-export async function fetchFromAPI<T>(
-  path: string,
-  type: "POST" | "CREATE" | "DELETE" | "GET",
-  input?: Object,
-  query?: { [key: string]: string }
-) {
+export async function fetchFromAPI<T>({
+  path,
+  type,
+  input,
+  query,
+}: {
+  path: string;
+  type: "POST" | "CREATE" | "DELETE" | "GET";
+  input?: Object | undefined;
+  query?: { [key: string]: string };
+}) {
   let myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
 
@@ -662,10 +668,15 @@ export async function fetchFromAPI<T>(
   }
 
   return fetch(url, requestOptions).then(async (res) => {
-    const log = logger.createLogger();
+    if (!res.ok)
+      throw {
+        error: await res.text(),
+        body: res.body,
+      };
+
     const json = await res.json();
 
-    if (json.error || !res.ok) {
+    if (json.error) {
       throw json as {
         error: null;
         body: T | null;
@@ -687,8 +698,6 @@ export function validateRFC(rfc: string) {
 }
 
 export const isEmulator = !Device.isDevice;
-
-export const log = logger.createLogger();
 
 export function normalizeCardType(tipo: string) {
   switch (tipo) {

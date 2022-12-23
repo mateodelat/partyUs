@@ -21,7 +21,7 @@ import {
   verde,
 } from "../../../../constants";
 
-export default function () {
+export default function Soporte() {
   function handleWhatsapp() {
     AsyncAlert(
       "Abrir whatsapp",

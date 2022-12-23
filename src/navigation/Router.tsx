@@ -36,7 +36,6 @@ import Loading from "../components/Loading";
 
 import AdminStack from "./AdminStack";
 import JSONVisualizer from "../components/JSONVisualizer";
-import stripeAccountOperations from "../../constants/stripeAccountOperations";
 import Stripe from "stripe";
 import { fetchFromAPI } from "../../constants";
 import { logger } from "react-native-logs";
@@ -102,7 +101,7 @@ function NombreApellidosOnPress({ navigation }: any) {
   return <NombreApellido onPress={handleContinuar} />;
 }
 
-export default function () {
+export default function router() {
   const Stack = createStackNavigator();
 
   const config = {
@@ -123,6 +122,7 @@ export default function () {
   return (
     <NavigationContainer linking={linking} fallback={<Loading indicator />}>
       <Stack.Navigator
+        initialRouteName="Pagar"
         screenOptions={{
           header: ({
             route: { name, params },

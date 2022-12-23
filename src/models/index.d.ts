@@ -16,7 +16,7 @@ export enum PlaceEnum {
 export enum MusicEnum {
   REGGAETON = "REGGAETON",
   POP = "POP",
-  TECHNO = "TECHNO",
+  TECNO = "TECNO",
   RAP = "RAP",
   BANDA = "BANDA",
   ROCK = "ROCK",
@@ -183,6 +183,7 @@ type EagerEvento = {
   readonly musica?: MusicEnum | keyof typeof MusicEnum | null;
   readonly comodities?: (ComoditiesEnum | null)[] | keyof typeof ComoditiesEnum | null;
   readonly musOtra?: string | null;
+  readonly allowPaymentsInPlace?: boolean | null;
   readonly personasReservadas?: number | null;
   readonly personasMax?: number | null;
   readonly precioMin?: number | null;
@@ -210,6 +211,7 @@ type LazyEvento = {
   readonly musica?: MusicEnum | keyof typeof MusicEnum | null;
   readonly comodities?: (ComoditiesEnum | null)[] | keyof typeof ComoditiesEnum | null;
   readonly musOtra?: string | null;
+  readonly allowPaymentsInPlace?: boolean | null;
   readonly personasReservadas?: number | null;
   readonly personasMax?: number | null;
   readonly precioMin?: number | null;

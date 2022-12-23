@@ -1,15 +1,11 @@
-import {
-  Amplify,
-  Auth,
-  AuthModeStrategyType,
-  DataStore,
-  Hub,
-} from "aws-amplify";
+import { Amplify, AuthModeStrategyType, DataStore, Hub } from "aws-amplify";
 
 import awsconfig from "./src/aws-exports";
 
 import "react-native-gesture-handler";
 import { useEffect, useState } from "react";
+import * as React from "react";
+import { LogBox, View } from "react-native";
 
 import ContextProvider from "./src/contexts/ContextProvider";
 import Router from "./src/navigation/Router";
@@ -18,14 +14,14 @@ import ErrorWrapper from "./src/components/ErrorWrapper";
 import Loading from "./src/components/Loading";
 import { StatusBar, StatusBarStyle } from "expo-status-bar";
 import moment from "moment";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
-import Bugsnag from "@bugsnag/expo";
-import { STRIPE_PUBLISHABLE_KEY } from "./keys";
+import { STRIPE_PUBLISHABLE_KEY } from "./constants/keys";
 
-// LogBox.ignoreAllLogs();
+LogBox.ignoreLogs(["new NativeEventEmitter"]); // Ignore log notification by message
 moment.locale("es");
 
-export default function App() {
+const App = () => {
   Amplify.configure({
     ...awsconfig,
     DataStore: {
@@ -66,16 +62,25 @@ export default function App() {
   if (loading) return <Loading />;
   else
     return (
-      <ErrorWrapper>
+      <View style={{ flex: 1 }}>
+        {/* <ErrorWrapper> */}
         <ContextProvider
           usuario={usuario}
           setUsuario={setUsuario}
           setStatusStyle={setStatusStyle}
         >
-          <StatusBar style={statusStyle} translucent={true} />
+          <StripeProvider
+            publishableKey={STRIPE_PUBLISHABLE_KEY}
+            urlScheme="your-url-scheme" // required for 3D Secure and bank redirects
+            merchantIdentifier="merchant.com.{{YOUR_APP_NAME}}" // required for Apple Pay
+          >
+            <StatusBar style={statusStyle} translucent={true} />
 
-          <Router />
+            <Router />
+          </StripeProvider>
         </ContextProvider>
-      </ErrorWrapper>
+        {/* </ErrorWrapper> */}
+      </View>
     );
-}
+};
+export default App;

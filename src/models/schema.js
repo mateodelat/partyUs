@@ -433,6 +433,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "allowPaymentsInPlace": {
+                    "name": "allowPaymentsInPlace",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "personasReservadas": {
                     "name": "personasReservadas",
                     "isArray": false,
@@ -1749,7 +1756,7 @@ export const schema = {
             "values": [
                 "REGGAETON",
                 "POP",
-                "TECHNO",
+                "TECNO",
                 "RAP",
                 "BANDA",
                 "ROCK",
@@ -1801,5 +1808,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.3.2",
-    "version": "3a1ea1c26226e9b59af395a4d1cb41d9"
+    "version": "29dd1286f8a50e8a8ac05027608b3811"
 };

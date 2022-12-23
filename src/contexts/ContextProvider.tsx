@@ -28,7 +28,7 @@ import { TipoNotificacion } from "../models";
 import { queryNewNotifications } from "../screens/Inicio/Home";
 import Bugsnag from "@bugsnag/expo";
 
-export default function ({
+export default function Context({
   children,
 
   usuario,

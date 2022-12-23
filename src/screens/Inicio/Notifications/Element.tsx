@@ -96,7 +96,7 @@ const Icon = ({ tipo }: { tipo: TipoNotificacion }) => {
   }
 };
 
-export default ({
+export default function Element({
   titulo,
   descripcion,
   tiempo: time,
@@ -104,7 +104,7 @@ export default ({
   leido,
   tipo,
   handleDeleteItem,
-}) => {
+}) {
   const [tiempo, setTiempo] = useState(() => moment(time).from(moment()));
   let scrollX = useRef(new Animated.Value(0));
 
@@ -201,7 +201,7 @@ export default ({
       </View>
     </Swipeable>
   );
-};
+}
 
 const styles = StyleSheet.create({
   center: {

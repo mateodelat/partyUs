@@ -1,12 +1,9 @@
 // Funcion crear cuenta de stripe a partir de datos
 
-import { PUBLIC_KEY } from "@env";
 import { logger } from "react-native-logs";
 import Stripe from "stripe";
 import { currency, fetchFromAPI } from ".";
 import { bankExternalType, cardExternalType } from "../types/stripe";
-
-const log = logger.createLogger();
 
 export default async function (
   params: {

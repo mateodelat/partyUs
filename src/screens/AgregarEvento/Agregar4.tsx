@@ -55,7 +55,7 @@ import { notificacionesRecordatorio } from "../Inicio/Notifications/functions";
 import useUser from "../../Hooks/useUser";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { logger } from "react-native-logs";
-import { STRIPE_PRODUCTS_KEY } from "../../../keys";
+import { STRIPE_PRODUCTS_KEY } from "../../../constants/keys";
 import Stripe from "stripe";
 
 const musicList = enumToArray(MusicEnum);
@@ -210,7 +210,7 @@ export default function Agregar2({
         type: "POST",
         input: {
           name: evento.titulo,
-          unit_label: "por boleto",
+          unit_label: "boleto",
           statement_descriptor: evento.titulo,
           type: "service",
           description: evento.detalles?.slice(0, 50),

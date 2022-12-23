@@ -20,7 +20,7 @@ import { Entypo } from "@expo/vector-icons";
 import useUser from "../../../Hooks/useUser";
 import Header from "../../../navigation/components/Header";
 
-export default function ({ navigation }) {
+export default function Notifi({ navigation }) {
   useEffect(() => {
     handleFetch().then(setNotificaciones);
   }, []);
