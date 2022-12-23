@@ -59,7 +59,7 @@ async function createAccount(req, res) {
     handleResponse(res, account)
   }
   catch (e) {
-    handleError(e)
+    handleError(res, e)
   }
 }
 app.post('/payments/createAccount', createAccount)
@@ -154,11 +154,14 @@ app.post('/payments/createPaymentIntent', async (req, res) => {
   }
 });
 
+/*******************************************************************************************************************************
+*********************************************** CLIENT CARDS *******************************************************************
+********************************************************************************************************************************/
 
 /**************************************
 * GET Obtener tarjetas de un cliente  *
 **************************************/
-app.post('/payments/getClientCards/:clientID', async (req, res) => {
+app.get('/payments/getClientCards/:clientID', async (req, res) => {
   try {
     const { clientID } = req.params
 
@@ -173,18 +176,61 @@ app.post('/payments/getClientCards/:clientID', async (req, res) => {
       return
     }
 
-    // Create payment intent
-    const paymentIntent = await stripe.paymentIntents.create(body)
-    console.log("Payment intent result: ", paymentIntent)
+    let cards = await stripe.customers.listSources(clientID,
+      { object: 'card' });
 
-    // Create the PaymentIntent
-    let intent = await stripe.paymentIntents.create(body);
-
-    return handleResponse(res, intent);
+    return handleResponse(res, cards);
   } catch (e) {
     handleError(res, e)
   }
 });
+
+/**************************************
+* POST Crear tarjeta de un cliente  *
+**************************************/
+app.post('/payments/saveCard', async (req, res) => {
+  try {
+    const { query, body } = req
+    const { clientID } = req.query
+
+    console.log({
+      body, query
+    })
+
+    // Validar que existan los parametros clientID y body
+    if (!clientID) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio clientID en el query",
+        body: query
+      })
+      return
+    }
+    if (!body) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio body en la solicitud POST",
+        body
+
+      })
+      return
+
+    }
+
+    let tok = await stripe.tokens.create(
+      {
+        card: body,
+        customer: clientID
+      });
+
+
+    return handleResponse(res, tok.card);
+  } catch (e) {
+    handleError(res, e)
+  }
+});
+
+
 
 // Estandarizar respuestas exitosas y errores
 function handleResponse(res, input) {
@@ -198,27 +244,28 @@ function handleResponse(res, input) {
 }
 
 function handleError(res, e) {
-  console.log("Ocurrio un error")
 
+  console.log(e)
 
-  const mes = e ? e.code ? (e.code + "\n" + e.message) : e.errorMessage ? e.errorMessage : e.Errore.Error ? e.Error : JSON.stringify(e) : ""
+  // Si no hay e.type es que no es de stripe, codigo de error 500
+  if (!e.type) {
+    return res.json({
+      error: "error interno",
+      body: e
+    });
+
+  }
+
+  const mes = e.message
   const statusCode = e?.statusCode ? e.statusCode : 500
 
   res.status(statusCode)
 
-  if (e.type === 'StripeCardError') {
-    // Display error on client
-    return res.json({
-      error: mes,
-    })
+  return res.json({
+    error: mes,
+    body: e.error
+  });
 
-  } else {
-    // Something else happened
-    return res.status(500).send({
-      error: mes,
-      body: e
-    });
-  }
 }
 
 

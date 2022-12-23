@@ -41,6 +41,7 @@ import {
   fetchFromStripe,
   log,
   mayusFirstLetter,
+  currency,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
@@ -49,7 +50,7 @@ import { Cupon, Usuario } from "../../../models";
 
 import Header from "../../../navigation/components/Header";
 import uuid from "react-native-uuid";
-import CardInput, { saveParams } from "../../../components/CardInput";
+import { saveParams } from "../../../components/CardInput/SecureCardInput";
 
 import useUser from "../../../Hooks/useUser";
 import { DataStore } from "aws-amplify";
@@ -60,6 +61,14 @@ import { TipoPago } from "../../../models";
 import WebView from "react-native-webview";
 
 import Stripe from "stripe";
+import StripeRN, {
+  CardField,
+  useConfirmSetupIntent,
+} from "@stripe/stripe-react-native";
+import { cardBrand_type } from "../../../../types/stripe";
+import ModalBottom from "../../../components/ModalBottom";
+import SecureCardInput from "../../../components/CardInput/SecureCardInput";
+import { STRIPE_SECRET_KEY } from "../../../../constants/keys";
 export default function Pagar({
   route,
   navigation,
@@ -251,7 +260,7 @@ export default function Pagar({
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [sesionId, setSesionId] = useState<string>();
+  const [clientSecret, setClientSecret] = useState<string>("");
 
   const { setNewNotifications, usuario, setLoading, setUsuario } = useUser();
 
@@ -284,6 +293,7 @@ export default function Pagar({
     setReservaID(res);
 
     // Crear payment intent
+    getClientSecret();
 
     setButtonLoading(false);
     setLoading(false);
@@ -350,59 +360,50 @@ export default function Pagar({
   }
 
   function getUserCards() {
-    console.log("Obtener tarjetas del cliente");
     return;
     if (usuario.paymentClientID) {
       fetchFromAPI<Stripe.Card[]>({
         path: "/payments/getClientCards/" + usuario.paymentClientID,
         type: "GET",
       }).then((r) => {
-        log(r);
+        if (r.error) {
+          log(r);
+          Alert.alert(
+            "Error",
+            "Hubo un error obteniendo las tarjetas guardadas del cliente"
+          );
+        } else {
+          setTarjetasGuardadas(r.body);
+        }
       });
     }
   }
 
   function getClientSecret() {
-    fetchFromAPI<Stripe.PaymentIntent>({
+    // Recibimos eventoID, reservaID (para guardar en metadata) y descuento en caso de haber para poner el precio del PI
+
+    fetchFromStripe<Stripe.PaymentIntent>({
       path: "/payments/createPaymentIntent",
-      type: "POST",
-      input: {
-        amount: total * 100,
-        currency: "mxn",
-        // Podemos poner el total aqui pues despues cuando se crea el create reserva y confirmar el pago de dar precios diferentes no se hace nada
-        application_fee_amount: precioTotalSinComision,
-        metadata: {
-          eventoID,
-          usuarioID: usuario.id,
-          reservaID,
-          boletosID: JSON.stringify(boletos.map((e) => e.id)),
-        },
+      type: "GET",
+      secretKey: STRIPE_SECRET_KEY,
+      input: {},
+    })
+      .then((r) => {
+        log(r);
+      })
+      .catch(log);
 
-        payment_method_types: ["card", "oxxo"],
-
-        // Guardar pagos en la tarjeta
-        setup_future_usage: "off_session",
-
-        // Cliente al quien guardarle los datos de tarjeta
-        customer: usuario.paymentClientID,
-
-        // Descripcion en stripe y extracto bancario
-        description: route.params.detalles,
-        statement_descriptor:
-          "PARTYUS--" + mayusFirstLetter(route.params.titulo.slice(0, 10)),
-
-        // If the payment requires any follow-up actions from the
-        // customer, like two-factor authentication, Stripe will error
-        // and you will need to prompt them for a new payment method.>
-        error_on_requires_action: true,
-
-        transfer_data: {
-          destination: creator.paymentAccountID,
-        },
-      } as Stripe.PaymentIntentCreateParams,
-    }).then((r) => {
-      log(r);
-    });
+    return;
+    fetchFromStripe<Stripe.PaymentIntent>({
+      path: "/payments/createPaymentIntent",
+      type: "GET",
+      secretKey: STRIPE_SECRET_KEY,
+      input: {},
+    })
+      .then((r) => {
+        log(r);
+      })
+      .catch(log);
   }
 
   // Action tras darle click a agregar metodo de pago
@@ -485,24 +486,28 @@ export default function Pagar({
       //   }
       //   return;
       // } else {
-      const result = (await fetchFromAPI("/createReserva", "POST", {
-        tipoPago:
-          tipoPago === "EFECTIVO"
-            ? "EFECTIVO"
-            : total === 0
-            ? "EFECTIVO"
-            : "TARJETA",
-        boletos: boletos.map((e: any) => ({
-          quantity: e.quantity,
-          id: e.id,
-        })),
-        cuponID: descuento?.id ? descuento.id : undefined,
-        eventoID,
-        organizadorID: CreatorID,
-        usuarioID: sub,
-        reservaID: reservaID,
-        sourceID: tarjetaID,
-        total,
+      const result = (await fetchFromAPI({
+        path: "/createReserva",
+        type: "POST",
+        input: {
+          tipoPago:
+            tipoPago === "EFECTIVO"
+              ? "EFECTIVO"
+              : total === 0
+              ? "EFECTIVO"
+              : "TARJETA",
+          boletos: boletos.map((e: any) => ({
+            quantity: e.quantity,
+            id: e.id,
+          })),
+          cuponID: descuento?.id ? descuento.id : undefined,
+          eventoID,
+          organizadorID: CreatorID,
+          usuarioID: sub,
+          reservaID: reservaID,
+          sourceID: tarjetaID,
+          total,
+        },
       })) as any;
 
       if (!result) {
@@ -677,18 +682,54 @@ export default function Pagar({
       setTipoPago(
         tarjetasGuardadas.length !== 0 ? tarjetasGuardadas.length : 0
       );
+      const { last4 } = r;
+
+      // // Si tenemos la direccion del usuario, ponerla en la tarjeta
+      // const { direccion } = usuario;
+
+      // // No guardar la tarjeta hasta que se confirme el payment intent por seguridad de Stripe
+      // const cardID = await fetchFromAPI<Stripe.Card>({
+      //   path: "/payments/saveCard",
+      //   type: "POST",
+      //   query: { clientID: usuario.paymentClientID },
+      //   input: {
+      //     object: "card",
+      //     name: r.name,
+      //     number: r.number,
+      //     exp_month: r.expiry.month,
+      //     exp_year: r.expiry.year,
+      //     cvc: r.cvv,
+      //     address_zip: r.postalCode,
+      //     address_state: (direccion as any)?.state,
+      //     address_line1: (direccion as any)?.line1,
+      //     address_city: (direccion as any)?.city,
+      //     address_country: "MX",
+      //   },
+      // })
+      //   .then((c) => {
+      //     log(c);
+      //     return c.body.id;
+      //   })
+      //   .catch((e) => {
+      //     log(e);
+      //     Alert.alert("Error", "Error guardando tarjeta: " + e);
+      //   });
+
+      setButtonLoading(false);
+      setLoading(false);
+
+      if (!cardID) {
+        return;
+      }
 
       setTarjetasGuardadas([
         ...tarjetasGuardadas,
         {
-          holder_name: r.name,
-          card_number: r.number,
-          brand: r.type,
-          icon: r.icon,
-          saveCard: !!r.saveCard,
-          tokenID: tokenID as any,
           id: cardID,
-        },
+          name: r.name,
+          last4,
+          brand: r.type,
+        } as any,
       ]);
     } catch (error: any) {
       setButtonLoading(false);
@@ -709,11 +750,16 @@ export default function Pagar({
     const tarjetaID = await tarjetasGuardadas[idx].id;
     setTarjetasGuardadas(() => {
       if (tarjetaID) {
-        if (!usuario.userPaymentID) {
+        if (!usuario.paymentClientID) {
           console.log("No hay payment ID para ese usuario");
+          return;
         } else {
-          fetchFromAPI("/payments/card/" + tarjetaID, "DELETE", undefined, {
-            customer_id: usuario.userPaymentID,
+          fetchFromAPI({
+            path: "/payments/card/" + tarjetaID,
+            type: "DELETE",
+            input: {
+              customer_id: usuario.paymentClientID,
+            },
           }).catch((e) => {
             console.log(e);
             Alert.alert(
@@ -964,11 +1010,18 @@ export default function Pagar({
 
                       {/* Mapeo de tarjetas guardadas */}
                       {tarjetasGuardadas.map((tarjeta, idx: number) => {
-                        if (!tarjeta.card_number) {
-                          return <View />;
-                        }
-                        const l = tarjeta.card_number.length;
-                        let last4 = tarjeta.card_number.slice(l - 4, l);
+                        let { last4, brand, name, exp_month, exp_year } =
+                          tarjeta;
+
+                        exp_month = String(exp_month).padStart(2, "0") as any;
+
+                        let exp_yearS = String(exp_year);
+                        exp_yearS = exp_yearS.slice(
+                          exp_yearS.length - 2,
+                          exp_yearS.length
+                        ) as any;
+
+                        const icon = getCardIcon(brand as cardBrand_type);
 
                         return (
                           <View key={idx}>
@@ -995,8 +1048,8 @@ export default function Pagar({
                                       width: 40,
                                     }}
                                     source={
-                                      tarjeta.icon
-                                        ? tarjeta.icon
+                                      icon
+                                        ? icon
                                         : require("../../../../assets/icons/stp_card_undefined.png")
                                     }
                                   />
@@ -1011,16 +1064,25 @@ export default function Pagar({
                                     color: tipoPago === idx ? "#222" : "#aaa",
                                   }}
                                 >
-                                  **** **** **** {last4.toUpperCase()}
+                                  **** **** **** {last4}
                                 </Text>
-                                {tarjeta.holder_name && (
+                                {name ? (
                                   <Text
                                     style={{
                                       ...styles.tarjetahabiente,
                                       color: tipoPago === idx ? "#777" : "#ddd",
                                     }}
                                   >
-                                    {tarjeta.holder_name?.toUpperCase()}
+                                    {name?.toUpperCase()}
+                                  </Text>
+                                ) : (
+                                  <Text
+                                    style={{
+                                      ...styles.tarjetahabiente,
+                                      color: tipoPago === idx ? "#777" : "#ddd",
+                                    }}
+                                  >
+                                    Expira el {exp_month}/{exp_yearS}
                                   </Text>
                                 )}
                               </View>
@@ -1137,34 +1199,12 @@ export default function Pagar({
           setModalVisible(false);
         }}
       >
-        <CardInput onAdd={handleAddCard} setModalVisible={setModalVisible} />
-      </Modal>
-      {/* <Modal
-        animationType={"none"}
-        transparent={true}
-        visible={!!threeDsecure}
-        onRequestClose={() => {
-          setThreeDsecure("");
-        }}
-      >
-        <WebView
-          onNavigationStateChange={(e) => {
-            if (e.url.startsWith("https://www.partyusmx.com/")) {
-              setThreeDsecure("");
-              navigation.navigate("ExitoScreen", {
-                txtExito: "Reserva creada",
-                descripcion:
-                  "Se ha creado tu reserva con exito. Puedes consultar tu qr en Perfil - Mis reservas",
-                txtOnPress: "Ver boleto",
-              });
-            }
-          }}
-          source={{ uri: threeDsecure }}
-          style={{
-            flex: 1,
-          }}
+        <SecureCardInput
+          clientSecret={clientSecret}
+          onAdd={handleAddCard}
+          setModalVisible={setModalVisible}
         />
-      </Modal> */}
+      </Modal>
     </View>
   );
 }

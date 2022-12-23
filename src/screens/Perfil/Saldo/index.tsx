@@ -41,14 +41,6 @@ import {
   timer,
 } from "../../../../constants";
 import useUser from "../../../Hooks/useUser";
-import {
-  bankAccount_type,
-  cardType,
-  chargeType,
-  customer_type,
-  transactionStatus_type,
-  transaction_type,
-} from "../../../../types/openpay";
 import Loading from "../../../components/Loading";
 
 import { Feather } from "@expo/vector-icons";

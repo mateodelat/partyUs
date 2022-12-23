@@ -19,6 +19,7 @@ import { clabe } from "../src/components/ClabeValidator";
 import { STRIPE_FILES_KEY, STRIPE_PUBLISHABLE_KEY } from "./keys";
 import Stripe from "stripe";
 import { logger } from "react-native-logs";
+import { cardBrand_type } from "../types/stripe";
 
 export const log = logger.createLogger().debug;
 
@@ -668,19 +669,16 @@ export async function fetchFromAPI<T>({
   }
 
   return fetch(url, requestOptions).then(async (res) => {
-    if (!res.ok)
-      throw {
-        error: await res.text(),
-        body: res.body,
-      };
-
-    const json = await res.json();
+    let json = await res.json();
 
     if (json.error) {
-      throw json as {
-        error: null;
-        body: T | null;
-      };
+      log(json);
+      throw json.error;
+    }
+
+    // Si hay body.data, formatearlo para que sea directo en body y evitar seccion de pagination
+    if (json.body?.data) {
+      json.body = json.body.data;
     }
 
     return json;
@@ -702,30 +700,23 @@ export const isEmulator = !Device.isDevice;
 export function normalizeCardType(tipo: string) {
   switch (tipo) {
     case "master-card":
-      return "mastercard";
-    case "mastercard":
-      return "mastercard";
-    case "visa":
-      return "visa";
+      return "MasterCard";
     case "american-express":
       return "american_express";
 
     default:
-      return;
+      return tipo;
   }
 }
 
-export const getCardIcon = (
-  type?: "visa" | "mastercard" | "carnet" | "american_express" | string
-) => {
+export const getCardIcon = (type?: cardBrand_type) => {
+  // Estandarizar tipo quitando espacios, mayusculas o guiones bajos
+  type = type.toLowerCase().replace(/ |_/g, "") as any;
+  // Estandarizar dinners
+  if (type === ("dinners" as any)) type = "dinersclub";
+
   if (!type) {
     return require("../assets/icons/stp_card_undefined.png");
-  }
-
-  if (
-    !(type === "visa" || type === "mastercard" || type === "american_express")
-  ) {
-    type = normalizeCardType(type);
   }
 
   switch (type) {
@@ -735,16 +726,16 @@ export const getCardIcon = (
     case "mastercard":
       return require("../assets/icons/stp_card_mastercard.png");
 
-    case "american_express":
+    case "americanexpress":
       return require("../assets/icons/stp_card_amex.png");
 
-    //     case "discover":
-    //       return require("../assets/icons/stp_card_discover.png");
-    // case "jbc":
-    //   return require("../assets/icons/stp_card_jcb.png");
+    case "discover":
+      return require("../assets/icons/stp_card_discover.png");
+    case "jcb":
+      return require("../assets/icons/stp_card_jcb.png");
 
-    // case "diners":
-    //   return require("../assets/icons/stp_card_diners.png");
+    case "dinersclub":
+      return require("../assets/icons/stp_card_diners.png");
 
     default:
       return require("../assets/icons/stp_card_undefined.png");

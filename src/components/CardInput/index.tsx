@@ -28,7 +28,7 @@ import { TextInputMask } from "react-native-masked-text";
 import { Feather } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-import { cardBrand_type } from "../../../types/openpay";
+import { cardBrand_type } from "../../../types/stripe";
 import { produccion } from "../../../constants/keys";
 
 enum cardType {
@@ -191,9 +191,8 @@ export default function ({
 
     // No se realiza verificacion del codigo postal pues es opcional
 
-    const tipoTarjeta = normalizeCardType(
-      number.validation.card?.type as cardType
-    );
+    const tipoTarjeta = number.validation.card?.type as cardBrand_type;
+
     onAdd({
       cvv: cvv?.value,
       expiry: {
@@ -204,7 +203,7 @@ export default function ({
       name,
       postalCode,
       icon: getCardIcon(tipoTarjeta),
-      type: normalizeCardType(number.validation.card?.type as cardType),
+      type: tipoTarjeta,
       saveCard,
     });
     setModalVisible(false);
@@ -323,7 +322,7 @@ export default function ({
               RightIcon={() => (
                 <Image
                   style={styles.icon}
-                  source={getCardIcon(number?.validation?.card?.type)}
+                  source={getCardIcon(number?.validation?.card?.type as any)}
                 />
               )}
             />

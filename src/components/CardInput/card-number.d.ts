@@ -11,4 +11,3 @@ declare type CardNumberOptions = {
     luhnValidateUnionPay?: boolean;
 };
 export declare function cardNumber(value: string | unknown, options?: CardNumberOptions): CardNumberVerification;
-export {};

@@ -21,13 +21,13 @@
       "function": {
         "paymentsHandler": {
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/paymentsHandler-34505a777678326c3877-build.zip",
+          "s3Key": "amplify-builds/paymentsHandler-6a354d745155386d7952-build.zip",
           "secretKeyStag": "sk_test_51LiSyAEigD6kxjjgNIdnNGVamsKTNPCVLFWBsjFLt2CMm4O82g37XxDIlCrl1KSavtWkZ4zzh7s0NXvcDCfHpJWg00WOrci3xO"
         },
         "postSignUpPARTYUS": {
           "deploymentBucketName": "amplify-partyus-staging-225309-deployment",
-          "s3Key": "amplify-builds/postSignUpPARTYUS-74356f63556665547869-build.zip",
-          "secretKeyProd": " ",
+          "s3Key": "amplify-builds/postSignUpPARTYUS-61382b55694f37673033-build.zip",
+          "secretKeyProd": "",
           "secretKeyStag": "sk_test_51LiSyAEigD6kxjjgNIdnNGVamsKTNPCVLFWBsjFLt2CMm4O82g37XxDIlCrl1KSavtWkZ4zzh7s0NXvcDCfHpJWg00WOrci3xO"
         },
         "createReserva": {

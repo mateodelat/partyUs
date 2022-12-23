@@ -72,7 +72,7 @@ const App = () => {
           <StripeProvider
             publishableKey={STRIPE_PUBLISHABLE_KEY}
             urlScheme="your-url-scheme" // required for 3D Secure and bank redirects
-            merchantIdentifier="merchant.com.{{YOUR_APP_NAME}}" // required for Apple Pay
+            merchantIdentifier="merchant.com.partyus" // required for Apple Pay
           >
             <StatusBar style={statusStyle} translucent={true} />
 

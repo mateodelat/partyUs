@@ -98,7 +98,14 @@ export type tipoTransaccion = "charge" | "payout" | "refund" | "transfer" | "fee
 export type method_type = "card" | "store" | "bank"
 export type operation_type = "in" | "out"
 export type transactionStatus_type = "completed" | "failed" | "in_progress" | "cancelled" | "refunded" | "chargeback_pending" | "chargeback_accepted" | "chargeback_adjustement" | "charge_pending" | "expired"
-export type cardBrand_type = "visa" | "mastercard" | "american_express"
+export type cardBrand_type = "discover"
+    | "jcb"
+    | "mastercard"
+    | "unionpay"
+    | "visa"
+    | "americanexpress"
+    | "dinersclub"
+
 
 
 export interface errorOpenPay {
