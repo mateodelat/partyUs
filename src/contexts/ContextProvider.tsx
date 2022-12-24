@@ -28,7 +28,7 @@ import { TipoNotificacion } from "../models";
 import { queryNewNotifications } from "../screens/Inicio/Home";
 import Bugsnag from "@bugsnag/expo";
 
-export default function ({
+export default function Context({
   children,
 
   usuario,
@@ -79,23 +79,30 @@ export default function ({
           }
         }
 
-        Bugsnag.setUser(sub, r.email, r.nickname);
+        // Bugsnag.setUser(sub, r.email, r.nickname);
 
         setUsuario(r);
       });
     }
   }
   async function registerForPushNotificationsAsync(usuario: Usuario) {
-    let token: Notifications.ExpoPushToken["data"];
-    const { status: existingStatus } =
+    let token: string;
+    const { status: existingStatus, ios } =
       await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
+
+    // Si es IOS son permisos distintos
+
     if (existingStatus !== "granted") {
+      // Si estamos en un dispositivo ios ver si el usuario explicitamente denego las notificaciones para no mandarle el permiso
+      if (ios?.status === Notifications.IosAuthorizationStatus.DENIED) {
+        return;
+      }
+
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
-      alert("Failed to get push token for push notification!");
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync())?.data;
@@ -173,7 +180,7 @@ export default function ({
 
           setLoading(false);
           // cancelAllScheduledNotificationsAsync();
-          Bugsnag.setUser("", "", "");
+          // Bugsnag.setUser("", "", "");
           break;
 
         case "signUp":

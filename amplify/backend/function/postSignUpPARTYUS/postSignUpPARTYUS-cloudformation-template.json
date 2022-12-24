@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"Amplify\",\"createdWith\":\"10.0.0\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+  "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"Amplify\",\"createdWith\":\"10.4.0\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
@@ -32,7 +32,14 @@
       "Type": "String",
       "Default": "functionpartyuslayerArn"
     },
-    "secretKey": {
+    "functionpartyuslambdaDependenciesArn": {
+      "Type": "String",
+      "Default": "functionpartyuslambdaDependenciesArn"
+    },
+    "secretKeyProd": {
+      "Type": "String"
+    },
+    "secretKeyStag": {
       "Type": "String"
     }
   },
@@ -98,8 +105,11 @@
             "API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT": {
               "Ref": "apipartyUsAPIGraphQLAPIKeyOutput"
             },
-            "SECRET_KEY": {
-              "Ref": "secretKey"
+            "SECRET_KEY_PROD": {
+              "Ref": "secretKeyProd"
+            },
+            "SECRET_KEY_STAG": {
+              "Ref": "secretKeyStag"
             }
           }
         },
@@ -112,7 +122,7 @@
         "Runtime": "nodejs14.x",
         "Layers": [
           {
-            "Ref": "functionpartyuslayerArn"
+            "Ref": "functionpartyuslambdaDependenciesArn"
           }
         ],
         "Timeout": 25

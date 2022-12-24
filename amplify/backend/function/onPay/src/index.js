@@ -14,10 +14,17 @@ Amplify Params - DO NOT EDIT */
 const { graphqlOperation } = require('/opt/graphqlOperation')
 const { createNotificacionReturns, reservaReturns } = require('/opt/graphqlReturns')
 
+const production = process.env.ENV === "production"
+
+const MERCHANT_ID = production ? process.env.MERCHANT_ID_PROD : process.env.MERCHANT_ID_STAG
+const SECRET_KEY = production ? process.env.SECRET_KEY_PROD : process.env.SECRET_KEY_STAG
+
+
+
 const Openpay = require("openpay")
-var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
+var openpay = new Openpay(MERCHANT_ID, SECRET_KEY);
 const axios = require('axios');
-// openpay.setProductionReady(true);
+openpay.setProductionReady(production);
 
 
 async function graphqlRequest({ query, variables }) {

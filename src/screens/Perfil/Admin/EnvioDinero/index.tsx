@@ -34,7 +34,6 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 
 import * as Clipboard from "expo-clipboard";
-import Toast from "react-native-simple-toast";
 import InputOnFocus from "../../../../components/InputOnFocus";
 import Boton from "../../../../components/Boton";
 import useUser from "../../../../Hooks/useUser";
@@ -109,7 +108,7 @@ export default function ({
       nombreCopiado = true;
     }
 
-    Toast.show(mensaje, Toast.LONG);
+    Alert.alert("Atencion", message);
   }
 
   function handleContacto(tipo: "whatsapp" | "email" | "telefono") {

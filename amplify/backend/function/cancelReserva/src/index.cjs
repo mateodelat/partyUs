@@ -16,13 +16,21 @@ Amplify Params - DO NOT EDIT */
 const { graphqlOperation } = require('/opt/graphqlOperation')
 const { reservaReturns } = require("/opt/graphqlReturns")
 
+const production = process.env.ENV === "production"
+
+const MERCHANT_ID = production ? process.env.MERCHANT_ID_PROD : process.env.MERCHANT_ID_STAG
+const SECRET_KEY = production ? process.env.SECRET_KEY_PROD : process.env.SECRET_KEY_STAG
+
+
+
 const Openpay = require("openpay")
 // Actualizar url de produccion a fee refund
-var openpay = new Openpay(process.env.MERCHANT_ID, process.env.SECRET_KEY);
+var openpay = new Openpay(MERCHANT_ID, SECRET_KEY);
 const axios = require('axios');
-const url = "https://sandbox-api.openpay.mx/v1/"
-// : "https://api.openpay.mx/v1/";
-// openpay.setProductionReady(true);
+const url =
+    !production ? "https://sandbox-api.openpay.mx/v1/" :
+        "https://api.openpay.mx/v1/";
+openpay.setProductionReady(production);
 
 
 

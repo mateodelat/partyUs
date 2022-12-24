@@ -2,14 +2,17 @@ import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import {
   azulClaro,
+  fetchFromAPI,
   getBlob,
   sendAdminNotification,
   shadowBaja,
+  subirImagen,
 } from "../../../constants";
 
 import { AntDesign } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 
 import { NavigationProp } from "../../shared/interfaces/navigation.interface";
 
@@ -18,6 +21,8 @@ import useUser from "../../Hooks/useUser";
 import Boton from "../../components/Boton";
 import { DataStore, Storage } from "aws-amplify";
 import { Usuario } from "../../models";
+import { logger } from "react-native-logs";
+import Stripe from "stripe";
 
 export default function ({ navigation }: { navigation: NavigationProp }) {
   function handleDatosPersonales() {
@@ -48,6 +53,11 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
   const colorPruebaIdentidad = allowUpload ? azulClaro : azulClaro + "88";
 
   async function handleSaveInfo() {
+    const log = logger.createLogger();
+    // DataStore.query(Usuario, usuario.id).then((r) => {
+    //   log.debug(r.direccion);
+    // });
+    // return;
     try {
       const {
         idData,
@@ -55,28 +65,68 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
         cuentaBancaria,
         titularCuenta,
         phoneCode,
+        tipoDocumento,
         phoneNumber,
+        direccion,
+        rfc,
       } = usuario;
 
-      const key = "usr-" + usuario.id + "|id.jpg";
+      // Extraer ciudad y datos de direccion si se guardaron en el usuario
 
       if (!idData) {
         Alert.alert("Error", "Ha habido un error");
         throw new Error(
           "Error al guardar informacion del usuario pues no hay idData"
         );
-      } else if (!cuentaBancaria || !titularCuenta) {
+      }
+      if (!cuentaBancaria || !titularCuenta) {
         Alert.alert("Error", "No se detecto la cuenta CLABE o el titular");
         return;
       }
 
-      const uri = JSON.parse(idData).uri;
+      // Actualizar datos de documentos de stripe
+      const {
+        stripeIdBackKey,
+        stripeIdFrontKey,
+        localUriIdBack,
+        localUriIdFront,
+      } = usuario;
+
+      // Agregegar la key de atras solo si hay uri de imagen reverso
+      const keyFront = "usr-" + usuario.id + "|id-front.jpg";
+      const keyBack = localUriIdBack
+        ? "usr-" + usuario.id + "|id-back.jpg"
+        : null;
       setLoading(true);
 
-      // Subir imagen de id
-      getBlob(uri).then((image) => {
-        Storage.put(key, image);
+      // Se suben documentos a la cuenta stripe
+      fetchFromAPI<Stripe.Account>("/payments/updateAccount", "POST", {
+        accountID: usuario.paymentAccountID,
+
+        // Actualizar informacion del individuo dueño de la cuenta
+        individual: {
+          verification: {
+            document: {
+              front: stripeIdFrontKey,
+              back: stripeIdBackKey,
+            },
+          },
+        },
+      }).catch((e) => {
+        console.log("Hubo un error guardando documentos en stripe");
+        // Si la cuenta ya esta verificada simplemente se omite
       });
+
+      // Subir imagen de id front
+      getBlob(localUriIdFront).then((image) => {
+        subirImagen(keyFront, image);
+      });
+
+      // Subir imagen de id back solo si hay imagen
+      localUriIdBack &&
+        getBlob(localUriIdBack).then((image) => {
+          subirImagen(keyBack, image);
+        });
 
       // Notificar al los administradores que el usuario se verfico como organizador
       sendAdminNotification({
@@ -95,8 +145,16 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
             ne.idUploaded = true;
             ne.organizador = true;
 
-            ne.idKey = key;
+            ne.idFrontKey = keyFront;
+            ne.idBackKey = keyBack;
+
+            ne.tipoDocumento = tipoDocumento;
+
             ne.idData = idData;
+
+            ne.direccion = direccion;
+
+            ne.rfc = rfc;
 
             ne.nombre = nombre;
             ne.paterno = paterno;
@@ -113,9 +171,11 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
         ).then(setUsuario);
       });
     } catch (e) {
+      setLoading(false);
+
       console.log(e);
       Alert.alert("Error", "Hubo un error subiendo tus documentos");
-      throw new Error("Error subiendo documentos del usuario" + e);
+      return;
     }
 
     setLoading(false);
@@ -179,15 +239,9 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
               color={azulClaro}
             />
           ) : (
-            <AntDesign
-              style={{
-                width: 25,
-                marginLeft: 10,
-              }}
-              name="checkcircleo"
-              size={24}
-              color={azulClaro}
-            />
+            <View style={styles.checkContainer}>
+              <Feather name="check" size={18} color={"#fff"} />
+            </View>
           )}
         </Pressable>
 
@@ -228,15 +282,9 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
                 color={azulClaro}
               />
             ) : (
-              <AntDesign
-                style={{
-                  marginLeft: 10,
-                  width: 25,
-                }}
-                name="checkcircleo"
-                size={24}
-                color={azulClaro}
-              />
+              <View style={styles.checkContainer}>
+                <Feather name="check" size={18} color={"#fff"} />
+              </View>
             ))}
         </Pressable>
       </View>
@@ -260,6 +308,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     flex: 1,
     padding: 20,
+  },
+
+  checkContainer: {
+    backgroundColor: azulClaro,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 28,
+    height: 28,
+    marginLeft: 10,
+    borderRadius: 20,
   },
 
   buttonContainer: {

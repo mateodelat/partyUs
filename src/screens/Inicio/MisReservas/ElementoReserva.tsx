@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Pressable,
@@ -176,14 +177,23 @@ export default function ElementoReserva({
         >
           <View style={{ flexDirection: "row", flex: 1 }}>
             {/* Imagen principal */}
-            <Image
-              style={styles.image}
-              source={{
-                uri: imagenFondo
-                  ? imagenFondo
-                  : "https://static3.mujerhoy.com/www/multimedia/202203/17/media/cortadas/apertura-party-kjgF-U1601347275536ie-624x624@MujerHoy.jpeg",
-              }}
-            />
+            <View style={styles.image}>
+              <ActivityIndicator
+                size={"small"}
+                color={"#000"}
+                style={{
+                  position: "absolute",
+                }}
+              />
+              <Image
+                style={{ width: "100%", height: "100%" }}
+                source={{
+                  uri: imagenFondo
+                    ? imagenFondo
+                    : "https://static3.mujerhoy.com/www/multimedia/202203/17/media/cortadas/apertura-party-kjgF-U1601347275536ie-624x624@MujerHoy.jpeg",
+                }}
+              />
+            </View>
 
             {/* Textos de titulo y creador */}
             <View style={styles.textContainer}>
@@ -286,7 +296,10 @@ const styles = StyleSheet.create({
   image: {
     width: 80,
     aspectRatio: 1,
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 10,
+    overflow: "hidden",
 
     marginRight: 20,
   },

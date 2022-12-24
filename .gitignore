@@ -15,6 +15,16 @@ web-build/
 .DS_Store
 
 
+.secret-*
+**.sample
+app.json
+
+amplify/team-provider-info.json
+googleServiceAccount.json
+
+keys.js
+constants/keys.ts
+
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend
 amplify/.config/local-*
@@ -33,10 +43,7 @@ amplifyconfiguration.dart
 amplify-build-config.json
 amplify-gradle-config.json
 amplifytools.xcconfig
-amplify/team-provider-info.json
-
 .secret-*
 **.sample
 #amplify-do-not-edit-end
-
-app.json
+amplify/team-provider-info.json

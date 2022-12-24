@@ -13,13 +13,18 @@ import {
   ViewStyle,
   Modal,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+
+import { createMapLink } from "react-native-open-maps";
 
 import MapView, { LatLng, Region } from "react-native-maps";
 
 import { Entypo, Feather } from "@expo/vector-icons";
 
 import {
+  AsyncAlert,
   azulClaro,
   azulFondo,
   azulOscuro,
@@ -39,6 +44,7 @@ import HeaderModal from "./HeaderModal";
 import useUser from "../Hooks/useUser";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import InputOnFocus from "./InputOnFocus";
 
 const { height } = Dimensions.get("window");
 export type locationType = Region & {
@@ -47,7 +53,10 @@ export type locationType = Region & {
   ubicacionId?: string;
 };
 
-export default ({
+// Abrir un link a google maps en el celular
+let mapsAlertShown = false;
+
+const ModalMap = ({
   style,
 
   selectedPlace,
@@ -77,6 +86,8 @@ export default ({
   // Variables del buscador
   const [buscar, setBuscar] = useState<string>();
   const [suggestedPlace, setSuggestedPlace] = useState([]);
+
+  const [editingPlaceName, setEditingPlaceName] = useState(false);
 
   const [place, setPlace] = useState<locationType | undefined>(selectedPlace);
 
@@ -272,8 +283,55 @@ export default ({
   };
 
   function handleCancel() {
+    mapsAlertShown = false;
     setPlace(selectedPlace);
     setModalVisible(false);
+  }
+
+  function openGoogleMaps(openAlways?: true) {
+    // Mostrarlo solo una vez con la flag
+    console.log({
+      mapsAlertShown,
+      openAlways,
+    });
+    (!mapsAlertShown || !!openAlways) &&
+      AsyncAlert("Atencion", "Se abrira google maps, ¿quieres continuar?").then(
+        (r) => {
+          mapsAlertShown = true;
+
+          if (!r) {
+            return;
+          }
+
+          try {
+            let link = "";
+
+            // Si tiene place ID, ir directo al mismo
+            if (place.ubicacionId) {
+              link = createMapLink({
+                navigate: true,
+                provider: "google",
+                end: place.ubicacionNombre,
+                endPlaceId: place.ubicacionId,
+              });
+            } else {
+              // Ver por coordenadas
+              link = createMapLink({
+                navigate: true,
+                provider: "google",
+                latitude: place.latitude,
+                longitude: place.longitude,
+              });
+            }
+
+            Linking.openURL(link);
+
+            console.log(link);
+          } catch (error) {
+            Alert.alert("Error", "Ocurrio un error abriendo el mapa");
+          }
+        }
+      );
   }
 
   const { bottom } = useSafeAreaInsets();
@@ -285,191 +343,230 @@ export default ({
       visible={modalVisible}
       onRequestClose={handleCancel}
     >
-      <StatusBar translucent={false} animated={false} />
-      <Pressable
-        onPress={() => {
-          Keyboard.dismiss();
-        }}
-        style={[styles.container, style]}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        {/* Header */}
-        <HeaderModal
-          onPress={handleCancel}
-          titulo={handleSelectPlace ? "Selecciona la ubicacion" : titulo}
-        />
+        <StatusBar translucent={false} animated={false} />
+        <Pressable
+          onPress={() => {
+            // Si hay ubicacion link preguntar al usuario si desa ver en
+            Keyboard.dismiss();
 
-        {/* Buscador */}
-        {handleSelectPlace && (
-          <View
-            style={{
-              padding: 20,
-              paddingVertical: 0,
-              zIndex: 1,
-            }}
-          >
+            !handleSelectPlace && openGoogleMaps();
+          }}
+          style={[styles.container, style]}
+        >
+          {/* Header */}
+          <HeaderModal
+            onPress={handleCancel}
+            titulo={handleSelectPlace ? "Selecciona la ubicacion" : titulo}
+          />
+
+          {/* Buscador */}
+          {handleSelectPlace && (
             <View
               style={{
-                ...styles.buscarContainer,
-                borderBottomRightRadius: !!buscar ? 0 : 7,
-                borderBottomLeftRadius: !!buscar ? 0 : 7,
+                padding: 20,
+                paddingVertical: 0,
+                zIndex: 1,
               }}
             >
-              <Feather
-                name="search"
-                size={25}
-                color="#7E7F84"
+              <View
                 style={{
-                  marginRight: 5,
-                  position: "absolute",
-                  bottom: 10,
-                  left: 10,
+                  ...styles.buscarContainer,
+                  borderBottomRightRadius: !!buscar ? 0 : 7,
+                  borderBottomLeftRadius: !!buscar ? 0 : 7,
                 }}
-              />
-              <TextInput
-                style={{
-                  flex: 1,
-                  marginLeft: 35,
-                }}
-                value={buscar}
-                placeholder="Buscar lugar"
-                onChangeText={handleSearchPlace}
-              />
-              {!!buscar && (
+              >
                 <Feather
-                  onPress={clearSugested}
-                  name="x"
+                  name="search"
                   size={25}
                   color="#7E7F84"
                   style={{
                     marginRight: 5,
                     position: "absolute",
                     bottom: 10,
-                    right: 10,
+                    left: 10,
                   }}
+                />
+                <TextInput
+                  style={{
+                    flex: 1,
+                    marginLeft: 35,
+                  }}
+                  value={buscar}
+                  placeholder="Buscar lugar"
+                  onChangeText={handleSearchPlace}
+                />
+                {!!buscar && (
+                  <Feather
+                    onPress={clearSugested}
+                    name="x"
+                    size={25}
+                    color="#7E7F84"
+                    style={{
+                      marginRight: 5,
+                      position: "absolute",
+                      bottom: 10,
+                      right: 10,
+                    }}
+                  />
+                )}
+              </View>
+              {!!buscar &&
+                buscar?.length !== 0 &&
+                (suggestedPlace.length !== 0 ? (
+                  <View style={[styles.sugestionsContainer]}>
+                    <View style={styles.line} />
+
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                      {suggestedPlace.map((e: any, i) => {
+                        const titulo = e.structured_formatting?.main_text;
+                        const descripcion =
+                          e.structured_formatting?.secondary_text;
+                        return (
+                          <Pressable
+                            onPress={() => handlePressSuggested(e)}
+                            key={i.toString()}
+                            style={styles.suggestedPlace}
+                          >
+                            <Entypo
+                              style={styles.icon}
+                              name="location-pin"
+                              size={30}
+                              color={azulClaro}
+                            />
+
+                            <Text
+                              numberOfLines={2}
+                              style={styles.tituloSugested}
+                            >
+                              {titulo}{" "}
+                              <Text style={styles.descripcionSugested}>
+                                {descripcion}
+                              </Text>
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+                ) : (
+                  <View style={[styles.sugestionsContainer]}>
+                    <View style={styles.line} />
+                    <View
+                      style={{
+                        ...styles.suggestedPlace,
+                        flex: 1,
+                      }}
+                    >
+                      <Text
+                        numberOfLines={2}
+                        style={{
+                          ...styles.tituloSugested,
+                          textAlign: "center",
+                        }}
+                      >
+                        No se han encontrado lugares
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              {place && (
+                <InputOnFocus
+                  onFocus={() => setEditingPlaceName(true)}
+                  style={{
+                    marginBottom: 10,
+                  }}
+                  textStyle={{
+                    fontSize: 14,
+                    color: azulClaro + "dd",
+                    paddingLeft: 10,
+                  }}
+                  onChangeText={(te) => {
+                    setPlace((prev) => ({
+                      ...prev,
+                      ubicacionNombre: te,
+                    }));
+                  }}
+                  value={place?.ubicacionNombre}
                 />
               )}
             </View>
-            {!!buscar &&
-              buscar?.length !== 0 &&
-              (suggestedPlace.length !== 0 ? (
-                <View style={[styles.sugestionsContainer]}>
-                  <View style={styles.line} />
+          )}
 
-                  <ScrollView showsVerticalScrollIndicator={false}>
-                    {suggestedPlace.map((e: any, i) => {
-                      const titulo = e.structured_formatting?.main_text;
-                      const descripcion =
-                        e.structured_formatting?.secondary_text;
-                      return (
-                        <Pressable
-                          onPress={() => handlePressSuggested(e)}
-                          key={i.toString()}
-                          style={styles.suggestedPlace}
-                        >
-                          <Entypo
-                            style={styles.icon}
-                            name="location-pin"
-                            size={30}
-                            color={azulClaro}
-                          />
-
-                          <Text numberOfLines={2} style={styles.tituloSugested}>
-                            {titulo}{" "}
-                            <Text style={styles.descripcionSugested}>
-                              {descripcion}
-                            </Text>
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
-              ) : (
-                <View style={[styles.sugestionsContainer]}>
-                  <View style={styles.line} />
-                  <View
-                    style={{
-                      ...styles.suggestedPlace,
-                      flex: 1,
-                    }}
-                  >
-                    <Text
-                      numberOfLines={2}
-                      style={{
-                        ...styles.tituloSugested,
-                        textAlign: "center",
-                      }}
-                    >
-                      No se han encontrado lugares
-                    </Text>
-                  </View>
-                </View>
-              ))}
-          </View>
-        )}
-
-        <View style={styles.mapContainer}>
-          <MapView
-            ref={map}
-            provider={"google"}
-            mapType={"standard"}
-            showsUserLocation={locationPermision}
-            loadingEnabled={true}
-            onTouchStart={clearSugested}
-            onPress={
-              handleSelectPlace
-                ? ({ nativeEvent }) => {
-                    const { coordinate } = nativeEvent as any;
-                    handlePressPlace(coordinate);
-                  }
-                : () => null
-            }
-            onLongPress={
-              handleSelectPlace
-                ? ({ nativeEvent }) => {
-                    const { coordinate } = nativeEvent as any;
-                    handlePressPlace(coordinate);
-                  }
-                : () => null
-            }
-            initialRegion={region ? region : defaultLocation}
-            onPoiClick={
-              handleSelectPlace
-                ? ({ nativeEvent }) => {
-                    const { coordinate, placeId, name } = nativeEvent as any;
-                    handlePressPlace(coordinate, placeId, name);
-                  }
-                : () => null
-            }
-            style={{
-              ...StyleSheet.absoluteFillObject,
-            }}
-            onRegionChangeComplete={(r) => {
-              setActualRegion(r);
-            }}
-          >
-            {/* Marcador */}
-            {place && <Marker coordinate={place} />}
-          </MapView>
-
-          {place?.ubicacionNombre && handleSelectPlace && (
-            <View
+          <View style={styles.mapContainer}>
+            <MapView
+              ref={map}
+              provider={"google"}
+              mapType={"standard"}
+              showsUserLocation={locationPermision}
+              loadingEnabled={true}
+              onTouchStart={clearSugested}
+              onPress={
+                handleSelectPlace && !editingPlaceName
+                  ? ({ nativeEvent }) => {
+                      const { coordinate } = nativeEvent as any;
+                      handlePressPlace(coordinate);
+                    }
+                  : () => null
+              }
+              onLongPress={
+                handleSelectPlace && !editingPlaceName
+                  ? ({ nativeEvent }) => {
+                      const { coordinate } = nativeEvent as any;
+                      handlePressPlace(coordinate);
+                    }
+                  : () => null
+              }
+              initialRegion={region ? region : defaultLocation}
+              onPoiClick={
+                handleSelectPlace && !editingPlaceName
+                  ? ({ nativeEvent }) => {
+                      const { coordinate, placeId, name } = nativeEvent as any;
+                      handlePressPlace(coordinate, placeId, name);
+                    }
+                  : () => null
+              }
               style={{
-                ...styles.locationTxtContainer,
+                ...StyleSheet.absoluteFillObject,
+              }}
+              onRegionChangeComplete={(r) => {
+                setActualRegion(r);
               }}
             >
-              <TouchableOpacity onPress={() => guardarLugar(place)}>
-                <Text
-                  numberOfLines={2}
-                  style={{ ...styles.locationTxt, paddingBottom: bottom + 10 }}
-                >
-                  {place?.ubicacionNombre}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      </Pressable>
+              {/* Marcador */}
+              {place && (
+                <Marker
+                  onPress={() => openGoogleMaps(true)}
+                  coordinate={place}
+                />
+              )}
+            </MapView>
+
+            {place?.ubicacionNombre && handleSelectPlace && (
+              <View
+                style={{
+                  ...styles.locationTxtContainer,
+                }}
+              >
+                <TouchableOpacity onPress={() => guardarLugar(place)}>
+                  <Text
+                    numberOfLines={2}
+                    style={{
+                      ...styles.locationTxt,
+                      paddingBottom: bottom + 10,
+                    }}
+                  >
+                    {place?.ubicacionNombre}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </Pressable>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -581,3 +678,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 });
+export default ModalMap;

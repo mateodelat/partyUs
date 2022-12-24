@@ -17,7 +17,12 @@ import { Feather } from "@expo/vector-icons";
 
 import sharedStyles from "../sharedStyles";
 import InputOnFocus from "../../../components/InputOnFocus";
-import { AsyncAlert, azulClaro, rojo } from "../../../../constants";
+import {
+  AsyncAlert,
+  azulClaro,
+  rojo,
+  uploadImageToStripe,
+} from "../../../../constants";
 
 import { useNavigation } from "@react-navigation/native";
 import HeaderAgregar from "./HeaderAgregar";
@@ -27,6 +32,10 @@ import ModalTipoImagen from "../../../components/ModalTipoImagen";
 import uuid from "react-native-uuid";
 import useEvento from "../../../Hooks/useEvento";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { logger } from "react-native-logs";
+import Stripe from "stripe";
+
+const log = logger.createLogger();
 
 export type ImagenesType = {
   uri: string;
@@ -40,7 +49,7 @@ enum enumModal {
   "SELECTIMAGE" = "SELECTIMAGE",
 }
 
-export default function () {
+export default function Agregar1() {
   const { evento, setEvento } = useEvento();
   const id = evento.id ? evento.id : uuid.v4().toString(); // ⇨ '11edc52b-2918-4d71-9058-f7285e29d894'
 
@@ -165,12 +174,25 @@ export default function () {
       imgs[0].imagenPrincipal = true;
     }
 
+    const mainImageUri = imagenes.find((im) => im.imagenPrincipal).uri;
+
     // Actualizar estado
     setEvento((prev: any) => {
       return {
         ...prev,
         id: id,
         titulo,
+
+        // Subir imagen principal de producto a stripe como promesa y asignarla
+        stripeFileImagenPrincipal: uploadImageToStripe({
+          uri: mainImageUri,
+          purpose: "product_image",
+          name: "Img evento:" + id,
+          getLink: true,
+        }).then((r) => {
+          return r.url;
+        }),
+
         imagenes: imgs as {
           imagenPrincipal: boolean;
           uri: string;
@@ -301,9 +323,11 @@ export default function () {
                         color: "#fff",
                         fontWeight: "bold",
                         fontSize: 20,
+                        paddingHorizontal: 20,
+                        textAlign: "center",
                       }}
                     >
-                      IMAGEN PRINCIPAL
+                      PRESIONA PARA IMAGEN PRINCIPAL
                     </Text>
                   </View>
                 </Pressable>

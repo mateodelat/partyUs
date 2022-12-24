@@ -32,7 +32,7 @@ import MessageBox from "../components/MessageBox";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Boton from "../components/Boton";
 
-export default function ({
+export default function Ref({
   route,
 }: {
   route: {

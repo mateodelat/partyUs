@@ -1,8 +1,5 @@
 export type AmplifyDependentResourcesAttributes = {
     "function": {
-        "partyuslayer": {
-            "Arn": "string"
-        },
         "paymentsHandler": {
             "Name": "string",
             "Arn": "string",
@@ -35,6 +32,9 @@ export type AmplifyDependentResourcesAttributes = {
             "Arn": "string",
             "Region": "string",
             "LambdaExecutionRole": "string"
+        },
+        "partyuslambdaDependencies": {
+            "Arn": "string"
         }
     },
     "auth": {

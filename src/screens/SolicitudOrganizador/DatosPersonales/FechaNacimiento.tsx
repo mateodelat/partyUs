@@ -5,9 +5,11 @@ import Boton from "../../../components/Boton";
 import {
   azulClaro,
   clearDate,
+  isEmulator,
   mayusFirstLetter,
   mesAString,
   msInDay,
+  produccion,
 } from "../../../../constants";
 import { useNavigation } from "@react-navigation/native";
 
@@ -32,10 +34,15 @@ export default function ({
   };
 }) {
   const navigation = useNavigation<any>();
-  const {
+  let {
     usuario: { fechaNacimiento: fNac },
     usuario,
   } = useUser();
+
+  // Si estamos en desarollo fecha de nacimiento se pone default
+  if (!produccion) {
+    fNac = fNac ? fNac : "2003-12-21T00:00:00.000Z";
+  }
 
   const nombre = route.params?.nombre;
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);

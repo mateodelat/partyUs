@@ -7,30 +7,15 @@
       ]
     }
   },
-  "lambdaLayers": [
-    {
-      "type": "ProjectLayer",
-      "resourceName": "partyusgraphqlOperations",
-      "version": "Always choose latest version",
-      "isLatestVersionSelected": true,
-      "env": "staging"
-    },
-    {
-      "type": "ProjectLayer",
-      "resourceName": "partyuslayer",
-      "version": "Always choose latest version",
-      "isLatestVersionSelected": true,
-      "env": "staging"
-    }
-  ],
+  "lambdaLayers": [],
   "environmentVariableList": [
     {
-      "cloudFormationParameterName": "secretKey",
-      "environmentVariableName": "SECRET_KEY"
+      "cloudFormationParameterName": "secretKeyProd",
+      "environmentVariableName": "SECRET_KEY_PROD"
     },
     {
-      "cloudFormationParameterName": "merchantId",
-      "environmentVariableName": "MERCHANT_ID"
+      "cloudFormationParameterName": "secretKeyStag",
+      "environmentVariableName": "SECRET_KEY_STAG"
     }
   ]
 }

@@ -423,11 +423,7 @@ export default function ({
     }
 
     if (!(await getUserSub())) {
-      navigation.navigate("LoginStack", {
-        onLogin: () => {
-          navigation.navigate("Boletos", evento);
-        },
-      });
+      navigation.navigate("LoginStack");
     } else {
       navigation.navigate("Boletos", evento);
     }

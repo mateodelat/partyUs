@@ -17,7 +17,6 @@ import Boton from "../Boton";
 import {
   AsyncAlert,
   azulClaro,
-  azulFondo,
   getCardIcon,
   normalizeCardType,
 } from "../../../constants";
@@ -29,7 +28,8 @@ import { TextInputMask } from "react-native-masked-text";
 import { Feather } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-import { cardBrand_type } from "../../../types/openpay";
+import { cardBrand_type } from "../../../types/stripe";
+import { produccion } from "../../../constants/keys";
 
 enum cardType {
   "visa" = "visa",
@@ -48,45 +48,71 @@ type input = {
 };
 
 export type saveParams = {
-  number: string; //"4242 4242"
-  expiry: { month: string; year: string }; //"06/19"
-  cvv: string; //"300",
-  icon: NodeRequire; // Icono de la tarjeta
-  name: string; //"Sam",
+  number?: string; //"4242 4242"
+  expiry?: { month: string; year: string }; //"06/19"
+  cvv?: string; //"300",
+  icon?: NodeRequire; // Icono de la tarjeta
+  name?: string; //"Sam",
   type?: cardBrand_type;
-  saveCard: boolean;
+  saveCard?: boolean;
+  postalCode?: string;
 };
 
 export default function ({
   onAdd,
   setModalVisible,
-  comprasFuturasEnabled,
+  comprasFuturasDisabled,
+  prevCard,
 }: {
   onAdd: (params: saveParams) => void;
   setModalVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  comprasFuturasEnabled?: boolean;
+  comprasFuturasDisabled?: boolean;
+  prevCard?: saveParams;
 }) {
+  const prevCvv = prevCard?.cvv ? prevCard?.cvv : "";
+  const prevExpiry = prevCard?.expiry
+    ? prevCard?.expiry.month + "/" + prevCard.expiry.year
+    : "";
+  const prevNumber = prevCard?.number ? prevCard?.number : "";
+  const prevName = prevCard?.name ? prevCard?.name : "";
+  const prevPostalCode = prevCard?.postalCode ? prevCard?.postalCode : "";
+
   const [innerModal, setInnerModal] = useState(false);
 
-  const [cvv, setCvv] = useState<input>();
+  const cvvValidation = valid.cvv(prevCvv);
 
-  const [expiry, setExpiry] = useState<input>();
+  const [cvv, setCvv] = useState<input>({
+    value: prevCvv,
+    validation: cvvValidation,
+  });
 
-  const [number, setNumber] = useState<input>();
+  const [expiry, setExpiry] = useState<input>({ value: prevExpiry });
 
-  const [name, setName] = useState("");
+  const numberValidation = valid.number(prevNumber);
+
+  const [number, setNumber] = useState<input>({
+    value: prevNumber,
+    validation: numberValidation,
+  });
+
+  const [postalCode, setPostalCode] = useState(prevPostalCode);
+  const [name, setName] = useState(prevName);
 
   const [saveCard, setSaveCard] = useState(true);
 
   const numberRef = useRef<{ _inputElement: TextInputMask & TextInput }>(null);
   const expiryRef = useRef<{ _inputElement: TextInputMask & TextInput }>(null);
   const cvcRef = useRef<{ _inputElement: TextInputMask & TextInput }>(null);
-  const nameRef = useRef<
-    { _inputElement: TextInputMask & TextInput } & TextInput
-  >(null);
+  const postalCodeRef = useRef<TextInput>(null);
+  const nameRef = useRef<TextInput>(null);
 
   const handleCloseModal = async () => {
-    if (name || number || expiry || cvv) {
+    if (
+      (!!name && name !== prevName) ||
+      (!!number?.value && number.value !== prevNumber) ||
+      (!!expiry?.value && expiry.value !== prevExpiry) ||
+      (!!cvv?.value && cvv.value !== prevCvv)
+    ) {
       await AsyncAlert("Atencion", "Se perderan los datos de la tarjeta").then(
         (r) => {
           if (r) {
@@ -104,33 +130,40 @@ export default function ({
   useEffect(() => {
     setInnerModal(true);
 
-    // setNumber({
-    //   value: "370000000000002",
-    //   validation: {
-    //     card: {
-    //       cvv: 3,
-    //       type: "visa",
-    //     },
-    //     isPotentiallyValid: true,
-    //     isValid: true,
-    //   },
-    // });
-    // setName("Test name");
-    // setExpiry({
-    //   value: "02/24",
-    //   validation: {
-    //     isPotentiallyValid: true,
-    //     isValid: true,
-    //   },
-    // });
-    // setCvv({
-    //   value: "022",
-    //   validation: {
-    //     isPotentiallyValid: true,
-    //     isValid: true,
-    //   },
-    // });
+    assignDefaultValues();
   }, []);
+
+  function assignDefaultValues() {
+    if (produccion) return;
+    setNumber({
+      value: "4000000000000119",
+      validation: {
+        card: {
+          cvv: 3,
+          type: "visa",
+        },
+        isPotentiallyValid: true,
+        isValid: true,
+      },
+    });
+    setName("Test name");
+    setExpiry({
+      value: "02/24",
+      validation: {
+        isPotentiallyValid: true,
+        isValid: true,
+      },
+    });
+    setCvv({
+      value: "022",
+      validation: {
+        isPotentiallyValid: true,
+        isValid: true,
+      },
+    });
+
+    setPostalCode("45500");
+  }
 
   function handleSave() {
     const exp = valid.expirationDate(expiry?.value);
@@ -151,9 +184,15 @@ export default function ({
       return;
     }
 
-    const tipoTarjeta = normalizeCardType(
-      number.validation.card?.type as cardType
-    );
+    if (postalCode.length !== 5) {
+      Alert.alert("Error", "Codigo postal no valido");
+      return;
+    }
+
+    // No se realiza verificacion del codigo postal pues es opcional
+
+    const tipoTarjeta = number.validation.card?.type as cardBrand_type;
+
     onAdd({
       cvv: cvv?.value,
       expiry: {
@@ -162,8 +201,9 @@ export default function ({
       },
       number: number?.value,
       name,
+      postalCode,
       icon: getCardIcon(tipoTarjeta),
-      type: normalizeCardType(number.validation.card?.type as cardType),
+      type: tipoTarjeta,
       saveCard,
     });
     setModalVisible(false);
@@ -282,7 +322,7 @@ export default function ({
               RightIcon={() => (
                 <Image
                   style={styles.icon}
-                  source={getCardIcon(number?.validation?.card?.type)}
+                  source={getCardIcon(number?.validation?.card?.type as any)}
                 />
               )}
             />
@@ -400,6 +440,7 @@ export default function ({
               />
             </View>
 
+            {/* Nombre del tarjetahabiente */}
             <InputOnFocusV2
               titulo={"Nombre del tarjetahabiente"}
               placeholder={"Escribe el nombre completo"}
@@ -407,17 +448,38 @@ export default function ({
               onChangeText={setName}
               value={name}
               style={{ marginTop: 30 }}
-              onSubmitEditing={handleSave}
+              returnKeyType={"next"}
+              onSubmitEditing={() => {
+                postalCodeRef.current?.focus();
+              }}
               ref={nameRef}
             />
 
-            <Text style={styles.infoTxt}>
-              Al momento de crear la tarjeta se hara un cargo de 10$ para
+            {/* Codigo postal */}
+            <InputOnFocusV2
+              titulo={"Codigo postal"}
+              ref={postalCodeRef}
+              placeholder={"45000"}
+              autoCapitalize={"characters"}
+              onChangeText={(r) => {
+                // Poner solo numeros
+                setPostalCode(r.replace(/\D/g, ""));
+              }}
+              value={postalCode}
+              returnKeyType={"done"}
+              keyboardType={"numeric"}
+              maxLength={5}
+              style={{ marginTop: 20 }}
+              onSubmitEditing={handleSave}
+            />
+
+            {/* <Text style={styles.infoTxt}>
+              Al momento de crear la tarjeta se realiza un cargo de 1$ para
               verificar que es valida y se devolvera al instante
-            </Text>
+            </Text> */}
 
             {/* Guardar tarjeta para compras futuras */}
-            {!comprasFuturasEnabled ? (
+            {!comprasFuturasDisabled ? (
               <Pressable
                 onPress={() => {
                   setSaveCard(!saveCard);
@@ -451,7 +513,7 @@ export default function ({
                 </Text>
               </Pressable>
             ) : (
-              <View style={{ marginTop: 20 }} />
+              <View style={{ marginTop: 40 }} />
             )}
 
             <Boton

@@ -1,15 +1,17 @@
 {
   "function": {
-    "partyuslayer": {
-      "providerPlugin": "awscloudformation",
-      "service": "LambdaLayer",
-      "build": true
-    },
     "paymentsHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "partyuslambdaDependencies",
+          "attributes": [
+            "Arn"
+          ]
+        },
         {
           "category": "api",
           "resourceName": "partyUsAPI",
@@ -17,13 +19,6 @@
             "GraphQLAPIIdOutput",
             "GraphQLAPIEndpointOutput",
             "GraphQLAPIKeyOutput"
-          ]
-        },
-        {
-          "category": "function",
-          "resourceName": "partyuslayer",
-          "attributes": [
-            "Arn"
           ]
         }
       ]
@@ -35,7 +30,7 @@
       "dependsOn": [
         {
           "category": "function",
-          "resourceName": "partyuslayer",
+          "resourceName": "partyuslambdaDependencies",
           "attributes": [
             "Arn"
           ]
@@ -57,20 +52,6 @@
       "service": "Lambda",
       "dependsOn": [
         {
-          "category": "function",
-          "resourceName": "partyuslayer",
-          "attributes": [
-            "Arn"
-          ]
-        },
-        {
-          "category": "function",
-          "resourceName": "partyusgraphqlOperations",
-          "attributes": [
-            "Arn"
-          ]
-        },
-        {
           "category": "api",
           "resourceName": "partyUsAPI",
           "attributes": [
@@ -86,13 +67,6 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda",
       "dependsOn": [
-        {
-          "category": "function",
-          "resourceName": "partyuslayer",
-          "attributes": [
-            "Arn"
-          ]
-        },
         {
           "category": "function",
           "resourceName": "partyusgraphqlOperations",
@@ -122,20 +96,6 @@
       "service": "Lambda",
       "dependsOn": [
         {
-          "category": "function",
-          "resourceName": "partyuslayer",
-          "attributes": [
-            "Arn"
-          ]
-        },
-        {
-          "category": "function",
-          "resourceName": "partyusgraphqlOperations",
-          "attributes": [
-            "Arn"
-          ]
-        },
-        {
           "category": "api",
           "resourceName": "partyUsAPI",
           "attributes": [
@@ -145,6 +105,11 @@
           ]
         }
       ]
+    },
+    "partyuslambdaDependencies": {
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer",
+      "build": true
     }
   },
   "auth": {

@@ -2,6 +2,11 @@
 import { initSchema } from '@aws-amplify/datastore';
 import { schema } from './schema';
 
+const TipoDocumento = {
+  "PASAPORTE": "PASAPORTE",
+  "INE": "INE"
+};
+
 const PlaceEnum = {
   "EXTERIOR": "EXTERIOR",
   "INTERIOR": "INTERIOR",
@@ -9,9 +14,9 @@ const PlaceEnum = {
 };
 
 const MusicEnum = {
-  "REGGETON": "REGGETON",
+  "REGGAETON": "REGGAETON",
   "POP": "POP",
-  "TECNO": "TECNO",
+  "TECHNO": "TECHNO",
   "RAP": "RAP",
   "BANDA": "BANDA",
   "ROCK": "ROCK",
@@ -63,6 +68,7 @@ export {
   Retiro,
   Cupon,
   Notificacion,
+  TipoDocumento,
   PlaceEnum,
   MusicEnum,
   ComoditiesEnum,

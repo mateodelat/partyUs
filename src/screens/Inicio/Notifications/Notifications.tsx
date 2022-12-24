@@ -20,7 +20,7 @@ import { Entypo } from "@expo/vector-icons";
 import useUser from "../../../Hooks/useUser";
 import Header from "../../../navigation/components/Header";
 
-export default function ({ navigation }) {
+export default function Notifi({ navigation }) {
   useEffect(() => {
     handleFetch().then(setNotificaciones);
   }, []);
@@ -111,6 +111,8 @@ export default function ({ navigation }) {
         break;
       case TipoNotificacion.ADMIN:
         navigation.navigate("AdminStack");
+        break;
+      case TipoNotificacion.BIENVENIDA:
         break;
 
       default:

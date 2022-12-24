@@ -170,7 +170,7 @@ export default function Agregar2({
   function handleInfoPagos() {
     Alert.alert(
       "Envio de fondos",
-      "Dependiendo del tipo de pago del cliente, el dinero puede tomar hasta 3 dias en llegarte a tu cuenta bancaria"
+      "Por politicas de nuestro manejador de pagos, los pagos de los boletos aparecen en tu saldo pero llegaran a tu banco en 7 dias"
     );
   }
 
@@ -358,7 +358,7 @@ export default function Agregar2({
             </TouchableOpacity>
           </ScrollView>
           <Text style={styles.infoTxt}>
-            El dinero puede tardar hasta 3 dias en llegar a tu cuenta
+            El dinero llega a tu cuenta en 7 dias
             <Text onPress={handleInfoPagos} style={styles.masInfo}>
               {" "}
               mas info

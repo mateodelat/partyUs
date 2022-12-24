@@ -6,17 +6,11 @@ import Agregar3 from "../screens/AgregarEvento/Agregar3";
 import Agregar4 from "../screens/AgregarEvento/Agregar4";
 import { EventoType } from "../screens/Inicio/Home";
 import EventContext from "../contexts/EventContext";
-import {
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { KeyboardAvoidingView, Platform } from "react-native";
 
-export default function () {
+export default function AgregarEvento() {
   const Stack = createStackNavigator();
-  const [evento, setEvento] = useState<EventoType>({});
+  const [evento, setEvento] = useState<EventoType>({} as any);
 
   return (
     <KeyboardAvoidingView

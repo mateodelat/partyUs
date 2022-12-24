@@ -2,7 +2,7 @@ import React from "react";
 import { Animated } from "react-native";
 
 //Los 3 puntitos creados mediante views con color negro y radius para que sean circulos
-export default ({
+export default function Indicator({
   scrollX,
   width,
   data,
@@ -11,8 +11,8 @@ export default ({
   scrollX: Animated.Value;
   width: number;
   data: Array<any>;
-  opacity?: Animated.AnimatedInterpolation;
-}) => {
+  opacity?: Animated.AnimatedInterpolation<any>;
+}) {
   return (
     <Animated.View
       style={{
@@ -49,4 +49,4 @@ export default ({
       })}
     </Animated.View>
   );
-};
+}

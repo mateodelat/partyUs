@@ -73,7 +73,7 @@ const Indicator = ({
   );
 };
 
-export default ({
+export default function Carr({
   scrollX,
   images,
   top,
@@ -81,7 +81,7 @@ export default ({
   scrollX: Animated.Value;
   images: { uri: string }[];
   top: number;
-}) => {
+}) {
   const data = images;
   let { width, height } = Dimensions.get("screen");
   width = width < height ? width : height;
@@ -253,7 +253,7 @@ export default ({
       />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   //contenedor general

@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { formatMoney } from "../../../../constants";
 
-export default ({
+export default function Elemento({
   cantidad,
   precio,
 
@@ -11,7 +11,7 @@ export default ({
   cantidad: number;
   precio: number;
   titulo: string;
-}) => {
+}) {
   return (
     <View style={{ ...styles.container }}>
       {/* Titulos */}
@@ -22,11 +22,7 @@ export default ({
         )}/persona)`}</Text>
       </View>
 
-      {!cantidad ? (
-        <Text style={styles.cantidad}>x{cantidad}</Text>
-      ) : (
-        <Text style={styles.cantidad}>x{cantidad}</Text>
-      )}
+      <Text style={styles.cantidad}>x{cantidad}</Text>
 
       {cantidad ? (
         <Text style={styles.precio}>
@@ -37,7 +33,7 @@ export default ({
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -50,6 +46,7 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: 18,
     color: "#444",
+    paddingRight: 20,
     // fontWeight: 'bold',
   },
 

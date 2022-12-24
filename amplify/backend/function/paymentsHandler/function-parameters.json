@@ -2,20 +2,16 @@
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
-      "resourceName": "partyuslayer",
+      "resourceName": "partyuslambdaDependencies",
+      "env": "staging",
       "version": "Always choose latest version",
-      "isLatestVersionSelected": true,
-      "env": "staging"
+      "isLatestVersionSelected": true
     }
   ],
   "environmentVariableList": [
     {
-      "cloudFormationParameterName": "merchantId",
-      "environmentVariableName": "MERCHANT_ID"
-    },
-    {
-      "cloudFormationParameterName": "secretKey",
-      "environmentVariableName": "SECRET_KEY"
+      "cloudFormationParameterName": "secretKeyStag",
+      "environmentVariableName": "SECRET_KEY_STAG"
     }
   ],
   "permissions": {

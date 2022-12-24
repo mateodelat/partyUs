@@ -25,6 +25,8 @@ type Usuario
 
   receiveNewReservations: Boolean
 
+  rfc: String
+
   imagenFondo: String
   direccion: AWSJSON
     @auth(rules: [{ allow: owner }, { allow: groups, groups: ["Admin"] }])
@@ -48,14 +50,24 @@ type Usuario
       ]
     )
   idUploaded: Boolean
+
+  # Data extraida de la imagen a texto
   idData: AWSJSON
     @auth(rules: [{ allow: owner }, { allow: groups, groups: ["Admin"] }])
-  idKey: String
+
+  # Ids de llaves de S3 para las imagenes de los documentos
+  idFrontKey: String
+  idBackKey: String
+
+  # Tipo del documento de identidad (INE o Pasaporte)
+  tipoDocumento: tipoDocumento
+
   fechaNacimiento: String
   calificacion: Float
   numResenas: Int
   notificationToken: String
-  userPaymentID: String
+  paymentClientID: String
+  paymentAccountID: String
   verified: Boolean
     @auth(
       rules: [
@@ -106,11 +118,17 @@ type Evento
   comodities: [comoditiesEnum]
   musOtra: String
 
+  # Permitir pagos en el lugar
+  allowPaymentsInPlace: Boolean
+
   personasReservadas: Int
   personasMax: Int
 
   precioMin: Int
   precioMax: Int
+
+  # Crear un producto por cada evento
+  paymentProductID: String
 
   CreatorID: ID @index(name: "byUsuario")
   creator: Usuario @belongsTo
@@ -173,6 +191,9 @@ type Boleto
   cantidad: Int
   personasReservadas: Int
   precio: Float
+
+  # Crear un precio por cada boleto en evento
+  paymentPriceID: String
 
   eventoID: ID @index(name: "byEvento")
   Reservas: [ReservasBoletos] @hasMany(indexName: "byBoletos", fields: ["id"])
@@ -346,13 +367,18 @@ enum placeEnum {
 }
 
 enum musicEnum {
-  REGGETON
+  REGGAETON
   POP
   TECNO
   RAP
   BANDA
   ROCK
   OTRO
+}
+
+enum tipoDocumento {
+  PASAPORTE
+  INE
 }
 
 enum comoditiesEnum {

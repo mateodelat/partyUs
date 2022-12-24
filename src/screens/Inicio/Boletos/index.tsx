@@ -43,7 +43,7 @@ export type BoletoType = Boleto & {
   quantity?: number;
 };
 
-export default function ({
+export default function Index({
   route,
   navigation,
 }: {

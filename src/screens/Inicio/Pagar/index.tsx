@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   Image,
@@ -15,27 +14,25 @@ import {
 import { Entypo } from "@expo/vector-icons";
 import { Octicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
-import { FontAwesome5 } from "@expo/vector-icons";
 
 import ElementoPersonas from "./ElementoPersonas";
+
+import NetInfo from "@react-native-community/netinfo";
 
 import Boton from "../../../components/Boton";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
 import {
   fetchFromAPI,
-  fetchFromOpenpay,
   formatAMPM,
   formatDateShort,
   formatMoney,
   getCardIcon,
   getUserSub,
-  msInDay,
   precioConComision,
   rojo,
   shadowMedia,
   rojoClaro,
   azulClaro,
-  comisionApp,
   AsyncAlert,
   vibrar,
   VibrationType,
@@ -43,28 +40,44 @@ import {
   abrirTerminos,
   sendNotifications,
   sendAdminNotification,
+  fetchFromStripe,
+  log,
+  mayusFirstLetter,
+  currency,
+  getIpAddress,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
 import { EventoType } from "../Home";
-import { Boleto, Cupon, Evento, Usuario } from "../../../models";
+import { Cupon, Usuario } from "../../../models";
 
 import Header from "../../../navigation/components/Header";
 import uuid from "react-native-uuid";
-import CardInput, { saveParams } from "../../../components/CardInput";
+import { saveParams } from "../../../components/CardInput";
 
-import OpenPay from "../../../components/OpenPay";
 import useUser from "../../../Hooks/useUser";
-import { cardType, chargeType } from "../../../../types/openpay";
 import { DataStore } from "aws-amplify";
 import { TipoNotificacion } from "../../../models";
 import { Notificacion } from "../../../models";
 import { notificacionesRecordatorio } from "../Notifications/functions";
-import RadioButton from "../../../components/RadioButton";
 import { TipoPago } from "../../../models";
 import WebView from "react-native-webview";
 
-export default function ({
+import Stripe from "stripe";
+import StripeRN, {
+  CardField,
+  useConfirmSetupIntent,
+} from "@stripe/stripe-react-native";
+import { cardBrand_type } from "../../../../types/stripe";
+import ModalBottom from "../../../components/ModalBottom";
+import SecureCardInput from "../../../components/CardInput/SecureCardInput";
+import {
+  STRIPE_PUBLISHABLE_KEY,
+  STRIPE_SECRET_KEY,
+} from "../../../../constants/keys";
+import createPaymentIntent from "./createPaymentIntent";
+import CardInput from "../../../components/CardInput";
+export default function Pagar({
   route,
   navigation,
 }: {
@@ -81,6 +94,163 @@ export default function ({
   };
   navigation: NavigationProp;
 }) {
+  route.params = {
+    id: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
+    imagenPrincipalIDX: 0,
+    titulo: "adsfa",
+    detalles: "asdf",
+    ubicacion: {
+      ubicacionNombre: " Hall, Hall",
+      longitudeDelta: 2,
+      latitudeDelta: 2,
+      latitude: 41.67858017474236,
+      longitude: -100.72023656219244,
+    },
+    fechaInicial: 1689973200000,
+    fechaFinal: 1689976800000,
+    tosAceptance: {
+      hora: "2022-12-22T09:28:50.741Z",
+    },
+    tipoLugar: "INTERIOR",
+    musica: "POP",
+    comodities: ["SEGURIDAD", "BARRALIBRE", "COMIDA"],
+    musOtra: null,
+    personasMax: 100,
+    precioMin: 50,
+    precioMax: 400,
+    paymentProductID: "prod_N1oj2JotnTBFbf",
+    CreatorID: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+    createdAt: "2022-12-22T09:29:49.770Z",
+    updatedAt: "2022-12-22T09:29:49.770Z",
+    _version: 1,
+    _lastChangedAt: 1671701389796,
+    _deleted: null,
+    imagenes: [
+      {
+        key: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
+        uri: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
+      },
+      {
+        key: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
+        uri: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
+      },
+    ],
+    creator: {
+      id: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+      nickname: "mateodelat",
+      nombre: "Velazquez",
+      materno: "Margarita",
+      paterno: "Gomez",
+      email: "mateodelat@gmail.com",
+      foto: "https://ui-avatars.com/api/?name=mateodelat&bold=true&background=fff&color=000&length=1",
+      cuentaBancaria: "000000001234567897",
+      titularCuenta: "NOMBRE PRUEBA",
+      receiveNewReservations: false,
+      rfc: "XAXX010101000",
+      imagenFondo: null,
+      direccion: {
+        postal_code: "45500",
+      },
+      phoneNumber: "3344443343",
+      phoneCode: "+52",
+      organizador: true,
+      admin: false,
+      idUploaded: true,
+      idData: {
+        detectedText:
+          '"222222\nppppp\nMEXICA\nMÉXICO\nINSTITUTO NACIONAL ELECTORAL\nCREDENCIAL PARA VOTAR\nNOMBRE\nGOMEZ\nVELAZQUEZ\nMARGARITA\nDOMICILIO\nINE\nC PITAGORAS 1253 INT. 4\nCOL. MORELOS 04800\nCUAJIMALPA DE MORELOS, D.F.\nCLAVE DE ELECTOR GMVLMR8007501M100\nGOVM800705MCLMLR01 AÑO DE REGISTRO 2008 02\nESTADO 09 MUNICIPIO 004 SECCIÓN 0747\nLOCALIDAD\nMISIÓN 2014 VIGENCIA 2024"',
+        tipoDocumento: "INE",
+        uri: "https://cdn.forbes.com.mx/2019/06/INE.jpg",
+        curp: "GOVM800705MCLMLR01",
+      },
+      idFrontKey: "usr-fe905dc2-97d2-4531-b018-fcd02aa534b8|id-front.jpg",
+      idBackKey: "usr-fe905dc2-97d2-4531-b018-fcd02aa534b8|id-back.jpg",
+      tipoDocumento: "INE",
+      fechaNacimiento: "2003-12-21T00:00:00.000Z",
+      calificacion: null,
+      numResenas: null,
+      notificationToken: null,
+      paymentClientID: "cus_N1l9LTBaAXHNjg",
+      paymentAccountID: "acct_1MHinBID9ekhSFzj",
+      verified: false,
+      owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+      createdAt: "2022-12-22T05:47:53.254Z",
+      updatedAt: "2022-12-22T20:59:17.925Z",
+      _version: 8,
+      _lastChangedAt: 1671742757970,
+      _deleted: null,
+    },
+    personasReservadas: 0,
+    boletos: [
+      {
+        id: "6c68e5f7-fb6c-4b66-8e2d-961b27953e3e",
+        titulo: "VIP",
+        descripcion: "Boleto VIP",
+        cantidad: 50,
+        precio: 400,
+        paymentPriceID: null,
+        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
+        createdAt: "2022-12-22T09:29:50.601Z",
+        updatedAt: "2022-12-22T09:29:50.601Z",
+        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+        _version: 1,
+        _lastChangedAt: 1671701390631,
+        _deleted: null,
+        personasReservadas: 0,
+      },
+      {
+        id: "c40da731-4cc2-4772-bd2d-d3214f070f05",
+        titulo: "VIP",
+        descripcion: "Boleto VIP",
+        cantidad: 50,
+        precio: 400,
+        paymentPriceID: null,
+        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
+        createdAt: "2022-12-22T09:30:42.018Z",
+        updatedAt: "2022-12-22T09:30:42.018Z",
+        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+        _version: 1,
+        _lastChangedAt: 1671701442044,
+        _deleted: null,
+        personasReservadas: 0,
+        quantity: 1,
+      },
+      {
+        id: "fb5ced93-0684-4007-a44d-ccf35fa969e1",
+        titulo: "Entrada normal",
+        descripcion: "dESCRIPCION del boleto noraml",
+        cantidad: 50,
+        precio: 50,
+        paymentPriceID: null,
+        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
+        createdAt: "2022-12-22T09:29:50.317Z",
+        updatedAt: "2022-12-22T09:29:50.317Z",
+        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+        _version: 1,
+        _lastChangedAt: 1671701390351,
+        _deleted: null,
+        personasReservadas: 0,
+      },
+      {
+        id: "5992138a-39b3-49f7-8d25-d65fb4ba7309",
+        titulo: "Entrada normal",
+        descripcion: "dESCRIPCION del boleto noraml",
+        cantidad: 50,
+        precio: 50,
+        paymentPriceID: null,
+        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
+        createdAt: "2022-12-22T09:30:41.555Z",
+        updatedAt: "2022-12-22T09:30:41.555Z",
+        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
+        _version: 1,
+        _lastChangedAt: 1671701441583,
+        _deleted: null,
+        personasReservadas: 0,
+      },
+    ],
+    total: 460,
+  } as any;
+
   const {
     total,
     imagenes,
@@ -93,14 +263,16 @@ export default function ({
     id: eventoID,
     CreatorID,
   } = route.params;
+
+  type cardType = Omit<Stripe.Card, "id"> & { id: Promise<string> };
+
   const boletos = route.params.boletos.filter((e: any) => e.quantity);
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [threeDsecure, setThreeDsecure] = useState("");
-  const [sesionId, setSesionId] = useState<string>();
+  const [clientSecret, setClientSecret] = useState<string>("");
 
-  const { setNewNotifications, usuario, setLoading } = useUser();
+  const { setNewNotifications, usuario, setLoading, setUsuario } = useUser();
 
   // Opciones que se llenan cuando damos agregar tarjeta
   const [tarjetasGuardadas, setTarjetasGuardadas] = useState<cardType[]>([]);
@@ -109,8 +281,6 @@ export default function ({
   const [editing, setEditing] = useState(false);
 
   const [tipoPago, setTipoPago] = useState<"EFECTIVO" | number>();
-
-  const [termsAceptance, setTermsAceptance] = useState(false);
 
   // UI del boton
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -121,12 +291,16 @@ export default function ({
   // La pongo en estado para evitar que se cambie al actualizar
   const [reservaID, setReservaID] = useState(res);
 
-  const precioTotal = total;
-
   useEffect(() => {
     getUserSub().then(setSub);
+
+    // Obtener tarjetas del cliente guardadas desde backend
     getUserCards();
     setReservaID(res);
+
+    // Crear payment intent
+    getClientSecret();
+
     setButtonLoading(false);
     setLoading(false);
   }, []);
@@ -192,23 +366,76 @@ export default function ({
   }
 
   function getUserCards() {
-    if (usuario.userPaymentID) {
-      fetchFromAPI<cardType[]>("/payments/card", "GET", undefined, {
-        customer_id: usuario.userPaymentID,
-      }).then(({ body }) => {
-        if (body) {
-          body = body.map((card) => {
-            return {
-              ...card,
-              icon: getCardIcon(card.brand),
-            };
-          });
+    if (usuario.paymentClientID) {
+      fetchFromAPI<Stripe.PaymentMethod[]>({
+        path: "/payments/card/" + usuario.paymentClientID,
+        type: "GET",
+      })
+        .then((r) => {
+          if (r.error) {
+            throw r;
+          } else {
+            //  Mapear atributos para transformar a tipo Stripe.Card solo con lo que lee el cliente
+            const cards = r.body.map((e) => {
+              const {
+                id,
+                billing_details: { name },
+              } = e;
 
-          setTarjetasGuardadas(body);
-          return body;
-        } else return [];
-      });
+              const { brand, exp_year, exp_month, last4 } = e.card;
+
+              return {
+                id,
+                brand,
+                exp_month,
+                exp_year,
+                last4,
+                name,
+              } as any;
+            });
+
+            setTarjetasGuardadas(cards);
+          }
+        })
+        .catch((e) => {
+          log(e);
+          Alert.alert(
+            "Error",
+            "Hubo un error obteniendo las tarjetas guardadas del cliente"
+          );
+        });
     }
+  }
+
+  function getClientSecret() {
+    // Recibimos eventoID, reservaID (para guardar en metadata) y descuento en caso de haber para poner el precio del PI
+
+    // fetchFromStripe<Stripe.PaymentIntent>({
+    //   path: "/payments/createPaymentIntent",
+    //   type: "GET",
+    //   secretKey: STRIPE_SECRET_KEY,
+    //   input: {},
+    // })
+    //   .then((r) => {
+    //     log(r);
+    //   })
+    //   .catch(log);
+
+    // log(createPaymentIntent(
+
+    // ))
+
+    return;
+    fetchFromStripe<Stripe.PaymentIntent>({
+      path: "/payments/createPaymentIntent",
+      type: "GET",
+      secretKey: STRIPE_SECRET_KEY,
+      input: {},
+    })
+      .then((r) => {
+        log(r);
+      })
+      .catch(log);
   }
 
   // Action tras darle click a agregar metodo de pago
@@ -291,25 +518,28 @@ export default function ({
       //   }
       //   return;
       // } else {
-      const result = (await fetchFromAPI("/createReserva", "POST", {
-        tipoPago:
-          tipoPago === "EFECTIVO"
-            ? "EFECTIVO"
-            : total === 0
-            ? "EFECTIVO"
-            : "TARJETA",
-        boletos: boletos.map((e: any) => ({
-          quantity: e.quantity,
-          id: e.id,
-        })),
-        cuponID: descuento?.id ? descuento.id : undefined,
-        eventoID,
-        organizadorID: CreatorID,
-        usuarioID: sub,
-        reservaID: reservaID,
-        sourceID: tarjetaID,
-        total,
-        device_session_id: sesionId,
+      const result = (await fetchFromAPI({
+        path: "/createReserva",
+        type: "POST",
+        input: {
+          tipoPago:
+            tipoPago === "EFECTIVO"
+              ? "EFECTIVO"
+              : total === 0
+              ? "EFECTIVO"
+              : "TARJETA",
+          boletos: boletos.map((e: any) => ({
+            quantity: e.quantity,
+            id: e.id,
+          })),
+          cuponID: descuento?.id ? descuento.id : undefined,
+          eventoID,
+          organizadorID: CreatorID,
+          usuarioID: sub,
+          reservaID: reservaID,
+          sourceID: tarjetaID,
+          total,
+        },
       })) as any;
 
       if (!result) {
@@ -321,9 +551,6 @@ export default function ({
           result ? result : "No se recibio voucher para pago en efectivo"
         );
       }
-
-      // Mandar notificaciones de recordatorio
-      notificacionesRecordatorio({ evento: route.params, usuario });
 
       setButtonLoading(false);
       setLoading(false);
@@ -370,6 +597,8 @@ export default function ({
             organizadorID: CreatorID,
           })
         );
+        // Mandar notificaciones de recordatorio
+        notificacionesRecordatorio({ evento: route.params, usuario });
 
         notificacionesOrganizador(TipoPago.EFECTIVO, personasTotales);
 
@@ -404,6 +633,8 @@ export default function ({
             organizadorID: CreatorID,
           })
         );
+        // Mandar notificaciones de recordatorio
+        notificacionesRecordatorio({ evento: route.params, usuario });
 
         // Mandarle la notificacion al organizador de evento pagado
         notificacionesOrganizador(TipoPago.TARJETA, personasTotales);
@@ -449,85 +680,177 @@ export default function ({
 
   async function handleAddCard(r: saveParams) {
     setEditing(false);
+
+    // Sacar el index a donde se agrega la tarjeta por si no es valida
+    const idx = tarjetasGuardadas.length;
+
     try {
       setButtonLoading(true);
       setLoading(true);
-      const tokenID = await fetchFromOpenpay<cardType>({
-        path: "/tokens",
-        type: "POST",
-        input: {
-          holder_name: r.name,
-          card_number: r.number,
-          expiration_year: r.expiry.year,
-          expiration_month: r.expiry.month,
-          cvv2: r.cvv,
-        },
-      }).then((r) => r.id);
-      let cardID: Promise<string | undefined> | undefined;
 
-      // Si pide que se guarde para compras futuras agregar al usuario
-      if (r.saveCard) {
-        if (!tokenID) {
-          throw new Error("Falta el token ID");
-        }
-        if (!sesionId) {
-          Alert.alert(
-            "Error",
-            "Hubo un error obteninendo el identificador de tu dispositivo"
-          );
-          throw new Error("Falta el id de sesion");
-        }
-        if (!usuario.userPaymentID) {
-          Alert.alert("Error", "No se pudo guardar la tarjeta");
-          throw new Error("Usuario no tiene un id de cliente");
-        }
+      // Guardar el codigo postal del usuario si no tiene y se envio codigo postal de la tarjeta
+      if (!(usuario.direccion as any)?.postal_code && r.postalCode) {
+        console.log(
+          "El cliente no tiene codigo postal, agregando el de la tarjeta"
+        );
 
-        const input = {
-          token_id: tokenID,
-          device_session_id: sesionId,
-          customer_id: usuario.userPaymentID,
-        };
-        cardID = fetchFromAPI<cardType>("/payments/card", "POST", input)
-          .then((e) => {
-            const r = e.body?.id;
-            return r;
+        const direccion = {
+          ...(usuario.direccion as Object),
+          postal_code: r.postalCode,
+        } as any;
+
+        // Guardar en datastore
+        const us = await DataStore.query(Usuario, usuario.id);
+        DataStore.save(
+          Usuario.copyOf(us, (mut) => {
+            mut.direccion = direccion;
           })
-          .catch((e) => {
-            console.log(e.error);
-            Alert.alert("Error", "Tarjeta no valida, hubo un error");
+        );
 
-            setTipoPago(undefined);
-
-            setTarjetasGuardadas((ol) => {
-              const idx = ol.findIndex((e) => e.tokenID === tokenID);
-              if (idx >= 0) {
-                ol.splice(idx, 1);
-              }
-              return [...ol];
-            });
-            return undefined;
-          });
+        // Guardar localmente
+        setUsuario({
+          ...usuario,
+          direccion,
+        });
       }
 
       setTipoPago(
         tarjetasGuardadas.length !== 0 ? tarjetasGuardadas.length : 0
       );
+      const len = r.number.length;
+      const last4 = r.number.slice(len - 4, len);
+
+      // Si tenemos la direccion del usuario, ponerla en la tarjeta
+      const { direccion } = usuario;
+
+      // Obtener informacion de la direccion
+      const state = (direccion as any)?.state
+        ? (direccion as any)?.state
+        : undefined;
+      const city = (direccion as any)?.city
+        ? (direccion as any)?.city
+        : undefined;
+      const line1 = (direccion as any)?.line1
+        ? (direccion as any)?.line1
+        : undefined;
+
+      const numeroCompleto =
+        usuario.phoneCode && usuario.phoneNumber
+          ? usuario.phoneCode + usuario.phoneNumber
+          : undefined;
+
+      // Guardar el token de la tarjeta en stripe directo con la Publisable key
+      const paymentMethodID = fetchFromStripe<Stripe.Token>({
+        path: "/v1/tokens",
+        type: "POST",
+        input: {
+          card: {
+            object: "card",
+
+            name: r.name,
+            number: r.number,
+            exp_month: r.expiry.month,
+            exp_year: r.expiry.year,
+            cvc: r.cvv,
+            address_zip: r.postalCode,
+            address_state: state,
+            address_line1: line1,
+            address_city: city,
+            address_country: "MX",
+
+            currency,
+          },
+        } as Stripe.TokenCreateParams,
+      })
+        .then(async (c) => {
+          const tokenID = c.id;
+
+          // Guardar token como metodo de pago en stripe con la publishable key
+          const paymentMethodID = await fetchFromStripe<Stripe.PaymentMethod>({
+            path: "/v1/payment_methods",
+            type: "POST",
+            input: {
+              type: "card",
+              card: { token: tokenID },
+              billing_details: {
+                address: {
+                  postal_code: r.postalCode,
+                  state: state,
+                  line1: line1,
+                  city: city,
+                  country: "MX",
+                },
+                email: usuario.email,
+                name: r.name,
+                phone: numeroCompleto,
+              },
+            } as Stripe.PaymentMethodCreateParams,
+          }).then((r) => {
+            return r.id;
+          });
+
+          // Attachear metodo de pago al cliente si se pone guardar para compras futuras sin esperar que se resuelva
+          if (r.saveCard) {
+            fetchFromAPI<Stripe.PaymentMethod>({
+              path: "/payments/card",
+              type: "POST",
+              input: {
+                customerID: usuario.paymentClientID,
+                paymentMethodID,
+              },
+            }).catch((e) => {
+              log(e);
+              // Si el error viene de stripe, eliminarla
+              Alert.alert("Error", "Error guardando tarjeta: " + e);
+
+              // Borrar de la lista
+              setTarjetasGuardadas((prev) => {
+                let neCards = [...prev];
+
+                neCards.splice(idx, 1);
+                return neCards;
+              });
+            });
+          }
+
+          return paymentMethodID;
+        })
+        .catch((e) => {
+          log(e);
+          Alert.alert("Error", "Error guardando tarjeta: " + e);
+
+          // Borrar de la lista
+          setTarjetasGuardadas((prev) => {
+            let neCards = [...prev];
+
+            neCards.splice(idx, 1);
+            return neCards;
+          });
+        });
+
+      setButtonLoading(false);
+      setLoading(false);
+      if (!paymentMethodID) {
+        return;
+      }
 
       setTarjetasGuardadas([
         ...tarjetasGuardadas,
         {
-          holder_name: r.name,
-          card_number: r.number,
+          id: paymentMethodID,
+          name: r.name,
+          last4,
           brand: r.type,
-          icon: r.icon,
-          saveCard: !!r.saveCard,
-          tokenID: tokenID as any,
-          id: cardID,
-        },
+        } as any,
       ]);
     } catch (error: any) {
       setButtonLoading(false);
       setLoading(false);
+      Alert.alert(
+        "Error",
+        "Ocurrio un error guardando la tarjeta" +
+          (error.message ? error.message : "")
+      );
       console.log(error);
     }
 
@@ -536,30 +859,43 @@ export default function ({
   }
 
   async function handleRemovePayment(idx: number) {
-    const tarjetaID = await tarjetasGuardadas[idx].id;
-    setTarjetasGuardadas(() => {
-      if (tarjetaID) {
-        if (!usuario.userPaymentID) {
-          console.log("No hay payment ID para ese usuario");
+    const card = tarjetasGuardadas[idx];
+    const cardID = await card.id;
+    try {
+      setTarjetasGuardadas(() => {
+        if (cardID) {
+          if (!usuario.paymentClientID) {
+            console.log("No hay payment ID para ese usuario");
+            return;
+          } else {
+            fetchFromAPI({
+              path: "/payments/card/" + cardID,
+              type: "DELETE",
+            }).catch((e) => {
+              console.log(e);
+              Alert.alert("Error", "Error borrando tarjeta");
+            });
+          }
         } else {
-          fetchFromAPI("/payments/card/" + tarjetaID, "DELETE", undefined, {
-            customer_id: usuario.userPaymentID,
-          }).catch((e) => {
-            console.log(e);
-            Alert.alert(
-              "Error",
-              "Error borrando tarjeta: " + e?.error?.description
-            );
-          });
+          console.log("No hay tarjeta ID");
         }
-      } else {
-        console.log("No hay tarjeta ID");
-      }
 
-      let neCards = [...tarjetasGuardadas];
-      neCards.splice(idx, 1);
-      return [...neCards];
-    });
+        let neCards = [...tarjetasGuardadas];
+        neCards.splice(idx, 1);
+        return [...neCards];
+      });
+    } catch (error) {
+      log(error);
+      Alert.alert("Error", "Ocurrio un error guardando la tarjeta");
+
+      // Volver a poner la tarjeta en la lista
+      setTarjetasGuardadas((prev) => {
+        let neCards = [...prev];
+        neCards.push(card);
+
+        return neCards;
+      });
+    }
   }
 
   let { height, width } = Dimensions.get("screen");
@@ -594,7 +930,7 @@ export default function ({
               source={{
                 uri: imagenes[imagenPrincipalIDX ? imagenPrincipalIDX : 0].uri,
               }}
-              style={styles.imgAventura}
+              style={styles.imgLogo}
             />
 
             <View style={styles.adventureTextContainer}>
@@ -700,7 +1036,7 @@ export default function ({
               <Text style={{ ...styles.titulo, fontWeight: "bold" }}>
                 Total
               </Text>
-              <Text style={styles.precioTotal}>{formatMoney(precioTotal)}</Text>
+              <Text style={styles.precioTotal}>{formatMoney(total)}</Text>
             </View>
           </View>
 
@@ -794,11 +1130,18 @@ export default function ({
 
                       {/* Mapeo de tarjetas guardadas */}
                       {tarjetasGuardadas.map((tarjeta, idx: number) => {
-                        if (!tarjeta.card_number) {
-                          return <View />;
-                        }
-                        const l = tarjeta.card_number.length;
-                        let last4 = tarjeta.card_number.slice(l - 4, l);
+                        let { last4, brand, name, exp_month, exp_year } =
+                          tarjeta;
+
+                        exp_month = String(exp_month).padStart(2, "0") as any;
+
+                        let exp_yearS = String(exp_year);
+                        exp_yearS = exp_yearS.slice(
+                          exp_yearS.length - 2,
+                          exp_yearS.length
+                        ) as any;
+
+                        const icon = getCardIcon(brand as cardBrand_type);
 
                         return (
                           <View key={idx}>
@@ -825,8 +1168,8 @@ export default function ({
                                       width: 40,
                                     }}
                                     source={
-                                      tarjeta.icon
-                                        ? tarjeta.icon
+                                      icon
+                                        ? icon
                                         : require("../../../../assets/icons/stp_card_undefined.png")
                                     }
                                   />
@@ -841,16 +1184,25 @@ export default function ({
                                     color: tipoPago === idx ? "#222" : "#aaa",
                                   }}
                                 >
-                                  **** **** **** {last4.toUpperCase()}
+                                  **** **** **** {last4}
                                 </Text>
-                                {tarjeta.holder_name && (
+                                {name ? (
                                   <Text
                                     style={{
                                       ...styles.tarjetahabiente,
                                       color: tipoPago === idx ? "#777" : "#ddd",
                                     }}
                                   >
-                                    {tarjeta.holder_name?.toUpperCase()}
+                                    {name?.toUpperCase()}
+                                  </Text>
+                                ) : (
+                                  <Text
+                                    style={{
+                                      ...styles.tarjetahabiente,
+                                      color: tipoPago === idx ? "#777" : "#ddd",
+                                    }}
+                                  >
+                                    Expira el {exp_month}/{exp_yearS}
                                   </Text>
                                 )}
                               </View>
@@ -892,11 +1244,12 @@ export default function ({
                   }}
                   style={styles.metodoDePago}
                 >
-                  <View style={{ ...styles.iconoIzquierda }}>
-                    <FontAwesome5
-                      name="money-bill-wave-alt"
-                      size={24}
-                      color={azulClaro}
+                  <View
+                    style={{ ...styles.iconoIzquierda, overflow: "hidden" }}
+                  >
+                    <Image
+                      style={{ height: 30, resizeMode: "contain", width: 40 }}
+                      source={require("../../../../assets/IMG/Oxxo_Logo.png")}
                     />
                   </View>
 
@@ -968,33 +1321,6 @@ export default function ({
       >
         <CardInput onAdd={handleAddCard} setModalVisible={setModalVisible} />
       </Modal>
-      {/* <Modal
-        animationType={"none"}
-        transparent={true}
-        visible={!!threeDsecure}
-        onRequestClose={() => {
-          setThreeDsecure("");
-        }}
-      >
-        <WebView
-          onNavigationStateChange={(e) => {
-            if (e.url.startsWith("https://www.partyusmx.com/")) {
-              setThreeDsecure("");
-              navigation.navigate("ExitoScreen", {
-                txtExito: "Reserva creada",
-                descripcion:
-                  "Se ha creado tu reserva con exito. Puedes consultar tu qr en Perfil - Mis reservas",
-                txtOnPress: "Ver boleto",
-              });
-            }
-          }}
-          source={{ uri: threeDsecure }}
-          style={{
-            flex: 1,
-          }}
-        />
-      </Modal> */}
-      <OpenPay onCreateSesionID={setSesionId} />
     </View>
   );
 }
@@ -1026,11 +1352,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 
-  imgAventura: {
+  imgLogo: {
     flex: 2,
     height: "100%",
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
+    resizeMode: "contain",
   },
 
   adventureTextContainer: {

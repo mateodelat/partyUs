@@ -4,14 +4,24 @@
   API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT
   ENV
   REGION
+Amplify Params - DO NOT EDIT *//* Amplify Params - DO NOT EDIT
+  API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
+  API_PARTYUSAPI_GRAPHQLAPIIDOUTPUT
+  API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT
+  ENV
+  REGION
 Amplify Params - DO NOT EDIT */
 
 
-const axios = require('axios');
 const { GraphQLClient } = require('graphql-request');
 
 
 
+const production = process.env.ENV === "production"
+
+const SECRET_KEY = production ? process.env.SECRET_KEY_PROD : process.env.SECRET_KEY_STAG
+
+const stripe = require('stripe')(SECRET_KEY);
 
 
 function generateProfilePicture(nombre) {
@@ -25,12 +35,21 @@ function generateProfilePicture(nombre) {
     "F4F6F8",
     "cccccc",
   ];
-  const randomColor = Math.round(Math.random() * listaColores.length);
-  const bgc = listaColores[randomColor];
+  const randomColor = Math.round(Math.random() * (listaColores.length - 1))
+  const randomLenght = Math.round(Math.random()) + 1
+  let bgc = listaColores[randomColor];
 
-  const color = randomColor > 3 ? "000" : "fff";
 
-  return `https://ui-avatars.com/api/?name=${nombre}&bold=true&background=${bgc}&color=${color}&length=1`;
+  let color = randomColor > 3 ? "000" : "fff";
+
+  // Si no hay color de fondo seleccionar blanco y negro
+  if (!bgc || !color) {
+    bgc = "fff"
+    color = "000"
+  }
+
+
+  return `https://ui-avatars.com/api/?name=${nombre}&bold=true&background=${bgc}&color=${color}&length=${randomLenght}`;
 }
 
 async function createCustomer({
@@ -39,49 +58,59 @@ async function createCustomer({
   id
 }) {
 
-  var data = JSON.stringify({
-    "name": name,
-    "email": email,
-    "external_id": id,
-    "requires_account": true
-  });
-  let authKey = Buffer.from(process.env.SECRET_KEY).toString('base64').replace("=", "6")
+  const customer = await stripe.customers.create({
+    email,
+    name,
+    metadata: { id }
+  })
 
-  var config = {
-    method: 'post',
-    url: 'https://sandbox-api.openpay.mx/v1/mcwffetlymvvcqthcdxu/customers'
-    // 'https://api.openpay.mx/v1/m1qt7k7zcarncm0jkvrp/customers'
-    ,
-    headers: {
-      'Authorization': "Basic " + authKey,
-      'Content-Type': 'application/json'
-    },
-    data: data
-  };
-  return await axios(config).then(
-    (r) => {
-      return r.data.id;
-    }
-  );
+  return customer?.id
 }
 
-const crearUsr = `
+const operation = `
     mutation CreateUsuario(
-      $input: CreateUsuarioInput!
+      $inputUsr: CreateUsuarioInput!
+      $inputNot: CreateNotificacionInput!
     ) {
-      createUsuario(input: $input) {
+
+      createNotificacion(input: $inputNot) {
         id
         
-         _version
-         _deleted
-         _lastChangedAt
-         createdAt
-         updatedAt
- 
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+        tipo
 
+        titulo
+        descripcion
+        usuarioID
+        showAt
+
+
+      }
+
+      createUsuario(input: $inputUsr) {
+        id
+        
+        _version
+        _deleted
+        _lastChangedAt
+        createdAt
+        updatedAt
+ 
+        id
+        nickname
+        email
+        paymentClientID
+        foto
+        owner
+    
       }
     }
   `;
+
 
 
 exports.handler = async (event, context, callback) => {
@@ -90,27 +119,32 @@ exports.handler = async (event, context, callback) => {
   const attributes = event.request.userAttributes;
 
 
+  // Si viene de post confirm password devolver
+  if (event.triggerSource === "PostConfirmation_ConfirmForgotPassword") {
+    callback(null, event);
+  }
+
   // Crear customer de plataforma pago
-  const userPaymentID = await createCustomer({
+  const paymentClientID = await createCustomer({
     email: attributes.email,
     name: attributes.nickname,
     id: sub
   })
 
-  const input = {
+  const inputUsr = {
     id: sub,
     nickname: attributes.nickname,
     email: attributes.email,
-    userPaymentID,
+    paymentClientID,
 
     // Generar foto de perfil con letra inicial
     foto: generateProfilePicture(attributes.nickname),
 
     owner: sub
   };
-  console.log("Atributos recibidos en crear usuario: ", input);
+  console.log("Atributos recibidos en crear usuario: ", inputUsr);
 
-  if (input.id) {
+  if (inputUsr.id) {
     // Informacion para conectarse a graphql
     const endpoint = process.env.API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT;
     const headers = {
@@ -121,8 +155,21 @@ exports.handler = async (event, context, callback) => {
 
     const client = new GraphQLClient(endpoint, { headers });
 
+
+    const inputNot = {
+      tipo: "BIENVENIDA",
+
+      titulo: "Party us",
+      descripcion:
+        (attributes.nickname) +
+        " gracias por registrarte en party us.\nAqui podras encontrar los mejores eventos de tu ciudad",
+
+      usuarioID: sub,
+      showAt: new Date().toISOString()
+    }
+
     await client
-      .request(crearUsr, { input })
+      .request(operation, { inputUsr, inputNot })
       .then((r) => {
         console.log("Resultado crear usuario: ", r);
       })
@@ -130,19 +177,6 @@ exports.handler = async (event, context, callback) => {
         console.log("Error creando usuario: ", err);
       });
 
-    // // Crear la notificacion de bienvenida cuando no existia el usuario
-    // client.request(crearNotificacion, {
-    //   input: {
-    //     tipo: "BIENVENIDA",
-
-    //     titulo: "Party us",
-    //     descripcion:
-    //       (attributes.nickname) +
-    //       " gracias por registrarte en party us.\nAqui podras encontrar los mejores eventos en tu ciudad",
-
-    //     usuarioID: sub,
-    //   },
-    // });
   } else {
     console.log("Error creando el usuario");
   }

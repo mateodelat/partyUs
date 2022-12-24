@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"Amplify\",\"createdWith\":\"10.0.0\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+  "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"Amplify\",\"createdWith\":\"10.4.0\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
@@ -36,10 +36,10 @@
       "Type": "String",
       "Default": "functionpartyusgraphqlOperationsArn"
     },
-    "merchantId": {
+    "secretKeyProd": {
       "Type": "String"
     },
-    "secretKey": {
+    "secretKeyStag": {
       "Type": "String"
     }
   },
@@ -105,11 +105,11 @@
             "API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT": {
               "Ref": "apipartyUsAPIGraphQLAPIKeyOutput"
             },
-            "MERCHANT_ID": {
-              "Ref": "merchantId"
+            "SECRET_KEY_PROD": {
+              "Ref": "secretKeyProd"
             },
-            "SECRET_KEY": {
-              "Ref": "secretKey"
+            "SECRET_KEY_STAG": {
+              "Ref": "secretKeyStag"
             }
           }
         },
@@ -123,9 +123,6 @@
         "Layers": [
           {
             "Ref": "functionpartyusgraphqlOperationsArn"
-          },
-          {
-            "Ref": "functionpartyuslayerArn"
           }
         ],
         "Timeout": 25

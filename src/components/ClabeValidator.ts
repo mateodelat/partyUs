@@ -1,10 +1,10 @@
 // CLABE Validator -- MIT License
 
-export type ClabeBank = { tag?: string, name?: string };
-export type ClabeBanksMap = { [bankCode: number]: ClabeBank };
-export type ClabeCityInfo = [number, string, ClabeMxState?];  //code, name, and state -- example: [27, 'Tecate', 'MX-BCN']
-export type ClabeCitiesMap = { [cityCode: number]: ClabeCityInfo[] };
-export type ClabeCheck = {
+type ClabeBank = { tag?: string, name?: string };
+type ClabeBanksMap = { [bankCode: number]: ClabeBank };
+type ClabeCityInfo = [number, string, ClabeMxState?];  //code, name, and state -- example: [27, 'Tecate', 'MX-BCN']
+type ClabeCitiesMap = { [cityCode: number]: ClabeCityInfo[] };
+type ClabeCheck = {
    ok: boolean,        //todo está bien
    formatOk: boolean,        //valid length and checksum
    error: string | null,  //failure code, example: 'invalid-city'
@@ -19,15 +19,13 @@ export type ClabeCheck = {
    code: { bank: string, city: string },  //3-digit codes
    checksum: number | null,  //control digit (0 to 9)
 };
-export type ClabeMxState = 'MX-AGU' | 'MX-BCN' | 'MX-BCS' | 'MX-CAM' | 'MX-CHH' | 'MX-CHP' |
+type ClabeMxState = 'MX-AGU' | 'MX-BCN' | 'MX-BCS' | 'MX-CAM' | 'MX-CHH' | 'MX-CHP' |
    'MX-CMX' | 'MX-COA' | 'MX-COL' | 'MX-DUR' | 'MX-GRO' | 'MX-GUA' | 'MX-HID' | 'MX-JAL' |
    'MX-MEX' | 'MX-MIC' | 'MX-MOR' | 'MX-NAY' | 'MX-NLE' | 'MX-OAX' | 'MX-PUE' | 'MX-QUE' |
    'MX-ROO' | 'MX-SIN' | 'MX-SLP' | 'MX-SON' | 'MX-TAB' | 'MX-TAM' | 'MX-TLA' | 'MX-VER' |
    'MX-YUC' | 'MX-ZAC';
 
 const clabe = {
-
-   version: '~~~version~~~',
 
    computeChecksum(clabeNum17: string): number | null {
       // Returns the checksum calculated from the first 17 characters of CLABE number.
@@ -104,6 +102,7 @@ const clabe = {
       //    https://es.wikipedia.org/wiki/CLABE#C.C3.B3digo_de_banco
       //    http://omawww.sat.gob.mx/fichas_tematicas/buzon_tributario/Documents/catalogo_bancos.pdf
       //    https://frbservices.org/assets/financial-services/ach/global-service-orig-manual.pdf
+      0: { tag: 'STRIPE', name: 'Prueba stripe' },
       1: { tag: 'BANXICO', name: 'Banco de México' },
       2: { tag: 'BANAMEX', name: 'Banco Nacional de México' },
       6: { tag: 'BANCOMEXT', name: 'Banco Nacional de Comercio Exterior' },
@@ -235,6 +234,7 @@ const clabe = {
       // Sources:
       //    https://en.wikipedia.org/wiki/Template:Mexico_State-Abbreviation_CodesMX
       //    https://es.wikipedia.org/wiki/CLABE#C.C3.B3digo_de_plaza
+      [0, '', ''],
       [10, 'Aguascalientes', 'MX-AGU'],
       [11, 'Asientos', 'MX-AGU'],
       [12, 'Calvillo', 'MX-AGU'],
@@ -1123,4 +1123,4 @@ const clabe = {
 
 };
 
-export { clabe };
+export { clabe } 

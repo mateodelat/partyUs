@@ -1,27 +1,15 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
   Modal,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   ViewStyle,
   View,
 } from "react-native";
-import {
-  colorFondo,
-  fetchWithTimeout,
-  isUrl,
-  openCameraPickerAsync,
-  openImagePickerAsync,
-} from "../../constants";
+import { colorFondo } from "../../constants";
 
 import { Feather } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Entypo } from "@expo/vector-icons";
 
 export default function ({
   setModalVisible,

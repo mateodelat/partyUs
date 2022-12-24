@@ -1,5 +1,4 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
 import Home from "../../screens/Inicio/Home";
 import MyTabBar from "./components/MyTabBar";
 
@@ -19,7 +18,7 @@ function PlusScreen() {
   return null;
 }
 
-export default function () {
+export default function NavBar() {
   const organizador = useUser()?.usuario;
 
   const insets = useSafeAreaInsets();

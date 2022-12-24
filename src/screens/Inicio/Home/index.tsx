@@ -7,6 +7,7 @@ import {
   Modal,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -62,8 +63,6 @@ import EmptyProfile from "../../../components/EmptyProfile";
 import { Boleto } from "../../../models";
 import { locationType } from "../../../components/ModalMap";
 import { Notificacion } from "../../../models";
-import { Reserva } from "../../../models";
-import { notificacionesRecordatorio } from "../Notifications/functions";
 
 export type EventoType = Evento & {
   favoritos?: boolean;
@@ -72,6 +71,7 @@ export type EventoType = Evento & {
   creator?: Usuario;
   comodities?: ComoditiesEnum[];
   ubicacion: locationType;
+  stripeFileImagenPrincipal?: Promise<string>;
 };
 
 export async function queryNewNotifications() {
@@ -86,7 +86,7 @@ export async function queryNewNotifications() {
   });
 }
 
-export default function ({ navigation }: { navigation: NavigationProp }) {
+export default function Home({ navigation }: { navigation: NavigationProp }) {
   const {
     usuario: { foto },
     setUsuario,
@@ -113,9 +113,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
   const [loadingHidden, setLoadingHidden] = useState(false);
 
-  const [eventosFiltrados, setEventosFiltrados] = useState<EventoType[] | []>(
-    []
-  );
+  const [eventosFiltrados, setEventosFiltrados] = useState<EventoType[]>([]);
 
   // Al cambiar la imagen de perfil del usuario pedirla
   useEffect(() => {
@@ -436,33 +434,6 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
     setFilters(filters);
   }
 
-  // Funcion que cambia estado en un evento filtrado y en evento normal
-  function updateEvent(newEvent: EventoType) {
-    // Pasar nuevo evento por el filtro
-    const filtradoIdx = eventosFiltrados.findIndex(
-      (e: any) => e.id === newEvent.id
-    );
-    const fetchedIdx = fetchedEvents.findIndex(
-      (e: any) => e.id === newEvent.id
-    );
-
-    if (filtradoIdx !== -1) {
-      let nuevosEventos = [...eventosFiltrados];
-      nuevosEventos[filtradoIdx] = newEvent;
-
-      setEventosFiltrados([...nuevosEventos]);
-    }
-    if (fetchedIdx !== -1) {
-      let nuevosEventos = [...eventosFiltrados];
-      nuevosEventos[fetchedIdx] = newEvent;
-
-      setFetchedEvents([...nuevosEventos]);
-    } else {
-      Alert.alert("Error", "Favor de reportarlo a los desarrolladores");
-      return;
-    }
-  }
-
   function handlePressItem(id?: string) {
     const evento = eventosFiltrados.find((i: any) => i.id === id);
     if (!evento) return;
@@ -661,7 +632,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           </View>
         </View>
 
-        <FlatList
+        <ScrollView
           refreshControl={
             <RefreshControl
               onRefresh={onRefresh}
@@ -669,42 +640,42 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
             />
           }
           showsVerticalScrollIndicator={false}
-          keyExtractor={(_, idx) => idx.toString()}
-          data={eventosFiltrados}
-          ListEmptyComponent={
-            loading ? (
-              <View style={{ flex: 1 }}>
-                <ActivityIndicator size={"large"} color={"black"} />
-              </View>
-            ) : (
-              <Text
-                style={{
-                  fontWeight: "bold",
-                  fontSize: 20,
-                  marginBottom: 5,
-                  textAlign: "center",
-                }}
-              >
-                No hay eventos
-              </Text>
-            )
-          }
-          renderItem={({ item, index }) => {
-            if (!item) return <View />;
-            return (
-              <View
-                style={{
-                  marginBottom: index === eventosFiltrados.length - 1 ? 100 : 0,
-                }}
-              >
-                <ElementoEvento
-                  data={item}
-                  onPress={() => handlePressItem(item.id)}
-                />
-              </View>
-            );
-          }}
-        />
+        >
+          {loading ? (
+            <View style={{ flex: 1 }}>
+              <ActivityIndicator size={"large"} color={"black"} />
+            </View>
+          ) : !eventosFiltrados.length ? (
+            <Text
+              style={{
+                fontWeight: "bold",
+                fontSize: 20,
+                marginBottom: 5,
+                textAlign: "center",
+              }}
+            >
+              No hay eventos
+            </Text>
+          ) : (
+            eventosFiltrados.map((item, index) => {
+              if (!item) return <View />;
+              return (
+                <View
+                  key={index}
+                  style={{
+                    marginBottom:
+                      index === eventosFiltrados.length - 1 ? 100 : 0,
+                  }}
+                >
+                  <ElementoEvento
+                    data={item}
+                    onPress={() => handlePressItem(item.id)}
+                  />
+                </View>
+              );
+            })
+          )}
+        </ScrollView>
       </Pressable>
 
       <Modal

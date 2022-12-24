@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Lambda Function resource stack creation using Amplify CLI",
+  "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"Amplify\",\"createdWith\":\"10.4.0\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
@@ -40,10 +40,10 @@
       "Type": "String",
       "Default": "functionpartyusgraphqlOperationsArn"
     },
-    "secretKey": {
+    "secretKeyProd": {
       "Type": "String"
     },
-    "merchantId": {
+    "secretKeyStag": {
       "Type": "String"
     }
   },
@@ -109,11 +109,11 @@
             "API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT": {
               "Ref": "apipartyUsAPIGraphQLAPIKeyOutput"
             },
-            "SECRET_KEY": {
-              "Ref": "secretKey"
+            "SECRET_KEY_PROD": {
+              "Ref": "secretKeyProd"
             },
-            "MERCHANT_ID": {
-              "Ref": "merchantId"
+            "SECRET_KEY_STAG": {
+              "Ref": "secretKeyStag"
             }
           }
         },
@@ -124,14 +124,7 @@
           ]
         },
         "Runtime": "nodejs14.x",
-        "Layers": [
-          {
-            "Ref": "functionpartyusgraphqlOperationsArn"
-          },
-          {
-            "Ref": "functionpartyuslayerArn"
-          }
-        ],
+        "Layers": [],
         "Timeout": 25
       }
     },

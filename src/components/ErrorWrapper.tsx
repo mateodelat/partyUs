@@ -4,20 +4,17 @@ import { View, Text, SafeAreaView, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Updates from "expo-updates";
 import Boton from "./Boton";
+import Bugsnag from "@bugsnag/expo";
 
 class ErrorRouter extends React.Component {
   state = {
     error: false,
   };
 
-  static getDerivedStateFromError() {
-    return { error: true };
-  }
-
   componentDidCatch(error: Error) {
-    // console.log(error);
-    // Alert.alert("Ocurrio un error", error.message);
-    // Bugsnag.notify(error)
+    console.log(error);
+    Alert.alert("Ocurrio un error", error.message);
+    Bugsnag.notify(error);
   }
 
   render() {
@@ -55,14 +52,12 @@ class ErrorRouter extends React.Component {
         </SafeAreaView>
       );
     } else {
-      return this.props.children;
+      return (this.props as any).children;
     }
   }
 }
 
-export default function ({ children }: { children: ReactChild }) {
-  return <ErrorRouter>{children}</ErrorRouter>;
-}
+export default ErrorRouter;
 
 const styles = StyleSheet.create({
   container: {

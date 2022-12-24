@@ -9,16 +9,20 @@
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
-      "resourceName": "partyuslayer",
+      "resourceName": "partyuslambdaDependencies",
+      "env": "staging",
       "version": "Always choose latest version",
-      "isLatestVersionSelected": true,
-      "env": "staging"
+      "isLatestVersionSelected": true
     }
   ],
   "environmentVariableList": [
     {
-      "cloudFormationParameterName": "secretKey",
-      "environmentVariableName": "SECRET_KEY"
+      "cloudFormationParameterName": "secretKeyProd",
+      "environmentVariableName": "SECRET_KEY_PROD"
+    },
+    {
+      "cloudFormationParameterName": "secretKeyStag",
+      "environmentVariableName": "SECRET_KEY_STAG"
     }
   ]
 }
