@@ -591,7 +591,10 @@ export async function fetchFromStripe<T>({
   const encodedData = new URLSearchParams();
 
   // Limpiar valores inexistentes
-  Object.keys(input).forEach((key) => (!input[key] ? delete input[key] : null));
+  input &&
+    Object.keys(input).forEach((key) =>
+      !input[key] ? delete input[key] : null
+    );
 
   // Funcion que codifica objectos nesteados en tipo www-url-formencoded
   function nestedObjEncode(prevKey: string, nestedObj: Object) {

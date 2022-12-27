@@ -18,14 +18,6 @@ import { azulClaro, currency, fetchFromStripe, log } from "../../../constants";
 
 import { AntDesign } from "@expo/vector-icons";
 import { cardBrand_type } from "../../../types/stripe";
-import {
-  CardField,
-  CardFieldInput,
-  createToken,
-  useConfirmSetupIntent,
-} from "@stripe/stripe-react-native";
-import { STRIPE_SECRET_KEY } from "../../../constants/keys";
-import Stripe from "stripe";
 import useUser from "../../Hooks/useUser";
 
 export type saveParams = {
@@ -49,9 +41,7 @@ export default function ({
   const [cardValidation, setCardValidation] =
     useState<CardFieldInput.Details>();
 
-  // Datos para guardar la tarjeta de manera segura con stripe
-  const { confirmSetupIntent, loading } = useConfirmSetupIntent();
-  const { usuario } = useUser;
+  const { usuario } = useUser();
 
   const handleCloseModal = async () => {
     setInnerModal(false);

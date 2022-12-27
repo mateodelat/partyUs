@@ -14,7 +14,6 @@ import ErrorWrapper from "./src/components/ErrorWrapper";
 import Loading from "./src/components/Loading";
 import { StatusBar, StatusBarStyle } from "expo-status-bar";
 import moment from "moment";
-import { StripeProvider } from "@stripe/stripe-react-native";
 
 import { STRIPE_PUBLISHABLE_KEY } from "./constants/keys";
 
@@ -69,15 +68,9 @@ const App = () => {
           setUsuario={setUsuario}
           setStatusStyle={setStatusStyle}
         >
-          <StripeProvider
-            publishableKey={STRIPE_PUBLISHABLE_KEY}
-            urlScheme="your-url-scheme" // required for 3D Secure and bank redirects
-            merchantIdentifier="merchant.com.partyus" // required for Apple Pay
-          >
-            <StatusBar style={statusStyle} translucent={true} />
+          <StatusBar style={statusStyle} translucent={true} />
 
-            <Router />
-          </StripeProvider>
+          <Router />
         </ContextProvider>
         {/* </ErrorWrapper> */}
       </View>

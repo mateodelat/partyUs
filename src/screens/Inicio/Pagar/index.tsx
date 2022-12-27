@@ -45,6 +45,7 @@ import {
   mayusFirstLetter,
   currency,
   getIpAddress,
+  azulFondo,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
@@ -64,10 +65,6 @@ import { TipoPago } from "../../../models";
 import WebView from "react-native-webview";
 
 import Stripe from "stripe";
-import StripeRN, {
-  CardField,
-  useConfirmSetupIntent,
-} from "@stripe/stripe-react-native";
 import { cardBrand_type } from "../../../../types/stripe";
 import ModalBottom from "../../../components/ModalBottom";
 import SecureCardInput from "../../../components/CardInput/SecureCardInput";
@@ -77,6 +74,10 @@ import {
 } from "../../../../constants/keys";
 import createPaymentIntent from "./createPaymentIntent";
 import CardInput from "../../../components/CardInput";
+import RadioButton from "../../../components/RadioButton";
+import Loading from "../../../components/Loading";
+import HeaderModal from "../../../components/HeaderModal";
+import confirmPaymentIntent from "./confirmPaymentIntent";
 export default function Pagar({
   route,
   navigation,
@@ -270,7 +271,15 @@ export default function Pagar({
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [clientSecret, setClientSecret] = useState<string>("");
+  const [threedvisible, setThreedvisible] = useState(false);
+  const [threedsecure, setThreedsecure] = useState<{
+    uri?: string;
+    redirectUrl?: string;
+  }>({});
+
+  const [paymentIntent, setPaymentIntent] = useState("");
+
+  const [webViewLoading, setWebViewLoading] = useState(false);
 
   const { setNewNotifications, usuario, setLoading, setUsuario } = useUser();
 
@@ -279,6 +288,10 @@ export default function Pagar({
 
   // Borrar metodos de pago
   const [editing, setEditing] = useState(false);
+
+  // Correo electronico para enviar recibo
+  const [correoElectronicoEnabled, setCorreoElectronicoEnabled] =
+    useState(false);
 
   const [tipoPago, setTipoPago] = useState<"EFECTIVO" | number>();
 
@@ -401,7 +414,7 @@ export default function Pagar({
           log(e);
           Alert.alert(
             "Error",
-            "Hubo un error obteniendo las tarjetas guardadas del cliente"
+            "Hubo un error obteniendo las tarjetas guardadas, puedes continuar sin problema"
           );
         });
     }
@@ -444,6 +457,45 @@ export default function Pagar({
     setModalVisible(true);
   };
 
+  // Funcion para confirmar el pago 3d secure en cuanto el usuario confirma su payment intent en el webview
+  async function handleConfirm3dSecure() {
+    setButtonLoading(true);
+    setLoading(true);
+
+    try {
+      // Confirmar el paymentIntent con todos los parametros a validar
+      const result = (await confirmPaymentIntent({
+        body: {
+          paymentIntentID: paymentIntent,
+        },
+      })) as {
+        body: Stripe.PaymentIntent;
+        error: string;
+      };
+
+      log(result);
+
+      setButtonLoading(false);
+      setLoading(false);
+
+      // Si se recibe error del confirmar pago
+      if (result.error) {
+        throw result.error;
+      }
+
+      Alert.alert("Exito", "La reserva se efectuo con exito!!");
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "Hubo un error confirmando tu pago" +
+          "\n" +
+          (error.message ? error.message : JSON.stringify(error))
+      );
+    }
+
+    // Navegar a exitoso, alerta etc...
+  }
+
   const handleConfirm = async () => {
     const personasTotales = boletos
       .map((e: any) => e.quantity)
@@ -463,71 +515,28 @@ export default function Pagar({
         const tarjeta = tarjetasGuardadas[tipoPago];
         tarjetaID = await tarjeta.id;
 
-        if (tarjeta.tokenID) {
-          tarjetaID = tarjeta.tokenID;
-        }
-
-        if (!tarjeta.tokenID && !tarjeta.allows_charges) {
-          Alert.alert(
-            "Error",
-            "No se permiten cargos en esa tarjeta, agrega otra"
-          );
+        if (typeof tarjetaID !== "string") {
+          Alert.alert("Error", "No se pudo obtener el id de la tarjeta");
           return;
         }
       }
 
+      // Mensaje de confirmacion de pago en efectivo
       if (
         tipoPago === "EFECTIVO" &&
         !(await AsyncAlert(
           "Pago en efectivo",
-          "Esto generara un voucher para pagar el boleto en cualquiera de nuestras tiendas autorizadas. ¿Quieres continuar?"
+          "Esto generara un voucher para pagar el boleto en un oxxo. ¿Quieres continuar?"
         ))
       )
         return;
     }
+
     setButtonLoading(true);
     setLoading(true);
     try {
-      // const { userPaymentID: customer_id } = await DataStore.query(
-      //   Usuario,
-      //   sub
-      // );
-
-      // if (tipoPago !== "EFECTIVO") {
-      //   const result = await fetchFromOpenpay<chargeType>({
-      //     path: "/customers/" + customer_id + "/charges",
-      //     type: "POST",
-      //     secretKey: "",
-      //     input: {
-      //       device_session_id: sesionId,
-      //       source_id: tarjetaID,
-      //       method: "card",
-      //       amount: total,
-      //       currency: "MXN",
-
-      //       use_3d_secure: true,
-      //       redirect_url: "https://www.partyusmx.com/",
-      //     },
-      //   });
-
-      //   setButtonLoading(false);
-      //   setLoading(false);
-
-      //   if (result?.payment_method.url) {
-      //     setThreeDsecure(result.payment_method.url);
-      //   }
-      //   return;
-      // } else {
-      const result = (await fetchFromAPI({
-        path: "/createReserva",
-        type: "POST",
-        input: {
-          tipoPago:
-            tipoPago === "EFECTIVO"
-              ? "EFECTIVO"
-              : total === 0
-              ? "EFECTIVO"
-              : "TARJETA",
+      const result = (await createPaymentIntent({
+        body: {
           boletos: boletos.map((e: any) => ({
             quantity: e.quantity,
             id: e.id,
@@ -537,11 +546,55 @@ export default function Pagar({
           organizadorID: CreatorID,
           usuarioID: sub,
           reservaID: reservaID,
+          // Se pone en efectivo o se tiene un descuento de 100 (total = 0)
+          tipoPago:
+            tipoPago === "EFECTIVO"
+              ? TipoPago.EFECTIVO
+              : total === 0
+              ? TipoPago.EFECTIVO
+              : TipoPago.TARJETA,
+          receipt_email: correoElectronicoEnabled ? usuario.email : undefined,
+
           sourceID: tarjetaID,
           total,
         },
-      })) as any;
+      })) as {
+        body: Stripe.PaymentIntent;
+        error: string;
+      };
 
+      if (result.error) {
+        throw result.error;
+      }
+
+      // Si nos devuelve el objeto payment intent con redirect to url manejarlo, es 3d secure
+      if (result.body?.next_action?.type === "redirect_to_url") {
+        // Obtener ID de payment intent a asignar localmente para confirmarlo despues
+        setPaymentIntent(result.body.id);
+
+        // Hacer visible el modal de 3d secure
+        setThreedvisible(true);
+
+        // Actualizar estado local de 3d secure
+        setThreedsecure({
+          uri: result.body?.next_action?.redirect_to_url?.url,
+          redirectUrl: result.body?.next_action?.redirect_to_url?.return_url,
+        });
+
+        setButtonLoading(false);
+        setLoading(false);
+
+        return;
+      }
+
+      // Si nos devuelve tipo pago con oxxo, pasarlo como exitoso y mostrar el voucher de pago en oxxo
+
+      // Si nos devuelve estado de pago exitoso, continuar al exito (la reserva se guardo en la nube con exito)
+      Alert.alert("Exito", "El pago se realizo correctamente");
+
+      setButtonLoading(false);
+      setLoading(false);
+      return;
       if (!result) {
         throw new Error("No se recibio ningun resultado");
       }
@@ -665,6 +718,8 @@ export default function Pagar({
         ? error.message
         : error.description
         ? error.description
+        : error.error
+        ? error.error
         : error;
 
       setTipoPago(undefined);
@@ -686,7 +741,6 @@ export default function Pagar({
 
     try {
       setButtonLoading(true);
-      setLoading(true);
 
       // Guardar el codigo postal del usuario si no tiene y se envio codigo postal de la tarjeta
       if (!(usuario.direccion as any)?.postal_code && r.postalCode) {
@@ -740,7 +794,7 @@ export default function Pagar({
           : undefined;
 
       // Guardar el token de la tarjeta en stripe directo con la Publisable key
-      const paymentMethodID = fetchFromStripe<Stripe.Token>({
+      const paymentMethodID = await fetchFromStripe<Stripe.Token>({
         path: "/v1/tokens",
         type: "POST",
         input: {
@@ -829,7 +883,6 @@ export default function Pagar({
         });
 
       setButtonLoading(false);
-      setLoading(false);
       if (!paymentMethodID) {
         return;
       }
@@ -840,12 +893,13 @@ export default function Pagar({
           id: paymentMethodID,
           name: r.name,
           last4,
+          exp_month: r.expiry.month,
+          exp_year: r.expiry.year,
           brand: r.type,
         } as any,
       ]);
     } catch (error: any) {
       setButtonLoading(false);
-      setLoading(false);
       Alert.alert(
         "Error",
         "Ocurrio un error guardando la tarjeta" +
@@ -855,7 +909,6 @@ export default function Pagar({
     }
 
     setButtonLoading(false);
-    setLoading(false);
   }
 
   async function handleRemovePayment(idx: number) {
@@ -1193,7 +1246,8 @@ export default function Pagar({
                                       color: tipoPago === idx ? "#777" : "#ddd",
                                     }}
                                   >
-                                    {name?.toUpperCase()}
+                                    {name?.toUpperCase()} {exp_month}/
+                                    {exp_yearS}
                                   </Text>
                                 ) : (
                                   <Text
@@ -1276,26 +1330,38 @@ export default function Pagar({
                 </Pressable>
               </View>
 
-              {/* Pago seguro */}
-              <View
-                style={{
-                  ...styles.row,
-                  padding: 20,
-                  flex: 1,
-                  alignItems: "flex-end",
-                }}
-              >
-                <Text style={styles.secureTxt}>
-                  Tus datos se envian de forma segura con encriptación punto a
-                  punto de 256 bits
-                </Text>
-                <AntDesign name="Safety" size={24} color={azulClaro} />
-              </View>
+              {/* Terminos y condiciones */}
               <Text onPress={abrirTerminos} style={styles.textoTerminos}>
                 Al continuar aceptas los{" "}
                 <Text style={{ color: azulClaro }}>terminos y condiciones</Text>{" "}
                 de partyus
               </Text>
+
+              {/* Recibo por correo */}
+              <Pressable
+                onPress={() =>
+                  setCorreoElectronicoEnabled(!correoElectronicoEnabled)
+                }
+                style={{
+                  ...styles.row,
+                  paddingHorizontal: 30,
+                  paddingVertical: 10,
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    ...styles.titulo,
+                    color: correoElectronicoEnabled ? azulClaro : "#aaa",
+                  }}
+                >
+                  Recibo por correo
+                </Text>
+
+                <RadioButton checked={correoElectronicoEnabled} />
+              </Pressable>
             </>
           ) : null}
         </View>
@@ -1311,6 +1377,61 @@ export default function Pagar({
           margin: 20,
         }}
       />
+
+      {/* 3D secure en caso de tenerlo en el estado */}
+      <Modal
+        transparent={true}
+        visible={!!threedvisible}
+        onRequestClose={() => {
+          setThreedvisible(false);
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#fff",
+          }}
+        >
+          <HeaderModal
+            noInsets
+            titulo="Verificacion bancaria"
+            onPress={() => setThreedvisible(false)}
+          />
+
+          {threedsecure?.uri && (
+            <WebView
+              onLoad={() => setWebViewLoading(false)}
+              renderLoading={() => <Loading indicator />}
+              onLoadStart={() => setWebViewLoading(true)}
+              source={{ uri: threedsecure.uri }}
+              onNavigationStateChange={(e) => {
+                // Si ya estamos en el url de redireccionamiento, cerrar el modal y poner estado en completed localmente
+                if (e.url.search(threedsecure.redirectUrl) !== -1) {
+                  // Cerrar el modal
+                  setThreedvisible(false);
+
+                  // Ir a confirm reserva
+                  handleConfirm3dSecure();
+                }
+              }}
+            />
+          )}
+
+          {/* Cargando el 3d secure */}
+          {webViewLoading && (
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                ...StyleSheet.absoluteFillObject,
+              }}
+            >
+              <Loading indicator />
+            </View>
+          )}
+        </View>
+      </Modal>
+
       <Modal
         animationType={"none"}
         transparent={true}
@@ -1329,12 +1450,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
     flex: 1,
-  },
-
-  secureTxt: {
-    marginLeft: 20,
-    color: "#777",
-    textAlign: "center",
   },
 
   innerContainer: {
@@ -1430,8 +1545,11 @@ const styles = StyleSheet.create({
   },
   textoTerminos: {
     flex: 1,
-    fontSize: 10,
+    fontSize: 14,
     textAlign: "center",
-    paddingVertical: 10,
+    color: "#aaa",
+
+    paddingHorizontal: 20,
+    marginTop: 10,
   },
 });

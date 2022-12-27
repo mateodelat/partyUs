@@ -35,6 +35,12 @@ export type AmplifyDependentResourcesAttributes = {
         },
         "partyuslambdaDependencies": {
             "Arn": "string"
+        },
+        "reservaHandler": {
+            "Name": "string",
+            "Arn": "string",
+            "Region": "string",
+            "LambdaExecutionRole": "string"
         }
     },
     "auth": {

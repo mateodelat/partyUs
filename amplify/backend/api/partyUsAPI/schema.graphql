@@ -118,6 +118,17 @@ type Evento
   comodities: [comoditiesEnum]
   musOtra: String
 
+  # Comision por evento solo modificable por admins
+  # Que todos la puedan ver
+  comisionPercent: String
+    @auth(
+      rules: [
+        { allow: private, operations: [read] }
+        { allow: public, operations: [read] }
+        { allow: groups, groups: ["Admin"] }
+      ]
+    )
+
   # Permitir pagos en el lugar
   allowPaymentsInPlace: Boolean
 
@@ -285,6 +296,9 @@ type Reserva
 
   pagado: Boolean
   paymentTime: AWSDateTime
+
+  # Persona que lo refirio
+  referedFrom: ID
 
   transaccionAOrganizadorID: ID @index(name: "byRetiro")
   transaccionAOrganizador: Retiro @belongsTo

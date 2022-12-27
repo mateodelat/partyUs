@@ -8,23 +8,9 @@
         "setting": "open"
       }
     },
-    "/createReserva": {
-      "name": "/createReserva",
-      "lambdaFunction": "createReserva",
-      "permissions": {
-        "setting": "open"
-      }
-    },
-    "/onPay": {
-      "name": "/onPay",
-      "lambdaFunction": "onPay",
-      "permissions": {
-        "setting": "open"
-      }
-    },
-    "/cancelReserva": {
-      "name": "/cancelReserva",
-      "lambdaFunction": "cancelReserva",
+    "/reservas": {
+      "name": "/reservas",
+      "lambdaFunction": "reservaHandler",
       "permissions": {
         "setting": "open"
       }

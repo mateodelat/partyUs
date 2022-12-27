@@ -136,7 +136,7 @@ export default function ({
   function assignDefaultValues() {
     if (produccion) return;
     setNumber({
-      value: "4000000000000119",
+      value: "4000002760003184",
       validation: {
         card: {
           cvv: 3,
