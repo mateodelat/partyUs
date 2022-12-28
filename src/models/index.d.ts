@@ -16,7 +16,7 @@ export enum PlaceEnum {
 export enum MusicEnum {
   REGGAETON = "REGGAETON",
   POP = "POP",
-  TECHNO = "TECHNO",
+  TECNO = "TECNO",
   RAP = "RAP",
   BANDA = "BANDA",
   ROCK = "ROCK",
@@ -183,6 +183,9 @@ type EagerEvento = {
   readonly musica?: MusicEnum | keyof typeof MusicEnum | null;
   readonly comodities?: (ComoditiesEnum | null)[] | keyof typeof ComoditiesEnum | null;
   readonly musOtra?: string | null;
+  readonly comisionPercent?: number | null;
+  readonly comisionRP?: number | null;
+  readonly allowPaymentsInPlace?: boolean | null;
   readonly personasReservadas?: number | null;
   readonly personasMax?: number | null;
   readonly precioMin?: number | null;
@@ -210,6 +213,9 @@ type LazyEvento = {
   readonly musica?: MusicEnum | keyof typeof MusicEnum | null;
   readonly comodities?: (ComoditiesEnum | null)[] | keyof typeof ComoditiesEnum | null;
   readonly musOtra?: string | null;
+  readonly comisionPercent?: number | null;
+  readonly comisionRP?: number | null;
+  readonly allowPaymentsInPlace?: boolean | null;
   readonly personasReservadas?: number | null;
   readonly personasMax?: number | null;
   readonly precioMin?: number | null;
@@ -299,12 +305,11 @@ type EagerReserva = {
   readonly cantidad?: number | null;
   readonly pagado?: boolean | null;
   readonly paymentTime?: string | null;
+  readonly referedFrom?: string | null;
   readonly transaccionAOrganizadorID?: string | null;
   readonly transaccionAOrganizador?: Retiro | null;
   readonly tipoPago?: TipoPago | keyof typeof TipoPago | null;
   readonly chargeID?: string | null;
-  readonly transactionID?: string | null;
-  readonly feeID?: string | null;
   readonly cashBarcode?: string | null;
   readonly cashReference?: string | null;
   readonly ingreso?: boolean | null;
@@ -333,12 +338,11 @@ type LazyReserva = {
   readonly cantidad?: number | null;
   readonly pagado?: boolean | null;
   readonly paymentTime?: string | null;
+  readonly referedFrom?: string | null;
   readonly transaccionAOrganizadorID?: string | null;
   readonly transaccionAOrganizador: AsyncItem<Retiro | undefined>;
   readonly tipoPago?: TipoPago | keyof typeof TipoPago | null;
   readonly chargeID?: string | null;
-  readonly transactionID?: string | null;
-  readonly feeID?: string | null;
   readonly cashBarcode?: string | null;
   readonly cashReference?: string | null;
   readonly ingreso?: boolean | null;

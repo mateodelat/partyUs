@@ -16,41 +16,14 @@ import { Feather } from "@expo/vector-icons";
 import {
   AsyncAlert,
   azulClaro,
+  openEmail,
+  openWhatsapp,
   partyusEmail,
   partyusPhone,
   verde,
 } from "../../../../constants";
 
 export default function Soporte() {
-  function handleWhatsapp() {
-    AsyncAlert(
-      "Abrir whatsapp",
-      "Se te dirigira a whatsapp para comunicarte con el soporte"
-    ).then((r) => {
-      if (!r) return;
-      Linking.openURL(
-        "whatsapp://send?text=Hola, tengo un problema con partyus: &phone=" +
-          partyusPhone
-      ).catch((e) => {
-        Alert.alert("Error", "Es probable que no tengas whatsapp instalado");
-      });
-    });
-  }
-
-  function handleMail() {
-    AsyncAlert(
-      "Enviar correo",
-      "Se abrira un correo nuevo al soporte de partyus"
-    ).then((r) => {
-      if (!r) return;
-      Linking.openURL(
-        "mailto: " + partyusEmail + "?subject=SOPORTE PARTYUS"
-      ).catch((e) => {
-        Alert.alert("Error", "Es probable que no tengas whatsapp instalado");
-      });
-    });
-  }
-
   function hanldeCall() {
     AsyncAlert(
       "Llamar",
@@ -81,7 +54,10 @@ export default function Soporte() {
       </TouchableOpacity>
 
       {/* Whatsapp contacto */}
-      <TouchableOpacity onPress={handleWhatsapp} style={styles.buttonContainer}>
+      <TouchableOpacity
+        onPress={() => openWhatsapp(partyusPhone)}
+        style={styles.buttonContainer}
+      >
         <FontAwesome
           style={styles.icon}
           name="whatsapp"
@@ -93,7 +69,10 @@ export default function Soporte() {
       </TouchableOpacity>
 
       {/* Contacto por correo electronico */}
-      <TouchableOpacity onPress={handleMail} style={styles.buttonContainer}>
+      <TouchableOpacity
+        onPress={() => openEmail(partyusEmail)}
+        style={styles.buttonContainer}
+      >
         <Feather style={styles.icon} name="mail" size={30} color={verde} />
 
         <Text style={styles.textButton}>Contacto por email</Text>

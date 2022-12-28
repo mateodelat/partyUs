@@ -16,9 +16,6 @@
     "s3Key": {
       "Type": "String"
     },
-    "secretKeyStag": {
-      "Type": "String"
-    },
     "apipartyUsAPIGraphQLAPIIdOutput": {
       "Type": "String",
       "Default": "apipartyUsAPIGraphQLAPIIdOutput"
@@ -38,6 +35,12 @@
     "functionpartyuslambdaDependenciesArn": {
       "Type": "String",
       "Default": "functionpartyuslambdaDependenciesArn"
+    },
+    "secretKeyStag": {
+      "Type": "String"
+    },
+    "webhookKeyStag": {
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -104,6 +107,9 @@
             },
             "SECRET_KEY_STAG": {
               "Ref": "secretKeyStag"
+            },
+            "WEBHOOK_KEY_STAG": {
+              "Ref": "webhookKeyStag"
             }
           }
         },

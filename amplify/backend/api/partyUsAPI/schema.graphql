@@ -120,7 +120,7 @@ type Evento
 
   # Comision por evento solo modificable por admins
   # Que todos la puedan ver
-  comisionPercent: String
+  comisionPercent: Float
     @auth(
       rules: [
         { allow: private, operations: [read] }
@@ -128,6 +128,9 @@ type Evento
         { allow: groups, groups: ["Admin"] }
       ]
     )
+
+  # Comision del RP que lo refirio
+  comisionRP: Float
 
   # Permitir pagos en el lugar
   allowPaymentsInPlace: Boolean
@@ -305,11 +308,10 @@ type Reserva
 
   tipoPago: tipoPago
 
-  # Tipos de cargo para el evento
+  # Guardar el payment intent
   chargeID: String
-  transactionID: String
-  feeID: String
 
+  # Ver datos de pago en oxxo
   cashBarcode: String
   cashReference: String
 

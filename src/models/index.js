@@ -16,7 +16,7 @@ const PlaceEnum = {
 const MusicEnum = {
   "REGGAETON": "REGGAETON",
   "POP": "POP",
-  "TECHNO": "TECHNO",
+  "TECNO": "TECNO",
   "RAP": "RAP",
   "BANDA": "BANDA",
   "ROCK": "ROCK",

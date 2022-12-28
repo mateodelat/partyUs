@@ -433,6 +433,27 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "comisionPercent": {
+                    "name": "comisionPercent",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "comisionRP": {
+                    "name": "comisionRP",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "allowPaymentsInPlace": {
+                    "name": "allowPaymentsInPlace",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "personasReservadas": {
                     "name": "personasReservadas",
                     "isArray": false,
@@ -989,6 +1010,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "referedFrom": {
+                    "name": "referedFrom",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "transaccionAOrganizadorID": {
                     "name": "transaccionAOrganizadorID",
                     "isArray": false,
@@ -1020,20 +1048,6 @@ export const schema = {
                 },
                 "chargeID": {
                     "name": "chargeID",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "transactionID": {
-                    "name": "transactionID",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "feeID": {
-                    "name": "feeID",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -1749,7 +1763,7 @@ export const schema = {
             "values": [
                 "REGGAETON",
                 "POP",
-                "TECHNO",
+                "TECNO",
                 "RAP",
                 "BANDA",
                 "ROCK",
@@ -1801,5 +1815,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.3.2",
-    "version": "3a1ea1c26226e9b59af395a4d1cb41d9"
+    "version": "f354480a5078b3accc9b1bb5811b199d"
 };

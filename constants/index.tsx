@@ -153,8 +153,8 @@ export async function sendAdminNotification({
   });
 }
 
-export const minEventPrice = 0;
-export const maxEventPrice = 8000;
+export const minEventPrice = 10;
+export const maxEventPrice = 7000;
 
 export async function fetchWithTimeout(url: string, timeout = 2000) {
   return Promise.race([
@@ -729,15 +729,15 @@ export function normalizeCardType(tipo: string) {
   }
 }
 
-export const getCardIcon = (type?: cardBrand_type) => {
+export const getCardIcon = (type?: cardBrand_type | undefined) => {
+  if (!type) {
+    return require("../assets/icons/stp_card_undefined.png");
+  }
+
   // Estandarizar tipo quitando espacios, mayusculas o guiones bajos
   type = type.toLowerCase().replace(/ |_|-/g, "") as any;
   // Estandarizar dinners
   if (type === ("dinners" as any)) type = "dinersclub";
-
-  if (!type) {
-    return require("../assets/icons/stp_card_undefined.png");
-  }
 
   switch (type) {
     case "visa":
@@ -1178,6 +1178,79 @@ export function enumToArray<T>(enumme: T) {
   );
 }
 
+export function getWorkingDays(startDate: Date, endDate: Date) {
+  const start = new Date(startDate);
+  // Crea una lista de días festivos para México
+  const mxHolidays = [
+    // Domingo 1 de enero: Año Nuevo
+    { day: 1, month: 1 },
+
+    // Lunes 6 de febrero: Día de la Constitución Mexicana, primer puente de 2023
+    { day: 6, month: 2 },
+
+    // Lunes 20 de marzo: Natalicio de Benito Juárez, segundo puente de 2023
+    { day: 20, month: 3 },
+
+    // Lunes 1 de mayo: Día Internacional de los Trabajadores, tercer puente de 2023
+    { day: 1, month: 5 },
+
+    // Sábado 16 de septiembre: Día de la Independencia de México.
+    { day: 16, month: 9 },
+
+    // Lunes 20 de noviembre: Aniversario de la Revolución Mexicana, cuarto puente de 2023
+    { day: 20, month: 11 },
+
+    // Lunes 25 de diciembre: Navidad, último puente del año
+    { day: 25, month: 12 },
+  ];
+
+  let workingDays = -1;
+
+  // Itera a través de cada día entre las dos fechas
+  for (let date = start; date < endDate; date.setDate(date.getDate() + 1)) {
+    // Verifica si el día es hábil o no es sabado o domingo y no es feriado
+    if (
+      date.getDay() !== 0 &&
+      date.getDay() !== 6 &&
+      !mxHolidays.some(
+        (holiday) =>
+          holiday.month === date.getMonth() + 1 &&
+          holiday.day === date.getDate()
+      )
+    ) {
+      workingDays++;
+    }
+  }
+
+  return workingDays;
+}
+
+export function openWhatsapp(number: string) {
+  return AsyncAlert("Abrir whatsapp", "Se te dirigira a whatsapp").then((r) => {
+    if (!r) return;
+    Linking.openURL(
+      "whatsapp://send?text=Hola, tengo un problema con partyus: &phone=" +
+        number
+    ).catch((e) => {
+      Alert.alert("Error", "Es probable que no tengas whatsapp instalado");
+    });
+  });
+}
+
+export function openEmail(email: string) {
+  AsyncAlert(
+    "Enviar correo",
+    "Se abrira la aplicacion de correos. ¿Quieres continuar?"
+  ).then((r) => {
+    if (!r) return;
+    Linking.openURL("mailto: " + email + "?subject=SOPORTE PARTYUS").catch(
+      (e) => {
+        Alert.alert("Error", "Es probable que no tengas whatsapp instalado");
+      }
+    );
+  });
+}
+
 export function formatAMPM(
   dateInMs: number | Date | undefined | null | string,
   hideAMPM?: boolean,
@@ -1482,9 +1555,16 @@ export const AsyncAlert = async (title: string, body: string) =>
     ]);
   }).catch((e) => e);
 
-export function precioConComision(inicial: number | undefined | null) {
+export function precioConComision(
+  inicial: number | undefined | null,
+  comision: undefined | number
+) {
   if (!inicial) return 0;
-  return redondear(inicial * (1 + comisionApp), 10, tipoRedondeo.ARRIBA);
+
+  // En caso de recibir comision exclusiva del evento
+  comision = comision ? comision : comisionApp;
+
+  return redondear(inicial * (1 + comision), 10, tipoRedondeo.ARRIBA);
 }
 
 export const getWeekDay = (d: Date | undefined | number) => {

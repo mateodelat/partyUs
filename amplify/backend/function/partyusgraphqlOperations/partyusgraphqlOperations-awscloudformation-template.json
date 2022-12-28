@@ -20,19 +20,23 @@
     }
   },
   "Resources": {
-    "LambdaLayerVersion82c12c58": {
+    "LambdaLayerVersionbd31a7ed": {
       "Type": "AWS::Lambda::LayerVersion",
       "Properties": {
-        "CompatibleRuntimes": [
-          "nodejs14.x"
-        ],
+        "CompatibleRuntimes": {
+          "Ref": "runtimes"
+        },
         "Content": {
           "S3Bucket": {
             "Ref": "deploymentBucketName"
           },
-          "S3Key": "amplify-builds/partyusgraphqlOperations-LambdaLayerVersion82c12c58-build.zip"
+          "S3Key": {
+            "Ref": "s3Key"
+          }
         },
-        "Description": "Updated layer version 2022-12-20T10:36:32.650Z",
+        "Description": {
+          "Ref": "description"
+        },
         "LayerName": {
           "Fn::Sub": [
             "partyusgraphqlOperations-${env}",
@@ -47,11 +51,13 @@
       "DeletionPolicy": "Delete",
       "UpdateReplacePolicy": "Retain"
     },
-    "LambdaLayerPermissionPrivate82c12c58": {
+    "LambdaLayerPermissionPrivatebd31a7ed": {
       "Type": "AWS::Lambda::LayerVersionPermission",
       "Properties": {
         "Action": "lambda:GetLayerVersion",
-        "LayerVersionArn": "arn:aws:lambda:us-east-1:832832547198:layer:partyusgraphqlOperations-staging:15",
+        "LayerVersionArn": {
+          "Ref": "LambdaLayerVersionbd31a7ed"
+        },
         "Principal": {
           "Ref": "AWS::AccountId"
         }
@@ -61,7 +67,7 @@
   "Outputs": {
     "Arn": {
       "Value": {
-        "Ref": "LambdaLayerVersion82c12c58"
+        "Ref": "LambdaLayerVersionbd31a7ed"
       }
     }
   }

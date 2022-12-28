@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -16,8 +17,6 @@ import { Octicons } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
 
 import ElementoPersonas from "./ElementoPersonas";
-
-import NetInfo from "@react-native-community/netinfo";
 
 import Boton from "../../../components/Boton";
 import { NavigationProp } from "../../../shared/interfaces/navigation.interface";
@@ -42,10 +41,9 @@ import {
   sendAdminNotification,
   fetchFromStripe,
   log,
-  mayusFirstLetter,
   currency,
-  getIpAddress,
-  azulFondo,
+  msInDay,
+  getWorkingDays,
 } from "../../../../constants";
 
 import { BoletoType } from "../Boletos";
@@ -66,18 +64,10 @@ import WebView from "react-native-webview";
 
 import Stripe from "stripe";
 import { cardBrand_type } from "../../../../types/stripe";
-import ModalBottom from "../../../components/ModalBottom";
-import SecureCardInput from "../../../components/CardInput/SecureCardInput";
-import {
-  STRIPE_PUBLISHABLE_KEY,
-  STRIPE_SECRET_KEY,
-} from "../../../../constants/keys";
-import createPaymentIntent from "./createPaymentIntent";
 import CardInput from "../../../components/CardInput";
 import RadioButton from "../../../components/RadioButton";
 import Loading from "../../../components/Loading";
 import HeaderModal from "../../../components/HeaderModal";
-import confirmPaymentIntent from "./confirmPaymentIntent";
 export default function Pagar({
   route,
   navigation,
@@ -277,7 +267,7 @@ export default function Pagar({
     redirectUrl?: string;
   }>({});
 
-  const [paymentIntent, setPaymentIntent] = useState("");
+  const [paymentIntentID, setPaymentIntentID] = useState("");
 
   const [webViewLoading, setWebViewLoading] = useState(false);
 
@@ -310,9 +300,6 @@ export default function Pagar({
     // Obtener tarjetas del cliente guardadas desde backend
     getUserCards();
     setReservaID(res);
-
-    // Crear payment intent
-    getClientSecret();
 
     setButtonLoading(false);
     setLoading(false);
@@ -420,37 +407,6 @@ export default function Pagar({
     }
   }
 
-  function getClientSecret() {
-    // Recibimos eventoID, reservaID (para guardar en metadata) y descuento en caso de haber para poner el precio del PI
-
-    // fetchFromStripe<Stripe.PaymentIntent>({
-    //   path: "/payments/createPaymentIntent",
-    //   type: "GET",
-    //   secretKey: STRIPE_SECRET_KEY,
-    //   input: {},
-    // })
-    //   .then((r) => {
-    //     log(r);
-    //   })
-    //   .catch(log);
-
-    // log(createPaymentIntent(
-
-    // ))
-
-    return;
-    fetchFromStripe<Stripe.PaymentIntent>({
-      path: "/payments/createPaymentIntent",
-      type: "GET",
-      secretKey: STRIPE_SECRET_KEY,
-      input: {},
-    })
-      .then((r) => {
-        log(r);
-      })
-      .catch(log);
-  }
-
   // Action tras darle click a agregar metodo de pago
   const handleAddPaymentMethod = async () => {
     setEditing(false);
@@ -464,14 +420,10 @@ export default function Pagar({
 
     try {
       // Confirmar el paymentIntent con todos los parametros a validar
-      const result = (await confirmPaymentIntent({
-        body: {
-          paymentIntentID: paymentIntent,
-        },
-      })) as {
-        body: Stripe.PaymentIntent;
-        error: string;
-      };
+      const result = await fetchFromAPI<Stripe.PaymentIntent>({
+        path: "/reservas/confirmReserva/" + paymentIntentID,
+        type: "GET",
+      });
 
       log(result);
 
@@ -485,22 +437,80 @@ export default function Pagar({
 
       Alert.alert("Exito", "La reserva se efectuo con exito!!");
     } catch (error) {
-      Alert.alert(
-        "Error",
-        "Hubo un error confirmando tu pago" +
-          "\n" +
-          (error.message ? error.message : JSON.stringify(error))
-      );
+      setButtonLoading(false);
+      setLoading(false);
+
+      if (typeof error !== "string") {
+        error = JSON.stringify(error);
+      }
+
+      log(error);
+
+      if (
+        (error as String).search(
+          "The provided PaymentMethod has failed authentication"
+        ) > -1
+      ) {
+        // Poner en español el mensaje de error mas comun
+        error = "La verificacion de seguridad bancaria ha fallado";
+      }
+
+      setTipoPago(undefined);
+
+      Alert.alert("Error", "Hubo un error confirmando tu pago: \n" + error);
+      return;
     }
 
-    // Navegar a exitoso, alerta etc...
+    // Mandar notificaciones de exitoso para tarjeta
+    sendSucessNotifications();
+
+    navigation.popToTop();
+    navigation.navigate("ExitoScreen", {
+      txtExito: "Reserva creada",
+      descripcion:
+        "Se ha creado tu reserva con exito. Puedes consultar tu qr en Perfil - Mis reservas",
+      onPress: () => {
+        navigation.popToTop();
+        navigation.navigate("Perfil");
+        navigation.navigate("MisReservas", { reservaID });
+      },
+      txtOnPress: "Ver boleto",
+    });
   }
 
-  const handleConfirm = async () => {
-    const personasTotales = boletos
-      .map((e: any) => e.quantity)
-      .reduce((prev, a) => prev + a);
+  // Fecha de expiracion pagos en efectivo
+  // Calcular fecha de expiracion
+  let limitDate = new Date();
 
+  // Restarle 6 horas al UTC para estar en UTC-6 (Mexico central)
+  limitDate.setTime(limitDate.getTime() - 6 * 3600 * 1000);
+
+  // Poner la hora a las (23:59:59) de el dia de hoy en UTC-6
+  limitDate.setUTCHours(23);
+  limitDate.setUTCMinutes(59);
+  limitDate.setUTCSeconds(59);
+  limitDate.setUTCMilliseconds(999);
+
+  const diasHabiles = 1;
+  let efectivoDeny;
+
+  // Si los dias laborales entre fecha limite y fecha inicial no es de 1 minimo dar error
+  if (getWorkingDays(limitDate, new Date(fechaInicial)) < 1) {
+    efectivoDeny = true;
+  }
+
+  // Sumarle 1 dia habil (Lo que tarda en procesarse pagos en oxxo)
+  limitDate = new Date(limitDate.getTime() + msInDay * diasHabiles);
+
+  // Fecha inicial tiene que ser mayor a la fecha limite de pago mas dias habiles
+  efectivoDeny = limitDate.getTime() > fechaInicial;
+
+  const personasTotales = boletos.reduce(
+    (prev, a: any) => prev + a.quantity,
+    0
+  );
+
+  const handleConfirm = async () => {
     let tarjetaID: undefined | string;
     if (total !== 0) {
       if (tipoPago === undefined) {
@@ -535,8 +545,14 @@ export default function Pagar({
     setButtonLoading(true);
     setLoading(true);
     try {
-      const result = (await createPaymentIntent({
-        body: {
+      // Crear el payment intent en la nube
+      const result = await fetchFromAPI<{
+        success: boolean;
+        paymentIntent?: Stripe.PaymentIntent;
+      }>({
+        path: "/reservas/createReserva",
+        type: "POST",
+        input: {
           boletos: boletos.map((e: any) => ({
             quantity: e.quantity,
             id: e.id,
@@ -558,102 +574,73 @@ export default function Pagar({
           sourceID: tarjetaID,
           total,
         },
-      })) as {
-        body: Stripe.PaymentIntent;
-        error: string;
-      };
+      });
 
       if (result.error) {
         throw result.error;
       }
+      setButtonLoading(false);
+      setLoading(false);
 
       // Si nos devuelve el objeto payment intent con redirect to url manejarlo, es 3d secure
-      if (result.body?.next_action?.type === "redirect_to_url") {
+      if (result.body?.paymentIntent?.next_action?.type === "redirect_to_url") {
         // Obtener ID de payment intent a asignar localmente para confirmarlo despues
-        setPaymentIntent(result.body.id);
+        setPaymentIntentID(result.body.paymentIntent.id);
 
         // Hacer visible el modal de 3d secure
         setThreedvisible(true);
 
         // Actualizar estado local de 3d secure
         setThreedsecure({
-          uri: result.body?.next_action?.redirect_to_url?.url,
-          redirectUrl: result.body?.next_action?.redirect_to_url?.return_url,
+          uri: result.body.paymentIntent.next_action?.redirect_to_url?.url,
+          redirectUrl:
+            result.body.paymentIntent.next_action?.redirect_to_url?.return_url,
         });
 
-        setButtonLoading(false);
-        setLoading(false);
+        return;
 
+        // Si no estuvo completada la reserva y no tenemos redirect to url, dar error de inesperado
+        // ( Pago no es con tarjeta, oxxo o 3d)
+      } else if (!result?.body?.success) {
+        log(result);
+        Alert.alert(
+          "Error",
+          "Ocurrio un error inesperado, contactanos para solucionarlo"
+        );
         return;
       }
 
-      // Si nos devuelve tipo pago con oxxo, pasarlo como exitoso y mostrar el voucher de pago en oxxo
-
-      // Si nos devuelve estado de pago exitoso, continuar al exito (la reserva se guardo en la nube con exito)
-      Alert.alert("Exito", "El pago se realizo correctamente");
-
-      setButtonLoading(false);
-      setLoading(false);
-      return;
-      if (!result) {
-        throw new Error("No se recibio ningun resultado");
-      }
-
-      if (result?.error || (tipoPago === "EFECTIVO" && !result?.voucher)) {
-        throw new Error(
-          result ? result : "No se recibio voucher para pago en efectivo"
-        );
-      }
+      log(result);
 
       setButtonLoading(false);
       setLoading(false);
 
-      if (result.tipoPago === "EFECTIVO" && total !== 0) {
-        const { barcode_url, reference, limitDate: limit } = result.voucher;
-        const limitDate = new Date(limit);
+      // Si pedimos tipo pago con oxxo mostrar el voucher de pago en oxxo
+      if (tipoPago === "EFECTIVO" && total !== 0) {
+        // Si no se tiene el voucher de oxxo, dar error
+        if (!result?.body?.paymentIntent?.next_action?.oxxo_display_details) {
+          Alert.alert("Error", "No se obtuvo el voucher para pagar en oxxo");
+        }
+
+        const { number, expires_after: limit } =
+          result.body.paymentIntent.next_action.oxxo_display_details;
+
+        let limitDate = new Date(limit);
+
+        // Agergar las 6 horas que se quitan en el servidor (Mexico central)
+        limitDate.setTime(limitDate.getTime() + 6 * 3600 * 1000);
+
         vibrar(VibrationType.sucess);
 
-        // Notificacion de reserva exitosa
-        DataStore.save(
-          new Notificacion({
-            tipo: TipoNotificacion.RESERVAEFECTIVOCREADA,
-            titulo: "Reserva exitosa",
-            descripcion: `Tu reserva en ${titulo}${
-              personasTotales !== 1
-                ? " con " + personasTotales + " personas"
-                : ""
-            } se ha creado con exito. Realiza el pago antes del ${
-              formatDateShort(limitDate) + " a las " + formatAMPM(limitDate)
-            } para confirmar tu lugar.`,
-            usuarioID: sub,
-
-            showAt: new Date().toISOString(),
-
-            reservaID,
-            eventoID,
-            organizadorID: CreatorID,
-          })
+        Alert.alert(
+          "Exito",
+          "Tu reserva se creo con exito, tienes hasta las " +
+            formatAMPM(limitDate) +
+            " para pagar tu boleto y que sea valido"
         );
 
-        // Mandarle la notificacion al organizador de reserva creada
-        DataStore.save(
-          new Notificacion({
-            tipo: TipoNotificacion.RECORDATORIOPAGO,
-            titulo: "Recordatorio pago",
-            descripcion: `Atencion, la fecha limite de pago en efectivo para ${titulo} es en menos de 1 hora`,
-            usuarioID: sub,
-
-            showAt: new Date(limitDate.getTime() - msInHour).toISOString(),
-
-            reservaID,
-            eventoID,
-            organizadorID: CreatorID,
-          })
-        );
-        // Mandar notificaciones de recordatorio
-        notificacionesRecordatorio({ evento: route.params, usuario });
-
-        notificacionesOrganizador(TipoPago.EFECTIVO, personasTotales);
+        // Mandar notificaciones de exitoso
+        sendSucessNotifications();
 
         navigation.popToTop();
         // Si el tipo de pago fue en efectivo, obtener la referencia y navegar a la pestaña pago
@@ -661,72 +648,102 @@ export default function Pagar({
           amount: total,
           titulo,
           codebar: {
-            uri: barcode_url,
-            number: reference,
+            number,
           },
           limitDate: limitDate.getTime(),
         });
-      } else if (result.tipoPago === "TARJETA" || total === 0) {
-        // Notificacion de reserva exitosa
-        DataStore.save(
-          new Notificacion({
-            tipo: TipoNotificacion.RESERVATARJETACREADA,
-            titulo: "Reserva exitosa",
-            descripcion: `Tu reserva en ${titulo}${
-              personasTotales !== 1
-                ? " con " + personasTotales + " personas"
-                : ""
-            } se ha creado con exito. Has click aqui para ver tu boleto de entrada`,
-            usuarioID: sub,
 
-            showAt: new Date().toISOString(),
-
-            reservaID,
-            eventoID,
-            organizadorID: CreatorID,
-          })
-        );
-        // Mandar notificaciones de recordatorio
-        notificacionesRecordatorio({ evento: route.params, usuario });
-
-        // Mandarle la notificacion al organizador de evento pagado
-        notificacionesOrganizador(TipoPago.TARJETA, personasTotales);
-
-        navigation.popToTop();
-        navigation.navigate("ExitoScreen", {
-          txtExito: "Reserva creada",
-          descripcion:
-            "Se ha creado tu reserva con exito. Puedes consultar tu qr en Perfil - Mis reservas",
-          onPress: () => {
-            navigation.popToTop();
-            navigation.navigate("Perfil");
-            navigation.navigate("MisReservas", { reservaID });
-          },
-          txtOnPress: "Ver boleto",
-        });
-      } else {
-        throw new Error("No se encontro tipo de pago del resultado");
+        return;
       }
-      console.log("Nueva notificacion insertada al contador");
 
-      setNewNotifications((prev) => prev++);
+      // Mandar notificaciones de exitoso para tarjeta
+      sendSucessNotifications();
+
+      navigation.popToTop();
+      navigation.navigate("ExitoScreen", {
+        txtExito: "Reserva creada",
+        descripcion:
+          "Se ha creado tu reserva con exito. Puedes consultar tu qr en Perfil - Mis reservas",
+        onPress: () => {
+          navigation.popToTop();
+          navigation.navigate("Perfil");
+          navigation.navigate("MisReservas", { reservaID });
+        },
+        txtOnPress: "Ver boleto",
+      });
     } catch (error: any) {
-      error = error?.error ? error.error : error;
       setButtonLoading(false);
       setLoading(false);
-      const msg = error.message
-        ? error.message
-        : error.description
-        ? error.description
-        : error.error
-        ? error.error
-        : error;
+
+      if (typeof error !== "string") {
+        error = JSON.stringify(error);
+      }
 
       setTipoPago(undefined);
 
-      Alert.alert("Error", "Hubo un error guardando la reserva: \n" + msg);
+      Alert.alert("Error", "Hubo un error guardando la reserva: \n" + error);
     }
   };
+
+  // Funcion para mandar todas las notificaciones de exito al cliente, organizadores y admins
+  async function sendSucessNotifications() {
+    console.log("Mandar notificaciones");
+    return;
+    // Notificacion de reserva exitosa
+    DataStore.save(
+      new Notificacion({
+        tipo: TipoNotificacion.RESERVAEFECTIVOCREADA,
+        titulo: "Reserva exitosa",
+        descripcion:
+          `Tu reserva en ${titulo}${
+            personasTotales !== 1 ? " con " + personasTotales + " personas" : ""
+          } se ha creado con exito. ` +
+            tipoPago ===
+          TipoPago.EFECTIVO
+            ? `Realiza el pago antes del ${
+                formatDateShort(limitDate) + " a las " + formatAMPM(limitDate)
+              } para confirmar tu lugar.`
+            : " Has click aqui para ver tu boleto de entrada",
+        usuarioID: sub,
+
+        showAt: new Date().toISOString(),
+
+        reservaID,
+        eventoID,
+        organizadorID: CreatorID,
+      })
+    );
+
+    // Mandarle la notificacion cuando vaya a expirar su reserva solo si es tipo pago efectivo
+    tipoPago === TipoPago.EFECTIVO &&
+      DataStore.save(
+        new Notificacion({
+          tipo: TipoNotificacion.RECORDATORIOPAGO,
+          titulo: "Recordatorio pago",
+          descripcion: `Atencion, la fecha limite de pago en efectivo para ${titulo} es en menos de 1 hora`,
+          usuarioID: sub,
+
+          showAt: new Date(limitDate.getTime() - msInHour).toISOString(),
+
+          reservaID,
+          eventoID,
+          organizadorID: CreatorID,
+        })
+      );
+    // Mandar notificaciones de recordatorio
+    notificacionesRecordatorio({ evento: route.params, usuario });
+
+    // Mandar notificaciones al organizador
+    notificacionesOrganizador(
+      tipoPago === "EFECTIVO" ? TipoPago.EFECTIVO : TipoPago.TARJETA,
+      personasTotales
+    );
+
+    console.log("Nueva notificacion agregada al contador");
+    setNewNotifications(
+      (prev) => prev + (tipoPago === TipoPago.EFECTIVO ? 2 : 1)
+    );
+  }
 
   async function handleEditPayments() {
     setEditing(!editing);
@@ -940,7 +957,6 @@ export default function Pagar({
     } catch (error) {
       log(error);
       Alert.alert("Error", "Ocurrio un error guardando la tarjeta");
-
       // Volver a poner la tarjeta en la lista
       setTarjetasGuardadas((prev) => {
         let neCards = [...prev];
@@ -1141,44 +1157,54 @@ export default function Pagar({
                           ...styles.row,
                         }}
                       >
-                        <Text
-                          style={{
-                            fontSize: 16,
-                            color: azulClaro,
-                            padding: 20,
-                            paddingVertical: 10,
-                            fontWeight: "bold",
-                          }}
+                        <TouchableOpacity
+                          disabled={editing}
                           onPress={
                             !editing ? (handleEditPayments as any) : undefined
                           }
                         >
-                          {editing ? "TARJETAS" : "EDITAR"}
-                        </Text>
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              color: azulClaro,
+                              padding: 20,
+                              paddingVertical: 10,
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {editing ? "TARJETAS" : "EDITAR"}
+                          </Text>
+                        </TouchableOpacity>
 
-                        {editing ? (
-                          <Entypo
-                            style={{
-                              padding: 10,
-                              paddingBottom: 6,
-                              paddingRight: 18,
-                            }}
-                            name="check"
-                            size={25}
-                            color={azulClaro}
-                            onPress={() => setEditing(false)}
-                          />
-                        ) : (
-                          <Entypo
-                            style={{
-                              marginRight: 15,
-                            }}
-                            name="plus"
-                            size={30}
-                            color={azulClaro}
-                            onPress={handleAddPaymentMethod}
-                          />
-                        )}
+                        <TouchableOpacity
+                          onPress={
+                            editing
+                              ? () => setEditing(false)
+                              : handleAddPaymentMethod
+                          }
+                        >
+                          {editing ? (
+                            <Entypo
+                              style={{
+                                padding: 10,
+                                paddingBottom: 6,
+                                paddingRight: 18,
+                              }}
+                              name="check"
+                              size={25}
+                              color={azulClaro}
+                            />
+                          ) : (
+                            <Entypo
+                              style={{
+                                marginRight: 15,
+                              }}
+                              name="plus"
+                              size={30}
+                              color={azulClaro}
+                            />
+                          )}
+                        </TouchableOpacity>
                       </View>
 
                       {/* Mapeo de tarjetas guardadas */}
@@ -1294,6 +1320,15 @@ export default function Pagar({
 
                 <Pressable
                   onPress={() => {
+                    // Si se niegan pagos en efectivo mostrar alerta
+                    if (efectivoDeny) {
+                      Alert.alert(
+                        "Error",
+                        "Para pagar en oxxo se necesitan 2 dias habiles para el procesamiento del pago. Puedes hacer tu reserva con tarjeta"
+                      );
+                      return;
+                    }
+
                     setTipoPago("EFECTIVO");
                   }}
                   style={styles.metodoDePago}
@@ -1302,7 +1337,12 @@ export default function Pagar({
                     style={{ ...styles.iconoIzquierda, overflow: "hidden" }}
                   >
                     <Image
-                      style={{ height: 30, resizeMode: "contain", width: 40 }}
+                      style={{
+                        height: 30,
+                        resizeMode: "contain",
+                        width: 40,
+                        opacity: efectivoDeny ? 0.3 : 1,
+                      }}
                       source={require("../../../../assets/IMG/Oxxo_Logo.png")}
                     />
                   </View>
@@ -1394,7 +1434,7 @@ export default function Pagar({
         >
           <HeaderModal
             noInsets
-            titulo="Verificacion bancaria"
+            titulo="Verificación bancaria"
             onPress={() => setThreedvisible(false)}
           />
 

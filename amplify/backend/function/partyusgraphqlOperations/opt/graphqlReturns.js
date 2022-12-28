@@ -95,8 +95,6 @@ pagado
 paymentTime
 tipoPago
 chargeID
-transactionID
-feeID
 cashBarcode
 cashReference
 ingreso

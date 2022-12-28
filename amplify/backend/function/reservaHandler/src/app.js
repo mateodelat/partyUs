@@ -1,12 +1,3 @@
-/*
-Copyright 2017 - 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-    http://aws.amazon.com/apache2.0/
-or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and limitations under the License.
-*/
-
-
 /* Amplify Params - DO NOT EDIT
   ENV
   REGION
@@ -15,6 +6,7 @@ See the License for the specific language governing permissions and limitations 
   API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT
   SECRET_KEY_STAG
 Amplify Params - DO NOT EDIT */
+
 
 const production = process.env.ENV === "production";
 
@@ -27,47 +19,46 @@ const {
 } = require("/opt/graphqlReturns");
 const { graphqlOperation } = require("/opt/graphqlOperation");
 
+const express = require("express");
+const bodyParser = require("body-parser");
+const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
 
-const express = require('express')
-const bodyParser = require('body-parser')
-const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
+const SECRET_KEY = production
+  ? process.env.SECRET_KEY_PROD
+  : process.env.SECRET_KEY_STAG;
 
-const SECRET_KEY = production ? process.env.SECRET_KEY_PROD : process.env.SECRET_KEY_STAG
+const WEBHOOK_KEY = production
+  ? process.env.WEBHOOK_KEY_PROD
+  : process.env.WEBHOOK_KEY_STAG;
 
-const stripe = require('stripe')(SECRET_KEY);
-
+const stripe = require("stripe")(SECRET_KEY);
 
 // declare a new express app
-const app = express()
-app.use(bodyParser.json())
-app.use(awsServerlessExpressMiddleware.eventContext())
+const app = express();
+app.use(bodyParser.json());
+app.use(awsServerlessExpressMiddleware.eventContext());
 
 // Enable CORS for all methods
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*")
-  res.header("Access-Control-Allow-Headers", "*")
-  next()
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "*");
+  next();
 });
-
 
 // Funciones miscelaneas
 const comisionApp = 0.15;
 const msInDay = 86400000;
 
 /*******************************************************************************************************************************
-******************************************* CREAR RESERVA ( PAYMENT INTENT) ****************************************************
+ ******************************************* CREAR RESERVA ( PAYMENT INTENT) ****************************************************
 ********************************************************************************************************************************/
-app.post('/createReserva', async function (req, res) {
-  //   event.body = JSON.parse(event.body);
-
+app.post("/reservas/createReserva", async function (req, res) {
   if (!req || !req.body) {
-    handleError(res, "No se recibio body en la solicitud")
-    return
+    handleError(res, "No se recibio body en la solicitud");
+    return;
   }
 
-  const { body } = req
-
-
+  const { body } = req;
 
   // Variables por si falla la creacion del boleto devolver cargos
 
@@ -88,6 +79,8 @@ app.post('/createReserva', async function (req, res) {
     tipoPago,
   } = body;
   try {
+    console.log({ body });
+
     // Ojo pagos en oxxo solo se permiten 1 dia antes y calcular fecha de expiracion dependiendo
     // Si faltan 2 dias
 
@@ -143,6 +136,17 @@ app.post('/createReserva', async function (req, res) {
       });
     }
 
+    // Si tenemos un total en efectivo pero no esta en el rango permitido por stripe para oxxo
+    if (!!total && tipoPago === "EFECTIVO" && (total < 10 || total > 7000)) {
+      return formatResponse({
+        res,
+        statusCode: 400,
+        error: "Error el precio total debe ser entre 10$ y 7000$ para pagos en oxxo",
+      });
+
+
+    }
+
     if (!reservaID) {
       return formatResponse({
         res,
@@ -167,77 +171,74 @@ app.post('/createReserva', async function (req, res) {
       });
 
       return /* GraphQL */ `
-            query fetchData($eventoID: ID!, $usuarioID:ID!, $organizadorID:ID! ${cuponID ? `,$cuponID:ID!` : ""
+              query fetchData($eventoID: ID!, $usuarioID:ID!, $organizadorID:ID! ${cuponID ? `,$cuponID:ID!` : ""
         }) {
-              getEvento(id: $eventoID) {
-                CreatorID
-                _version
-                id
-                personasMax
-                personasReservadas
-                titulo
-                fechaFinal
-                Reservas(filter: {cancelado: {ne: true}}) {
-                    items {
-                      _deleted
-                      cantidad
-                      fechaExpiracionUTC
-                      pagado
-                      Boletos {
-                        items {
-                          _deleted
-                          quantity
-                          boletoID
+                getEvento(id: $eventoID) {
+                  CreatorID
+                  _version
+                  id
+                  personasMax
+                  personasReservadas
+                  titulo
+                  fechaFinal
+                  Reservas(filter: {cancelado: {ne: true}}) {
+                      items {
+                        _deleted
+                        cantidad
+                        fechaExpiracionUTC
+                        pagado
+                        Boletos {
+                          items {
+                            _deleted
+                            quantity
+                            boletoID
+                          }
                         }
                       }
-                    }
-                }
+                  }
 
-              }
-              cliente:getUsuario(id:$usuarioID){
-                paymentClientID,
-                nickname
-                email
-                nombre
-                paterno
-              }
-              owner:getUsuario(id:$organizadorID){
-                paymentAccountID
-              }
-              listBoletos(filter:{or:[${string}]}) {
-                items{
-                  id
-                  cantidad
-                  personasReservadas
-                  precio
-                  eventoID
-                  titulo
-                  _version
                 }
-              }
-              listReservas(filter: {usuarioID: {eq: "${usuarioID}"}, eventoID:{eq:"${eventoID}"},pagado:{eq: false}, cancelado:{ne:true}}) {
-                    items {
-                        pagado
-                        cancelado
-                        fechaExpiracionUTC
-                        id
-                        _deleted
-                    }
+                cliente:getUsuario(id:$usuarioID){
+                  paymentClientID,
+                  nickname
                 }
+                owner:getUsuario(id:$organizadorID){
+                  paymentAccountID
+                }
+                listBoletos(filter:{or:[${string}]}) {
+                  items{
+                    id
+                    cantidad
+                    personasReservadas
+                    precio
+                    eventoID
+                    titulo
+                    _version
+                  }
+                }
+                listReservas(filter: {usuarioID: {eq: "${usuarioID}"}, eventoID:{eq:"${eventoID}"},pagado:{eq: false}, cancelado:{ne:true}}) {
+                      items {
+                          pagado
+                          cancelado
+                          fechaExpiracionUTC
+                          id
+                          _deleted
+                      }
+                  }
 
-              ${cuponID
+                ${cuponID
           ? /* GraphQL */ `getCupon(id: $cuponID) {
-                _version
-                id
-                cantidadDescuento
-                porcentajeDescuento
-                restantes
-                vencimiento
-              }`
+                  _version
+                  id
+                  cantidadDescuento
+                  porcentajeDescuento
+                  restantes
+                  vencimiento
+                }`
           : ""
         }
-            }
-          `;
+              }
+            `;
     };
 
     ////////////////////////////////////////////
@@ -262,9 +263,6 @@ app.post('/createReserva', async function (req, res) {
           organizadorID,
         },
     }).then((r) => {
-      if (r.errors) {
-        throw new Error("Error obteniendo datos: " + r.errors);
-      }
       r = r.data;
 
       // Asignar a 0 el numero de personas reservadas en todos los boletos
@@ -272,6 +270,30 @@ app.post('/createReserva', async function (req, res) {
         ...bol,
         personasReservadas: 0,
       }));
+
+      // Si hay mas reservas en efectivo por el mismo usuario dar error para evitar fraudes
+
+      if (tipoPago === "EFECTIVO" && total !== 0) {
+        const efectivoDeny = !!r.listReservas.items.find((e) => {
+          console.log("Reserva:")
+          console.log(e)
+          // Si el evento ya fue pagado o borrado o la fecha de expiracion es menor a la del dioa de hoy da falso para ese item
+          if (
+            e.pagado ||
+            e.fechaExpiracionUTC < new Date().toISOString() ||
+            e._deleted
+          )
+            return false;
+          else return true;
+        });
+
+        if (efectivoDeny) {
+          throw new Error(
+            "Solo se permite tener una reserva en efectivo por evento."
+          );
+        }
+      }
+
 
       let personasEnEvento = 0;
 
@@ -333,9 +355,6 @@ app.post('/createReserva', async function (req, res) {
         // Parametro de stripe customer
         paymentClientID: clientPaymentIDFetched,
         nickname: nicknameCliente,
-        email: emailCliente,
-        nombre: nombreCliente,
-        paterno: paternoCliente,
       },
       // Parametro de stripe account
       owner: { paymentAccountID: ownerPaymentIDFetched },
@@ -411,6 +430,30 @@ app.post('/createReserva', async function (req, res) {
         res,
         statusCode: 409,
         error: "no puedes registrarte en tu mismo evento",
+      });
+    }
+
+    // Fecha de expiracion pagos en efectivo
+    // Calcular fecha de expiracion
+    let limitDate = new Date();
+
+    // Restarle 6 horas al UTC para estar en UTC-6 (Mexico central)
+    limitDate.setTime(limitDate.getTime() - 6 * 3600 * 1000);
+
+    // Poner la hora a las (23:59:59) de el dia de hoy en UTC-6
+    limitDate.setUTCHours(23);
+    limitDate.setUTCMinutes(59);
+    limitDate.setUTCSeconds(59);
+    limitDate.setUTCMilliseconds(999);
+
+    // Dar error al cliente
+
+    if (limitDate.getTime() > evento.fechaInicial && tipoPago === "EFECTIVO") {
+      return formatResponse({
+        res,
+        statusCode: 400,
+        error:
+          "no se puede realizar un pago en efectivo faltando 1 dia para el evento",
       });
     }
 
@@ -504,19 +547,6 @@ app.post('/createReserva', async function (req, res) {
       });
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////
-    // Crear el payment intent para este evento seleccionado y confirmarlo en otra funcion  //
-    //////////////////////////////////////////////////////////////////////////////////////////
-
-    // Calcular fecha de expiracion
-    let limitDate = new Date(evento.fechaFinal);
-    // Si la fecha final es menor a un dia se pone la fecha final como limite de pago
-    limitDate =
-      limitDate.getTime() - new Date().getTime() < msInDay
-        ? limitDate
-        : new Date(new Date().getTime() + msInDay);
-
-    let statement_descriptor_suffix = "";
     let statement_descriptor = "";
 
     // Funcion para calcular el extrato bancario
@@ -524,13 +554,15 @@ app.post('/createReserva', async function (req, res) {
       //////////////////////////////////////////////////////////////////////////////
       ///////////////////////////////Extracto bancario//////////////////////////////
       //////////////////////////////////////////////////////////////////////////////
-      statement_descriptor_suffix = "PARTYUS";
+      statement_descriptor = "PARTYUS-";
+
+      const maxExtractLength = 21;
 
       // Calcular la longitud maxima del evento
       const lenEvento =
-        22 -
-        (statement_descriptor_suffix.length +
-          2 + //"* "
+        maxExtractLength -
+        (statement_descriptor.length +
+          2 + //"- "
           +1 + //"-"
           String(totalPersonasReservadas).length);
 
@@ -542,184 +574,569 @@ app.post('/createReserva', async function (req, res) {
         .slice(0, lenEvento);
       // Para mostrar en el extracto bancario de la forma PARTYUS* evento-20 recortado a 22 caracteres
       // Recortar el evento a maximo 9 caracteres sin espacio
-      statement_descriptor = titulo + "-" + totalPersonasReservadas;
+      statement_descriptor += titulo + " " + totalPersonasReservadas + " pers";
 
       // Si por algo fallaron las cuentas y el descriptor mas el titulo mas "* " es mayor a 22, reducir
-      if (
-        (statement_descriptor_suffix + "* " + statement_descriptor).length > 22
-      ) {
-        console.log(
-          "El extracto bancario fallo, cayendo a " + statement_descriptor
-        );
-        statement_descriptor = statement_descriptor.slice(
-          0,
-          22 - (statement_descriptor_suffix + "* ").length
-        );
+      if (statement_descriptor.length > maxExtractLength) {
+        statement_descriptor = statement_descriptor.slice(0, maxExtractLength);
       }
     })();
 
-    // Si el nickname es dividle en 2 hacerlo y verificar que tenga 2 caracteres minimo para pagos con oxxo
-    let nombre = nombreCliente ? nombreCliente : nicknameCliente.slice(0, 2);
-    let paterno = paternoCliente ? paternoCliente : nicknameCliente.slice(2);
+    // Datos de contacto para pagos en oxxo con el link
+    const partyusEmail = "partyus_mx@outlook.com";
+    const partyusPhone = "+5213312897347";
 
-    nombre = nombre.length < 2 ? "nombre" : nombre;
-    paterno = paterno.length < 2 ? "apellido" : paterno;
-    const name = nombre + " " + paterno;
+    let paymentIntent
+    // Si hay un total, cobrarlo de lo contrario solo se hace el boleto ( reserva )
+    if (total > 0) {
+      // Crear el payment intent con stripe y confirmarlo ahi mismo
+      paymentIntent = await stripe.paymentIntents.create({
+        // Multiplicar precio por 100 pues es en centavos
+        amount: total * 100,
+        currency: "mxn",
+        // Multiplicar comision por 100 pues es en centavos
+        application_fee_amount: comision * 100,
 
-    // Crear el payment intent con stripe y confirmarlo ahi mismo
-    const res = await stripe.paymentIntents.create({
-      // Multiplicar precio por 100 pues es en centavos
-      amount: total * 100,
-      currency: "mxn",
-      // Multiplicar comision por 100 pues es en centavos
-      application_fee_amount: comision * 100,
+        metadata: {
+          usuarioID,
+          reservaID,
+          eventoID,
 
-      metadata: {
-        usuarioID,
-        reservaID,
-        eventoID,
-        cuponID,
-        boletos: JSON.stringify(boletos),
-      },
+          // Poner informacion del cupon si existe
+          cuponID,
+          boletos: JSON.stringify(boletos),
+          pagadoAlOrganizador: enviarACreador,
 
-      // Confirmar el pago al momento
-      confirm: true,
-
-      // Url para cuando agregue autenticacion 3d secure
-      return_url: "https://www.partyusmx.com",
-
-      ///////////////////// OXXO /////////////////////
-      // Tiempo de expiracion del codigo oxxo en 1 dia
-      payment_method_options: {
-        oxxo: {
-          expires_after_days: 1,
+          tipoPago
         },
-      },
-      // Si el tipo de pago es oxxo, crear metodo de pago oxxo con ese parametro
-      payment_method_data:
-        tipoPago === "EFECTIVO"
-          ? {
-            type: "oxxo",
-            billing_details: {
-              name,
-              email: emailCliente,
-            },
-          }
-          : undefined,
 
-      ///////////////////// TARJETA /////////////////////
-      //// Agregar la tarjeta si es pago con tarjeta ////
-      payment_method: sourceID ? sourceID : undefined,
+        // Confirmar el pago al momento
+        confirm: true,
 
-      // Aceptar automaticamente todos los tipos de pago autorizados en Dashboard
-      automatic_payment_methods: { enabled: true },
+        // Url para cuando agregue autenticacion 3d secure
+        return_url: "https://www.partyusmx.com",
 
-      // Cliente a quien asociar el cargo
-      customer: clientPaymentID,
+        ///////////////////// OXXO /////////////////////
+        // Tiempo de expiracion del codigo oxxo en 1 dia
+        payment_method_options: {
+          oxxo: {
+            expires_after_days: 1,
+          },
+        },
+        // Si el tipo de pago es oxxo, crear metodo de pago oxxo con ese parametro
+        payment_method_data:
+          tipoPago === "EFECTIVO"
+            ? {
+              type: "oxxo",
+              billing_details: {
+                name: "Party us",
+                phone: partyusPhone,
+                email: partyusEmail,
+              },
+            }
+            : undefined,
 
-      // Descripcion en stripe y extracto bancario
-      description: description,
+        ///////////////////// TARJETA /////////////////////
+        //// Agregar la tarjeta si es pago con tarjeta ////
+        payment_method: sourceID ? sourceID : undefined,
 
-      // Descripcion del extracto bancario
-      statement_descriptor,
-      statement_descriptor_suffix,
+        // Aceptar metodos de pago oxxo y tarjeta
+        payment_method_types: ["card", "oxxo"],
 
-      // Mandar correo de recibo si se ingreso desde el cliente
-      receipt_email,
+        // Cliente a quien asociar el cargo
+        customer: clientPaymentID,
 
-      // Transferir dinero al organizador el evento
-      transfer_data: {
-        destination: ownerPaymentID,
-      },
-      // Rastrear estado del pago al grupo de reserva
-      transfer_group: "Reserva: " + reservaID,
-    });
+        // Descripcion en stripe y extracto bancario
+        description: description,
 
-    // Si nos da un estado de pago distinto a redirect url (3d secure) o pagos con oxxo, lanzar un error al cliente y no proceder con la reserva
-    if (
-      res?.status !== "succeeded" &&
-      res?.status !== "requires_action" &&
-      !res.next_action?.oxxo_display_details &&
-      !res.next_action?.redirect_to_url
-    ) {
-      console.log(
-        "El payment intent no esta completado o con tarjeta, 3d secure o con oxxo"
-      );
+        // Descripcion del extracto bancario
+        statement_descriptor,
 
+        // Mandar correo de recibo si se ingreso desde el cliente
+        receipt_email,
 
-      return formatResponse({
-        res,
-        statusCode: 400,
-        error:
-          "no se pudo crear la reserva, hubo un error con tu tarjeta. Si el cargo se realizo, contactanos para devolverte el dinero",
+        // Para que el se pongan los datos del organizador
+        on_behalf_of: ownerPaymentID,
+
+        // Transferir dinero al organizador el evento
+        transfer_data: {
+          destination: ownerPaymentID,
+        },
+        // Rastrear estado del pago al grupo de reserva
+        transfer_group: reservaID,
       });
+
+      // Si fue pago con oxxo, actualizar el expires_after para que el cliente que ve el payment intent lo lea
+
+      if (tipoPago === "EFECTIVO") {
+        paymentIntent.next_action.oxxo_display_details.expires_after =
+          limitDate.getTime();
+      }
+
+      console.log({
+        paymentIntent,
+      });
+
+      // Si nos da un estado de pago distinto a redirect url (3d secure) o pagos con oxxo, lanzar un error al cliente y no proceder con la reserva
+      if (
+        paymentIntent?.status !== "succeeded" &&
+        paymentIntent?.status !== "requires_action" &&
+        !paymentIntent.next_action?.oxxo_display_details &&
+        !paymentIntent.next_action?.redirect_to_url
+      ) {
+        console.log(
+          "Error inesperado, payment intent no esta completado o con tarjeta, 3d secure o con oxxo"
+        );
+
+        // Algun error inesperado cuando es distinto de pago con tarjeta o con oxxo o 3d secure
+
+        return formatResponse({
+          res,
+          body: {
+            paymentIntent,
+            success: false,
+          },
+        });
+      }
+
+      // Si se requiere 3d secure, devolver el estado de stripe y manejarlo en cliente para despues llamar a confirm reserva
+      if (paymentIntent.next_action?.type === "redirect_to_url") {
+        console.log("Requiere verificacion 3d secure");
+        return formatResponse({
+          res,
+          body: {
+            paymentIntent,
+            success: false,
+          },
+        });
+      }
+      // Manejar si tenemos activada la opcion de enviar a RP ( cuando alguien entra con el link de alguien mas )
+
+      // Obtener del evento la comision a RP
+
+      // Hacer un transfer con transfer_group reserva ID del organizador al RP
     }
 
-    // Manejar si tenemos activada la opcion de enviar a RP ( cuando alguien entra con el link de alguien mas )
+    //////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////CREAR RESERVA GRAPHQL////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 
-    // Obtener del evento la comision a RP
+    // Regresarle las 6 horas al UTC para estar en UTC para guardarlo en graphql reserva
+    limitDate.setTime(limitDate.getTime() + 6 * 3600 * 1000);
 
-    // Hacer un transfer con transfer_group reserva ID del organizador al RP
 
+    const cashBarcode = paymentIntent?.next_action?.oxxo_display_details?.number
+    const cashReference = paymentIntent?.next_action?.oxxo_display_details?.hosted_voucher_url
+
+
+    const reservaInput = {
+      cantidad: totalPersonasReservadas,
+      comision,
+      cuponID,
+      eventoID,
+      id: reservaID,
+      organizadorID,
+      pagadoAlOrganizador: enviarACreador,
+      chargeID: paymentIntent?.id,
+      total,
+
+      // Si es un pago en oxxo y pago con total no nulo ( cuando se descuenta por uso de cupon )
+      pagado: tipoPago === "EFECTIVO" && !!total ? false : true,
+      usuarioID,
+
+      // Expirar la reserva si es en efectivo a hoy a 11:59 de este dia en la hora UTC-6
+      fechaExpiracionUTC: limitDate.toISOString(),
+      cashBarcode,
+      cashReference,
+      tipoPago,
+      paymentTime: new Date().toISOString(),
+    };
+    const q = `
+    mutation myMutation($reservaInput:CreateReservaInput!) {
+      ${boletosFetched.map((e, idx) => {
+      // Actualizar personas reservadas por boleto
+
+      const boletoCliente = boletos.find((cli) => cli.id === e.id);
+      if (!boletoCliente) {
+        throw new Error(
+          "Ocurrio un error con los boletos obtenidos de la base de datos no se encotro el que coincida con " +
+          e.id
+        );
+      }
+
+      const personasReservadas =
+        (e.personasReservadas ? e.personasReservadas : 0) +
+        boletoCliente.quantity;
+
+      return `
+        bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
+            ${updateBoletoReturns}
+        }
+        bol${idx}rel: createReservasBoletos(input:{
+          boletoID:"${e.id}",
+          reservaID:"${reservaID}",
+          quantity:${boletoCliente.quantity},
+        }){
+            ${createReservasBoletosReturns}
+            }
+        `;
+    })}
+
+            updateEvento(input:{id:"${evento.id
+      }", personasReservadas:${reservadosEvento}, _version:${evento._version
+      }}){
+            ${updateEventoReturns}                    
+        }
+
+      ${
+      // Restar de cupon si existe ID
+      cuponID
+        ? `updateCupon(input: {id: "${cuponID}", restantes: ${cupon.restantes ? cupon.restantes - totalPersonasReservadas : 0
+        },_version:${cupon._version}}) {
+                ${updateCuponReturns}
+          }`
+        : ``
+      }
+
+
+        
+    createReserva(input: $reservaInput) {
+        ${reservaReturns}
+    }
+    }
+  `;
+
+    // Mutacion para actualizar los boletos, el evento, crear reservacion y restar el personas disponibles de cupon
+    await graphqlRequest({
+      query: q,
+      variables: {
+        reservaInput,
+      },
+    })
+
+    // Se devuelve una respuesta exitosa y el payment intent con el que se hizo en caso tal
     return formatResponse({
       res,
       statusCode: 200,
-      body: res,
+      body: {
+        paymentIntent,
+        success: true,
+      },
     });
   } catch (error) {
-    let msg = error.message
-      ? error.message
-      : error.description
-        ? error.description
-        : error.errorMessage
-          ? error.errorMessage
-          : error;
-
     return formatResponse({
       res,
       statusCode: 500,
-      error: msg,
+      error,
     });
   }
 });
 
 /*******************************************************************************************************************************
-******************************************* CONFIRMAR RESERVA DE 3D SECURE *****************************************************
+ ******************************************* CONFIRMAR RESERVA DE 3D SECURE *****************************************************
 ********************************************************************************************************************************/
-app.post('/confirmReserva', function (req, res) {
-  // Add your code here
-  res.json({ success: 'get call succeed!', url: req.url });
+app.get(
+  "/reservas/confirmReserva/:paymentIntentID",
+  async function (req, res) {
+    try {
+      const { paymentIntentID } = req.params;
+
+      // Validar que exista el parametro de id de paymentIntent
+      if (!paymentIntentID) {
+        console.log(req);
+        res.status(404);
+        res.json({
+          error: "Error, no se recibio paymentIntentID",
+        });
+        return;
+      }
+
+      // Obtener el payment intent que se quiere confirmar
+      const paymentIntent = await stripe.paymentIntents.retrieve(
+        paymentIntentID
+      );
+
+      // Si el estado del payment intent no es confirmado, dar error
+      if (paymentIntent.status !== "succeeded") {
+        // Devolver error de last payment error o mensaje generico
+        const mes = paymentIntent.last_payment_error?.message
+          ? paymentIntent.last_payment_error.message
+          : "ocurrio un error confirmando tu cargo, no se pudo realizar.";
+        return formatResponse({
+          res,
+          error: mes,
+          statusCode: 400,
+        });
+      }
+
+      // Crear la reserva obteniendo informacion a partir de la metadata del payment intent
+      await createReservaFromPaymentIntent(paymentIntent);
+
+      // Resolver con payment intent si fue exitosa
+      return formatResponse({
+        res,
+        statusCode: 200,
+        body: paymentIntent,
+      });
+    } catch (error) {
+      return formatResponse({
+        res,
+        statusCode: 500,
+        error,
+      });
+    }
+  }
+);
+
+
+/*******************************************************************************************************************************
+ **************************************************** ONPAY( OXXO ) *************************************************************
+********************************************************************************************************************************/
+app.post("/reservas/onPay", function (req, res) {
+
+
+  const { body } = req
+  const sig = request.headers['stripe-signature'];
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, WEBHOOK_KEY);
+
+    if (event.type !== "payment_intent.succeeded") {
+      throw "El tipo de evento no es de payment_intent.succeeded"
+    }
+
+    const paymentIntent = event.data.object;
+
+    console.log({ body, event })
+
+
+
+
+    // Return a 200 response to acknowledge receipt of the event
+    response.send();
+  } catch (err) {
+    console.log(err)
+    response.status(400).send(`Webhook Error: ${err.message}`);
+    return;
+  }
+
+
 });
 
 /*******************************************************************************************************************************
-**************************************************** ONPAY( OXXO ) *************************************************************
+ *************************************************** CANCELAR RESERVA ************************************************************
 ********************************************************************************************************************************/
-app.post('/onPay', function (req, res) {
+app.post("/reservas/cancel", function (req, res) {
   // Add your code here
-  res.json({ success: 'get call succeed!', url: req.url });
+  res.json({ success: "get call succeed!", url: req.url });
 });
-
-/*******************************************************************************************************************************
-*************************************************** CANCELAR RESERVA ************************************************************
-********************************************************************************************************************************/
-app.post('/cancel', function (req, res) {
-  // Add your code here
-  res.json({ success: 'get call succeed!', url: req.url });
-});
-
 
 // Export the app object. When executing the application local this does nothing. However,
 // to port it to AWS Lambda we will create a wrapper around that will load the app from
 // this file
-module.exports = app
+module.exports = app;
 app.listen(3000);
 
 /***********************************************************************************************************************************
-************************************************** FUNCIONES MISC ******************************************************************
+ ************************************************** FUNCIONES MISC ******************************************************************
 ************************************************************************************************************************************/
 
+async function createReservaFromPaymentIntent(
+  paymentIntent
+) {
+  // Obtener datos para crear la reserva de los metadatos del payment intent
+
+  let {
+    boletos,
+    eventoID,
+    reservaID,
+    usuarioID,
+    tipoPago,
+    cuponID,
+    pagadoAlOrganizador,
+  } = paymentIntent?.metadata;
+
+  boletos = JSON.parse(boletos);
+  console.log({
+    boletos,
+    eventoID,
+    reservaID,
+    usuarioID,
+    tipoPago,
+    cuponID,
+    pagadoAlOrganizador,
+  });
+
+  // Si nos falta cualquiera de esos parametros, dar error
+  if (!boletos || !eventoID || !reservaID || !usuarioID || !tipoPago) {
+    throw "No se encontro los metadatos del payment intent";
+  }
+
+  // Obtener el total de la reserva y comision (de centavos a pesos)
+  const total = paymentIntent.amount / 100
+  const comision = paymentIntent.application_fee_amount / 100
+
+  const personasReservadas = (
+    boletos
+  ).reduce((prev, bol) => prev + bol.quantity, 0);
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////PEDIR EVENTO Y BOLETOS PARA SACAR VERSIONES Y PERSONAS RESERVADAS//////////////////////
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Pedir evento, boleto y cupon
+  let string = "";
+  boletos.map((bol, idx) => {
+    // Poner todos los boletos que queremos en un query
+    string += `{id:{eq:"${bol.id}"}},`;
+  });
+
+  // Extraer resultado del graphql
+  const {
+    boletos: boletosFetched,
+    cupon,
+    evento,
+  } = await graphqlRequest({
+    query: /* GraphQL */ `
+    query fetchData($eventoID: ID!, ${cuponID ? `,$cuponID:ID!` : ""}) {
+      getEvento(id: $eventoID) {
+        CreatorID
+        _version
+        id
+        personasReservadas
+      }
+      listBoletos(filter:{or:[${string}]}) {
+        items{
+          id
+          personasReservadas
+          _version
+        }
+      }
+      ${cuponID
+        ? /* GraphQL */ `getCupon(id: $cuponID) {
+        _version
+        id
+        restantes
+      }`
+        : ""
+      }
+    }
+  `,
+    variables: cuponID
+      ? {
+        eventoID,
+        cuponID,
+      }
+      : {
+        eventoID,
+      },
+  }).then((r) => {
+
+    r = r.data;
+
+    return {
+      cupon: r.getCupon,
+      evento: r.getEvento,
+      boletos: r.listBoletos.items,
+    };
+  });
+
+
+  //////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////CREAR RESERVA GRAPHQL////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////
+
+  const reservaInput = {
+    cantidad: personasReservadas,
+    comision,
+    cuponID,
+    eventoID,
+    id: reservaID,
+    organizadorID: evento.CreatorID,
+    pagadoAlOrganizador,
+    chargeID: paymentIntent.id,
+    total,
+
+    // Cuando se llega a este estado, ya se verifico que el payment intent salga como confirmado
+    pagado: true,
+    usuarioID,
+
+    // Expirar la reserva si es en efectivo a hoy a 11:59 de este dia en la hora UTC-6
+
+    tipoPago,
+    paymentTime: new Date().toISOString(),
+  };
+
+
+  // Sacar las personas reservadas en el evento
+  let reservadosEvento = evento.personasReservadas
+    ? evento.personasReservadas
+    : 0;
+  // Sumarle las personas reservadas actuales
+  reservadosEvento += personasReservadas;
+
+  const q = `
+  mutation myMutation($reservaInput:CreateReservaInput!) {
+  ${boletosFetched.map((e, idx) => {
+    // Mapear los boletos obtenidos y cuadrarlo con los que teniamos en los metadatos del payment intent
+    const boletoCliente = boletos.find((cli) => cli.id === e.id);
+    if (!boletoCliente) {
+      throw new Error(
+        "Ocurrio un error con los boletos obtenidos de la base de datos no se encontro el que coincida con " +
+        e.id
+      );
+    }
+
+    const personasReservadas =
+      (e.personasReservadas ? e.personasReservadas : 0) + boletoCliente.quantity;
+
+    return `
+    bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
+        ${updateBoletoReturns}
+    }
+    bol${idx}rel: createReservasBoletos(input:{
+      boletoID:"${e.id}",
+      reservaID:"${reservaID}",
+      quantity:${boletoCliente.quantity},
+    }){
+        ${createReservasBoletosReturns}
+        }
+    `;
+  })}
+
+        updateEvento(input:{id:"${eventoID}", personasReservadas:${reservadosEvento}, _version:${evento._version
+    }}){
+        ${updateEventoReturns}                    
+    }
+
+  ${
+    // Restar de cupon si existe ID
+    cuponID
+      ? `updateCupon(input: {id: "${cuponID}", restantes: ${cupon.restantes ? cupon.restantes - personasReservadas : 0
+      },_version:${cupon._version}}) {
+            ${updateCuponReturns}
+      }`
+      : ``
+    }
+  createReserva(input: $reservaInput) {
+    ${reservaReturns}
+  }
+  }
+  `;
+
+  // Mutacion para actualizar los boletos, el evento, crear reservacion y restar el personas disponibles de cupon
+  await graphqlRequest({
+    query: q,
+    variables: {
+      reservaInput,
+    },
+  })
+}
+
 // Sacar el precio con comision de in precio inicial
-function precioConComision(inicial) {
+function precioConComision(inicial, comision) {
   if (!inicial) return 0;
   return redondear(inicial * (1 + comisionApp), 10);
 }
@@ -741,79 +1158,83 @@ async function graphqlRequest({ query, variables }) {
 
   let body = {};
 
-  try {
-    body = await graphqlOperation(
-      !!variables
-        ? { query, variables }
-        : {
-          query,
-        },
-      endpoint
-    );
-  } catch (error) {
-    console.log(error);
-    body = {
-      error: [
-        {
-          message: error.message,
-        },
-      ],
-    };
+  console.log({
+    query, variables
+  })
+
+  body = await graphqlOperation(
+    !!variables
+      ? { query, variables }
+      : {
+        query,
+      },
+    endpoint
+  );
+  if (body.errors) {
+
+    throw body.errors[0].message + "\nSi se realizo el cargo, contactanos para cancelarlo"
+
   }
+
 
   return body;
 }
 
 // Mandar respuestas en una sola manera
-function formatResponse({
-  error,
-  res,
-  body,
-  statusCode,
-}) {
+function formatResponse({ error, res, body, statusCode }) {
   let r = {
     statusCode,
     body,
     error,
   };
+
+
   if (error) {
-    handleError(res, body)
+
+    handleError(res, {
+      error,
+      statusCode,
+    });
+    return
   }
 
-  if (body) {
-    handleResponse(res, body)
-  }
+  handleResponse(res, body);
   return r;
 }
 
-
-
 /***********************************************************************************************************************************
-************************************************* RESPONSE HANDLERS *****************************************************************
+ ************************************************* RESPONSE HANDLERS *****************************************************************
 ************************************************************************************************************************************/
 // Estandarizar respuestas exitosas y errores
 
 function handleResponse(res, input) {
+  console.log({ response: input })
 
-  res.status(200)
+  res.status(200);
   res.json({
     error: null,
-    body: input
-  })
+    body: input,
+  });
 }
 
-function handleError(res, e) {
-  console.log(e)
+function handleError(res, error) {
+  console.log({ error })
+
+  error = error.error ? error.error : error
+
+  const msg = error.raw ? (error.raw.code + ": " + error.raw.message)
+    : error.message ? error.message : error.description
+      ? error.description
+      : error.errorMessage
+        ? error.errorMessage
+        : error;
 
 
-  const mes = e.message
-  const statusCode = e?.statusCode ? e.statusCode : 500
+  const statusCode = error?.statusCode ? error.statusCode : 500;
 
-  res.status(statusCode)
+  res.status(statusCode);
 
   return res.json({
-    error: mes,
-    body: e.error
+    error: msg,
   });
-
 }
