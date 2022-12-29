@@ -16,6 +16,7 @@ import {
   AsyncAlert,
   azulClaro,
   azulFondo,
+  comisionApp,
   currency,
   enumToArray,
   fetchFromStripe,
@@ -40,7 +41,7 @@ import InputOnFocus from "../../components/InputOnFocus";
 import useEvento from "../../Hooks/useEvento";
 import RadioButton from "../../components/RadioButton";
 import NetInfo from "@react-native-community/netinfo";
-import { API, DataStore, Storage } from "aws-amplify";
+import { DataStore } from "aws-amplify";
 import {
   Boleto,
   ComoditiesEnum,
@@ -255,11 +256,13 @@ export default function Agregar2({
               product: await stripePromises.productID,
               currency,
               unit_amount_decimal: String(
-                precioConComision(value.precio) * 100
+                // Poner la comision default
+                precioConComision(value.precio, comisionApp) * 100
               ),
               metadata: {
                 cantidad: value.cantidad,
-                precioConComision: precioConComision(value.precio),
+                // Poner la comision default
+                precioConComision: precioConComision(value.precio, comisionApp),
                 precioSinComision: value.precio,
               },
             } as Stripe.PriceCreateParams,

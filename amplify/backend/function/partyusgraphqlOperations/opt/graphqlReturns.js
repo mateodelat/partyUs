@@ -41,10 +41,14 @@ tipoLugar
 musica
 comodities
 musOtra
+comisionPercent
+comisionRP
+allowPaymentsInPlace
 personasReservadas
 personasMax
 precioMin
 precioMax
+paymentProductID
 CreatorID
 createdAt
 updatedAt
@@ -90,9 +94,12 @@ id
 total
 comision
 pagadoAlOrganizador
+pagadoARP
 cantidad
 pagado
 paymentTime
+referedFrom
+transaccionAOrganizadorID
 tipoPago
 chargeID
 cashBarcode
@@ -107,8 +114,8 @@ eventoID
 usuarioID
 cuponID
 organizadorID
-updatedAt
 createdAt
+updatedAt
 _version
 _deleted
 _lastChangedAt

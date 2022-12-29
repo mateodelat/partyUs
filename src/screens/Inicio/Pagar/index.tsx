@@ -85,163 +85,6 @@ export default function Pagar({
   };
   navigation: NavigationProp;
 }) {
-  route.params = {
-    id: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
-    imagenPrincipalIDX: 0,
-    titulo: "adsfa",
-    detalles: "asdf",
-    ubicacion: {
-      ubicacionNombre: " Hall, Hall",
-      longitudeDelta: 2,
-      latitudeDelta: 2,
-      latitude: 41.67858017474236,
-      longitude: -100.72023656219244,
-    },
-    fechaInicial: 1689973200000,
-    fechaFinal: 1689976800000,
-    tosAceptance: {
-      hora: "2022-12-22T09:28:50.741Z",
-    },
-    tipoLugar: "INTERIOR",
-    musica: "POP",
-    comodities: ["SEGURIDAD", "BARRALIBRE", "COMIDA"],
-    musOtra: null,
-    personasMax: 100,
-    precioMin: 50,
-    precioMax: 400,
-    paymentProductID: "prod_N1oj2JotnTBFbf",
-    CreatorID: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
-    createdAt: "2022-12-22T09:29:49.770Z",
-    updatedAt: "2022-12-22T09:29:49.770Z",
-    _version: 1,
-    _lastChangedAt: 1671701389796,
-    _deleted: null,
-    imagenes: [
-      {
-        key: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-        uri: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-      },
-      {
-        key: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-        uri: "https://images.unsplash.com/photo-1543168256-8133cc8e3ee4?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=MnwxfDB8MXxyYW5kb218MHx8cGFydHl8fHx8fHwxNjcxNzAxMjg1&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1100",
-      },
-    ],
-    creator: {
-      id: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
-      nickname: "mateodelat",
-      nombre: "Velazquez",
-      materno: "Margarita",
-      paterno: "Gomez",
-      email: "mateodelat@gmail.com",
-      foto: "https://ui-avatars.com/api/?name=mateodelat&bold=true&background=fff&color=000&length=1",
-      cuentaBancaria: "000000001234567897",
-      titularCuenta: "NOMBRE PRUEBA",
-      receiveNewReservations: false,
-      rfc: "XAXX010101000",
-      imagenFondo: null,
-      direccion: {
-        postal_code: "45500",
-      },
-      phoneNumber: "3344443343",
-      phoneCode: "+52",
-      organizador: true,
-      admin: false,
-      idUploaded: true,
-      idData: {
-        detectedText:
-          '"222222\nppppp\nMEXICA\nMÉXICO\nINSTITUTO NACIONAL ELECTORAL\nCREDENCIAL PARA VOTAR\nNOMBRE\nGOMEZ\nVELAZQUEZ\nMARGARITA\nDOMICILIO\nINE\nC PITAGORAS 1253 INT. 4\nCOL. MORELOS 04800\nCUAJIMALPA DE MORELOS, D.F.\nCLAVE DE ELECTOR GMVLMR8007501M100\nGOVM800705MCLMLR01 AÑO DE REGISTRO 2008 02\nESTADO 09 MUNICIPIO 004 SECCIÓN 0747\nLOCALIDAD\nMISIÓN 2014 VIGENCIA 2024"',
-        tipoDocumento: "INE",
-        uri: "https://cdn.forbes.com.mx/2019/06/INE.jpg",
-        curp: "GOVM800705MCLMLR01",
-      },
-      idFrontKey: "usr-fe905dc2-97d2-4531-b018-fcd02aa534b8|id-front.jpg",
-      idBackKey: "usr-fe905dc2-97d2-4531-b018-fcd02aa534b8|id-back.jpg",
-      tipoDocumento: "INE",
-      fechaNacimiento: "2003-12-21T00:00:00.000Z",
-      calificacion: null,
-      numResenas: null,
-      notificationToken: null,
-      paymentClientID: "cus_N1l9LTBaAXHNjg",
-      paymentAccountID: "acct_1MHinBID9ekhSFzj",
-      verified: false,
-      owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
-      createdAt: "2022-12-22T05:47:53.254Z",
-      updatedAt: "2022-12-22T20:59:17.925Z",
-      _version: 8,
-      _lastChangedAt: 1671742757970,
-      _deleted: null,
-    },
-    personasReservadas: 0,
-    boletos: [
-      {
-        id: "6c68e5f7-fb6c-4b66-8e2d-961b27953e3e",
-        titulo: "VIP",
-        descripcion: "Boleto VIP",
-        cantidad: 50,
-        precio: 400,
-        paymentPriceID: null,
-        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
-        createdAt: "2022-12-22T09:29:50.601Z",
-        updatedAt: "2022-12-22T09:29:50.601Z",
-        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
-        _version: 1,
-        _lastChangedAt: 1671701390631,
-        _deleted: null,
-        personasReservadas: 0,
-      },
-      {
-        id: "c40da731-4cc2-4772-bd2d-d3214f070f05",
-        titulo: "VIP",
-        descripcion: "Boleto VIP",
-        cantidad: 50,
-        precio: 400,
-        paymentPriceID: null,
-        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
-        createdAt: "2022-12-22T09:30:42.018Z",
-        updatedAt: "2022-12-22T09:30:42.018Z",
-        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
-        _version: 1,
-        _lastChangedAt: 1671701442044,
-        _deleted: null,
-        personasReservadas: 0,
-        quantity: 1,
-      },
-      {
-        id: "fb5ced93-0684-4007-a44d-ccf35fa969e1",
-        titulo: "Entrada normal",
-        descripcion: "dESCRIPCION del boleto noraml",
-        cantidad: 50,
-        precio: 50,
-        paymentPriceID: null,
-        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
-        createdAt: "2022-12-22T09:29:50.317Z",
-        updatedAt: "2022-12-22T09:29:50.317Z",
-        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
-        _version: 1,
-        _lastChangedAt: 1671701390351,
-        _deleted: null,
-        personasReservadas: 0,
-      },
-      {
-        id: "5992138a-39b3-49f7-8d25-d65fb4ba7309",
-        titulo: "Entrada normal",
-        descripcion: "dESCRIPCION del boleto noraml",
-        cantidad: 50,
-        precio: 50,
-        paymentPriceID: null,
-        eventoID: "a26592f0-5ea5-4853-ba70-0c88c1475f20",
-        createdAt: "2022-12-22T09:30:41.555Z",
-        updatedAt: "2022-12-22T09:30:41.555Z",
-        owner: "fe905dc2-97d2-4531-b018-fcd02aa534b8",
-        _version: 1,
-        _lastChangedAt: 1671701441583,
-        _deleted: null,
-        personasReservadas: 0,
-      },
-    ],
-    total: 460,
-  } as any;
-
   const {
     total,
     imagenes,
@@ -249,6 +92,7 @@ export default function Pagar({
     titulo,
     fechaInicial,
     fechaFinal,
+    comisionPercent,
     creator,
     descuento,
     id: eventoID,
@@ -632,17 +476,12 @@ export default function Pagar({
 
         vibrar(VibrationType.sucess);
 
-        Alert.alert(
-          "Exito",
-          "Tu reserva se creo con exito, tienes hasta las " +
-            formatAMPM(limitDate) +
-            " para pagar tu boleto y que sea valido"
-        );
-
         // Mandar notificaciones de exitoso
         sendSucessNotifications();
 
         navigation.popToTop();
+        navigation.navigate("Perfil");
+        navigation.navigate("MisReservas", { reservaID });
         // Si el tipo de pago fue en efectivo, obtener la referencia y navegar a la pestaña pago
         navigation.navigate("ReferenciaPago", {
           amount: total,
@@ -652,6 +491,12 @@ export default function Pagar({
           },
           limitDate: limitDate.getTime(),
         });
+        Alert.alert(
+          "Exito",
+          "Tu reserva se creo con exito, tienes hasta las " +
+            formatAMPM(limitDate) +
+            " para pagar tu boleto y que sea valido"
+        );
 
         return;
       }
@@ -687,8 +532,6 @@ export default function Pagar({
 
   // Funcion para mandar todas las notificaciones de exito al cliente, organizadores y admins
   async function sendSucessNotifications() {
-    console.log("Mandar notificaciones");
-    return;
     // Notificacion de reserva exitosa
     DataStore.save(
       new Notificacion({
@@ -1056,7 +899,10 @@ export default function Pagar({
 
           <View style={[styles.innerContainer, { padding: 15, paddingTop: 5 }]}>
             {boletos.map((e: BoletoType, index: number) => {
-              const precioIndividualConComision = precioConComision(e.precio);
+              const precioIndividualConComision = precioConComision(
+                e.precio,
+                comisionPercent
+              );
 
               if (!e.quantity) return <View key={index} />;
 

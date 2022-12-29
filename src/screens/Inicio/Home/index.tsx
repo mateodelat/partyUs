@@ -1,7 +1,6 @@
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Image,
   Keyboard,
   Modal,
@@ -156,7 +155,7 @@ export default function Home({ navigation }: { navigation: NavigationProp }) {
           { sort: (e) => e.precio("DESCENDING") }
         ).then((boletos) => {
           boletos.map((bo) => {
-            const precio = precioConComision(bo.precio);
+            const precio = precioConComision(bo.precio, e.comisionPercent);
 
             precioMin = !precioMin
               ? precio

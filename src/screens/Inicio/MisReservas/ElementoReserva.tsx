@@ -65,8 +65,7 @@ export default function ElementoReserva({
         amount: data.total,
         titulo: data.evento.titulo,
         codebar: {
-          uri: data.cashBarcode,
-          reference: data.cashReference,
+          number: data.cashBarcode,
         },
         limitDate: new Date(data.fechaExpiracionUTC).getTime(),
       });

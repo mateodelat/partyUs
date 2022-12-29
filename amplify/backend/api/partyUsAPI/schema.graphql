@@ -124,7 +124,8 @@ type Evento
     @auth(
       rules: [
         { allow: private, operations: [read] }
-        { allow: public, operations: [read] }
+        { allow: public, provider: apiKey, operations: [read] }
+        { allow: public, provider: iam, operations: [read] }
         { allow: groups, groups: ["Admin"] }
       ]
     )
@@ -294,7 +295,10 @@ type Reserva
   id: ID
   total: Float
   comision: Float
+
   pagadoAlOrganizador: Float
+  pagadoARP: Float
+
   cantidad: Int
 
   pagado: Boolean

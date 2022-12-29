@@ -1561,10 +1561,15 @@ export function precioConComision(
 ) {
   if (!inicial) return 0;
 
-  // En caso de recibir comision exclusiva del evento
-  comision = comision ? comision : comisionApp;
+  // En caso de recibir comision exclusiva del evento ponerla
+  comision = comision === 0 || !!comision ? comision : comisionApp;
 
-  return redondear(inicial * (1 + comision), 10, tipoRedondeo.ARRIBA);
+  // Redondeo al 5 de arriba
+  return redondear(
+    Math.round(inicial * (1 + comision)),
+    5,
+    tipoRedondeo.ARRIBA
+  );
 }
 
 export const getWeekDay = (d: Date | undefined | number) => {

@@ -103,6 +103,14 @@ export default function Agregar2({
         alerta = true;
       }
 
+      // Si el valor del boleto es menos de 10 pesos, dar error
+      if (e.precio < minEventPrice) {
+        err =
+          "Tu boleto " +
+          (e.titulo ? e.titulo : "") +
+          " debe costar minimo 10 pesos";
+      }
+
       if (!e.titulo) {
         err = "Asegurate de agregar titulo a todos tus boletos";
       }
@@ -267,7 +275,6 @@ export default function Agregar2({
                     value={boleto.precio}
                     cambio={50}
                     onChangeValue={(n) => {
-                      n = n < minEventPrice ? minEventPrice : n;
                       n = n > maxEventPrice ? maxEventPrice : n;
 
                       let b = [...boletos];

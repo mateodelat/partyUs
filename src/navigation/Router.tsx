@@ -60,10 +60,10 @@ function NombreApellidosOnPress({ navigation }: any) {
     }));
     try {
       // Si se activa al cambiar nombre y apellido, cambiarlos tambien en stripe
-      const res = await fetchFromAPI<Stripe.Account>(
-        "/payments/updateAccount",
-        "POST",
-        {
+      const res = await fetchFromAPI<Stripe.Account>({
+        path: "/payments/updateAccount",
+        type: "POST",
+        input: {
           accountID: usuario.paymentAccountID,
 
           // Actualizar informacion del individuo dueño de la cuenta
@@ -71,8 +71,8 @@ function NombreApellidosOnPress({ navigation }: any) {
             first_name: nombre,
             last_name: paterno + " " + materno,
           },
-        }
-      );
+        },
+      });
 
       if (res?.error) {
         throw new Error(res as any);
@@ -122,7 +122,7 @@ export default function router() {
   return (
     <NavigationContainer linking={linking} fallback={<Loading indicator />}>
       <Stack.Navigator
-        initialRouteName="Pagar"
+        // initialRouteName="Pagar"
         screenOptions={{
           header: ({
             route: { name, params },

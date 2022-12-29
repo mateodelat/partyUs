@@ -989,6 +989,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "pagadoARP": {
+                    "name": "pagadoARP",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "cantidad": {
                     "name": "cantidad",
                     "isArray": false,
@@ -1815,5 +1822,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.3.2",
-    "version": "f354480a5078b3accc9b1bb5811b199d"
+    "version": "917de69f615b88e34667068ec2f4b59a"
 };

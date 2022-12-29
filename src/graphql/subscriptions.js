@@ -52,6 +52,9 @@ export const onCreateUsuario = /* GraphQL */ `
           musica
           comodities
           musOtra
+          comisionPercent
+          comisionRP
+          allowPaymentsInPlace
           personasReservadas
           personasMax
           precioMin
@@ -73,14 +76,14 @@ export const onCreateUsuario = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -161,6 +164,9 @@ export const onUpdateUsuario = /* GraphQL */ `
           musica
           comodities
           musOtra
+          comisionPercent
+          comisionRP
+          allowPaymentsInPlace
           personasReservadas
           personasMax
           precioMin
@@ -182,14 +188,14 @@ export const onUpdateUsuario = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -270,6 +276,9 @@ export const onDeleteUsuario = /* GraphQL */ `
           musica
           comodities
           musOtra
+          comisionPercent
+          comisionRP
+          allowPaymentsInPlace
           personasReservadas
           personasMax
           precioMin
@@ -291,14 +300,14 @@ export const onDeleteUsuario = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -347,6 +356,9 @@ export const onCreateEvento = /* GraphQL */ `
       musica
       comodities
       musOtra
+      comisionPercent
+      comisionRP
+      allowPaymentsInPlace
       personasReservadas
       personasMax
       precioMin
@@ -424,14 +436,14 @@ export const onCreateEvento = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -480,6 +492,9 @@ export const onUpdateEvento = /* GraphQL */ `
       musica
       comodities
       musOtra
+      comisionPercent
+      comisionRP
+      allowPaymentsInPlace
       personasReservadas
       personasMax
       precioMin
@@ -557,14 +572,14 @@ export const onUpdateEvento = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -613,6 +628,9 @@ export const onDeleteEvento = /* GraphQL */ `
       musica
       comodities
       musOtra
+      comisionPercent
+      comisionRP
+      allowPaymentsInPlace
       personasReservadas
       personasMax
       precioMin
@@ -690,14 +708,14 @@ export const onDeleteEvento = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -927,14 +945,14 @@ export const onCreateCupon = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -978,14 +996,14 @@ export const onUpdateCupon = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -1029,14 +1047,14 @@ export const onDeleteCupon = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -1082,14 +1100,14 @@ export const onCreateRetiro = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -1135,14 +1153,14 @@ export const onUpdateRetiro = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -1188,14 +1206,14 @@ export const onDeleteRetiro = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -1232,9 +1250,11 @@ export const onCreateReserva = /* GraphQL */ `
       total
       comision
       pagadoAlOrganizador
+      pagadoARP
       cantidad
       pagado
       paymentTime
+      referedFrom
       transaccionAOrganizadorID
       transaccionAOrganizador {
         id
@@ -1256,8 +1276,6 @@ export const onCreateReserva = /* GraphQL */ `
       }
       tipoPago
       chargeID
-      transactionID
-      feeID
       cashBarcode
       cashReference
       ingreso
@@ -1281,6 +1299,9 @@ export const onCreateReserva = /* GraphQL */ `
         musica
         comodities
         musOtra
+        comisionPercent
+        comisionRP
+        allowPaymentsInPlace
         personasReservadas
         personasMax
         precioMin
@@ -1432,9 +1453,11 @@ export const onUpdateReserva = /* GraphQL */ `
       total
       comision
       pagadoAlOrganizador
+      pagadoARP
       cantidad
       pagado
       paymentTime
+      referedFrom
       transaccionAOrganizadorID
       transaccionAOrganizador {
         id
@@ -1456,8 +1479,6 @@ export const onUpdateReserva = /* GraphQL */ `
       }
       tipoPago
       chargeID
-      transactionID
-      feeID
       cashBarcode
       cashReference
       ingreso
@@ -1481,6 +1502,9 @@ export const onUpdateReserva = /* GraphQL */ `
         musica
         comodities
         musOtra
+        comisionPercent
+        comisionRP
+        allowPaymentsInPlace
         personasReservadas
         personasMax
         precioMin
@@ -1632,9 +1656,11 @@ export const onDeleteReserva = /* GraphQL */ `
       total
       comision
       pagadoAlOrganizador
+      pagadoARP
       cantidad
       pagado
       paymentTime
+      referedFrom
       transaccionAOrganizadorID
       transaccionAOrganizador {
         id
@@ -1656,8 +1682,6 @@ export const onDeleteReserva = /* GraphQL */ `
       }
       tipoPago
       chargeID
-      transactionID
-      feeID
       cashBarcode
       cashReference
       ingreso
@@ -1681,6 +1705,9 @@ export const onDeleteReserva = /* GraphQL */ `
         musica
         comodities
         musOtra
+        comisionPercent
+        comisionRP
+        allowPaymentsInPlace
         personasReservadas
         personasMax
         precioMin
@@ -1838,9 +1865,11 @@ export const onCreateReservasBoletos = /* GraphQL */ `
         total
         comision
         pagadoAlOrganizador
+        pagadoARP
         cantidad
         pagado
         paymentTime
+        referedFrom
         transaccionAOrganizadorID
         transaccionAOrganizador {
           id
@@ -1858,8 +1887,6 @@ export const onCreateReservasBoletos = /* GraphQL */ `
         }
         tipoPago
         chargeID
-        transactionID
-        feeID
         cashBarcode
         cashReference
         ingreso
@@ -1883,6 +1910,9 @@ export const onCreateReservasBoletos = /* GraphQL */ `
           musica
           comodities
           musOtra
+          comisionPercent
+          comisionRP
+          allowPaymentsInPlace
           personasReservadas
           personasMax
           precioMin
@@ -1999,9 +2029,11 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
         total
         comision
         pagadoAlOrganizador
+        pagadoARP
         cantidad
         pagado
         paymentTime
+        referedFrom
         transaccionAOrganizadorID
         transaccionAOrganizador {
           id
@@ -2019,8 +2051,6 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
         }
         tipoPago
         chargeID
-        transactionID
-        feeID
         cashBarcode
         cashReference
         ingreso
@@ -2044,6 +2074,9 @@ export const onUpdateReservasBoletos = /* GraphQL */ `
           musica
           comodities
           musOtra
+          comisionPercent
+          comisionRP
+          allowPaymentsInPlace
           personasReservadas
           personasMax
           precioMin
@@ -2160,9 +2193,11 @@ export const onDeleteReservasBoletos = /* GraphQL */ `
         total
         comision
         pagadoAlOrganizador
+        pagadoARP
         cantidad
         pagado
         paymentTime
+        referedFrom
         transaccionAOrganizadorID
         transaccionAOrganizador {
           id
@@ -2180,8 +2215,6 @@ export const onDeleteReservasBoletos = /* GraphQL */ `
         }
         tipoPago
         chargeID
-        transactionID
-        feeID
         cashBarcode
         cashReference
         ingreso
@@ -2205,6 +2238,9 @@ export const onDeleteReservasBoletos = /* GraphQL */ `
           musica
           comodities
           musOtra
+          comisionPercent
+          comisionRP
+          allowPaymentsInPlace
           personasReservadas
           personasMax
           precioMin

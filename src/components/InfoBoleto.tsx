@@ -4,14 +4,10 @@ import React, { useState } from "react";
 import {
   formatMoney,
   mayusFirstLetter,
-  precioConComision,
   rojo,
   rojoClaro,
-  shadowBaja,
 } from "../../constants";
 import { BoletoType } from "../screens/Inicio/Boletos";
-
-import { Ionicons } from "@expo/vector-icons";
 
 export default function ({
   item,

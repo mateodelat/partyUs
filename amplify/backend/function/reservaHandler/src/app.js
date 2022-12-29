@@ -16,12 +16,15 @@ const {
   updateEventoReturns,
   updateCuponReturns,
   reservaReturns,
+  createNotificacionReturns,
 } = require("/opt/graphqlReturns");
 const { graphqlOperation } = require("/opt/graphqlOperation");
 
 const express = require("express");
 const bodyParser = require("body-parser");
 const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
+
+const axios = require("axios");
 
 const SECRET_KEY = production
   ? process.env.SECRET_KEY_PROD
@@ -35,7 +38,13 @@ const stripe = require("stripe")(SECRET_KEY);
 
 // declare a new express app
 const app = express();
-app.use(bodyParser.json());
+app.use(bodyParser.json({
+  verify: function (req, res, buf, encoding) {
+    // get rawBody        
+    req.rawBody = buf.toString();
+
+  }
+}));
 app.use(awsServerlessExpressMiddleware.eventContext());
 
 // Enable CORS for all methods
@@ -46,7 +55,7 @@ app.use(function (req, res, next) {
 });
 
 // Funciones miscelaneas
-const comisionApp = 0.15;
+const comisionApp = 0.15; //Por default en 0.15 pero se modifica dependiendo de la comision del evento
 const msInDay = 86400000;
 
 /*******************************************************************************************************************************
@@ -141,10 +150,9 @@ app.post("/reservas/createReserva", async function (req, res) {
       return formatResponse({
         res,
         statusCode: 400,
-        error: "Error el precio total debe ser entre 10$ y 7000$ para pagos en oxxo",
+        error:
+          "Error el precio total debe ser entre 10$ y 7000$ para pagos en oxxo",
       });
-
-
     }
 
     if (!reservaID) {
@@ -171,74 +179,75 @@ app.post("/reservas/createReserva", async function (req, res) {
       });
 
       return /* GraphQL */ `
-              query fetchData($eventoID: ID!, $usuarioID:ID!, $organizadorID:ID! ${cuponID ? `,$cuponID:ID!` : ""
+                query fetchData($eventoID: ID!, $usuarioID:ID!, $organizadorID:ID! ${cuponID ? `,$cuponID:ID!` : ""
         }) {
-                getEvento(id: $eventoID) {
-                  CreatorID
-                  _version
-                  id
-                  personasMax
-                  personasReservadas
-                  titulo
-                  fechaFinal
-                  Reservas(filter: {cancelado: {ne: true}}) {
-                      items {
-                        _deleted
-                        cantidad
-                        fechaExpiracionUTC
-                        pagado
-                        Boletos {
-                          items {
-                            _deleted
-                            quantity
-                            boletoID
+                  getEvento(id: $eventoID) {
+                    CreatorID
+                    _version
+                    id
+                    personasMax
+                    personasReservadas
+                    comisionPercent
+                    titulo
+                    fechaFinal
+                    Reservas(filter: {cancelado: {ne: true}}) {
+                        items {
+                          _deleted
+                          cantidad
+                          fechaExpiracionUTC
+                          pagado
+                          Boletos {
+                            items {
+                              _deleted
+                              quantity
+                              boletoID
+                            }
                           }
                         }
-                      }
-                  }
+                    }
 
-                }
-                cliente:getUsuario(id:$usuarioID){
-                  paymentClientID,
-                  nickname
-                }
-                owner:getUsuario(id:$organizadorID){
-                  paymentAccountID
-                }
-                listBoletos(filter:{or:[${string}]}) {
-                  items{
-                    id
-                    cantidad
-                    personasReservadas
-                    precio
-                    eventoID
-                    titulo
-                    _version
                   }
-                }
-                listReservas(filter: {usuarioID: {eq: "${usuarioID}"}, eventoID:{eq:"${eventoID}"},pagado:{eq: false}, cancelado:{ne:true}}) {
-                      items {
-                          pagado
-                          cancelado
-                          fechaExpiracionUTC
-                          id
-                          _deleted
-                      }
+                  cliente:getUsuario(id:$usuarioID){
+                    paymentClientID,
+                    nickname
                   }
+                  owner:getUsuario(id:$organizadorID){
+                    paymentAccountID
+                  }
+                  listBoletos(filter:{or:[${string}]}) {
+                    items{
+                      id
+                      cantidad
+                      personasReservadas
+                      precio
+                      eventoID
+                      titulo
+                      _version
+                    }
+                  }
+                  listReservas(filter: {usuarioID: {eq: "${usuarioID}"}, eventoID:{eq:"${eventoID}"},pagado:{eq: false}, cancelado:{ne:true}}) {
+                        items {
+                            pagado
+                            cancelado
+                            fechaExpiracionUTC
+                            id
+                            _deleted
+                        }
+                    }
 
-                ${cuponID
+                  ${cuponID
           ? /* GraphQL */ `getCupon(id: $cuponID) {
-                  _version
-                  id
-                  cantidadDescuento
-                  porcentajeDescuento
-                  restantes
-                  vencimiento
-                }`
+                    _version
+                    id
+                    cantidadDescuento
+                    porcentajeDescuento
+                    restantes
+                    vencimiento
+                  }`
           : ""
         }
-              }
-            `;
+                }
+              `;
     };
 
     ////////////////////////////////////////////
@@ -275,8 +284,6 @@ app.post("/reservas/createReserva", async function (req, res) {
 
       if (tipoPago === "EFECTIVO" && total !== 0) {
         const efectivoDeny = !!r.listReservas.items.find((e) => {
-          console.log("Reserva:")
-          console.log(e)
           // Si el evento ya fue pagado o borrado o la fecha de expiracion es menor a la del dioa de hoy da falso para ese item
           if (
             e.pagado ||
@@ -293,7 +300,6 @@ app.post("/reservas/createReserva", async function (req, res) {
           );
         }
       }
-
 
       let personasEnEvento = 0;
 
@@ -361,6 +367,10 @@ app.post("/reservas/createReserva", async function (req, res) {
     } = response;
     // Obtener organizador desde evento
     const { CreatorID: organizadorIDFetched } = evento;
+
+    // Calcular la comision del evento si es que existe
+    const comisionEvento = evento.comisionPercent || evento.comisionPercent === 0 ? evento.comisionPercent : comisionApp
+
 
     clientPaymentID = clientPaymentIDFetched;
     ownerPaymentID = ownerPaymentIDFetched;
@@ -506,9 +516,11 @@ app.post("/reservas/createReserva", async function (req, res) {
           );
         }
 
-        comision += (precioConComision(precio) - precio) * quantity;
+        // Agregar a comision global la comision cobrada por este boleto
+        comision += (precioConComision(precio, comisionEvento) - precio) * quantity;
 
-        return precioConComision(precio) * quantity;
+        // Calcular precio final del boleto mas comision
+        return precioConComision(precio, comisionEvento) * quantity;
       })
       .reduce((partialSum, a) => partialSum + a, 0);
 
@@ -586,7 +598,7 @@ app.post("/reservas/createReserva", async function (req, res) {
     const partyusEmail = "partyus_mx@outlook.com";
     const partyusPhone = "+5213312897347";
 
-    let paymentIntent
+    let paymentIntent;
     // Si hay un total, cobrarlo de lo contrario solo se hace el boleto ( reserva )
     if (total > 0) {
       // Crear el payment intent con stripe y confirmarlo ahi mismo
@@ -601,13 +613,14 @@ app.post("/reservas/createReserva", async function (req, res) {
           usuarioID,
           reservaID,
           eventoID,
+          organizadorID,
 
           // Poner informacion del cupon si existe
           cuponID,
           boletos: JSON.stringify(boletos),
           pagadoAlOrganizador: enviarACreador,
 
-          tipoPago
+          tipoPago,
         },
 
         // Confirmar el pago al momento
@@ -724,10 +737,10 @@ app.post("/reservas/createReserva", async function (req, res) {
     // Regresarle las 6 horas al UTC para estar en UTC para guardarlo en graphql reserva
     limitDate.setTime(limitDate.getTime() + 6 * 3600 * 1000);
 
-
-    const cashBarcode = paymentIntent?.next_action?.oxxo_display_details?.number
-    const cashReference = paymentIntent?.next_action?.oxxo_display_details?.hosted_voucher_url
-
+    const cashBarcode =
+      paymentIntent?.next_action?.oxxo_display_details?.number;
+    const cashReference =
+      paymentIntent?.next_action?.oxxo_display_details?.hosted_voucher_url;
 
     const reservaInput = {
       cantidad: totalPersonasReservadas,
@@ -752,8 +765,8 @@ app.post("/reservas/createReserva", async function (req, res) {
       paymentTime: new Date().toISOString(),
     };
     const q = `
-    mutation myMutation($reservaInput:CreateReservaInput!) {
-      ${boletosFetched.map((e, idx) => {
+      mutation myMutation($reservaInput:CreateReservaInput!) {
+        ${boletosFetched.map((e, idx) => {
       // Actualizar personas reservadas por boleto
 
       const boletoCliente = boletos.find((cli) => cli.id === e.id);
@@ -769,42 +782,42 @@ app.post("/reservas/createReserva", async function (req, res) {
         boletoCliente.quantity;
 
       return `
-        bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
-            ${updateBoletoReturns}
-        }
-        bol${idx}rel: createReservasBoletos(input:{
-          boletoID:"${e.id}",
-          reservaID:"${reservaID}",
-          quantity:${boletoCliente.quantity},
-        }){
-            ${createReservasBoletosReturns}
-            }
-        `;
+          bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
+              ${updateBoletoReturns}
+          }
+          bol${idx}rel: createReservasBoletos(input:{
+            boletoID:"${e.id}",
+            reservaID:"${reservaID}",
+            quantity:${boletoCliente.quantity},
+          }){
+              ${createReservasBoletosReturns}
+              }
+          `;
     })}
 
-            updateEvento(input:{id:"${evento.id
+              updateEvento(input:{id:"${evento.id
       }", personasReservadas:${reservadosEvento}, _version:${evento._version
       }}){
-            ${updateEventoReturns}                    
-        }
+              ${updateEventoReturns}                    
+          }
 
-      ${
+        ${
       // Restar de cupon si existe ID
       cuponID
         ? `updateCupon(input: {id: "${cuponID}", restantes: ${cupon.restantes ? cupon.restantes - totalPersonasReservadas : 0
         },_version:${cupon._version}}) {
-                ${updateCuponReturns}
-          }`
+                  ${updateCuponReturns}
+            }`
         : ``
       }
 
 
-        
-    createReserva(input: $reservaInput) {
-        ${reservaReturns}
-    }
-    }
-  `;
+          
+      createReserva(input: $reservaInput) {
+          ${reservaReturns}
+      }
+      }
+    `;
 
     // Mutacion para actualizar los boletos, el evento, crear reservacion y restar el personas disponibles de cupon
     await graphqlRequest({
@@ -812,7 +825,7 @@ app.post("/reservas/createReserva", async function (req, res) {
       variables: {
         reservaInput,
       },
-    })
+    });
 
     // Se devuelve una respuesta exitosa y el payment intent con el que se hizo en caso tal
     return formatResponse({
@@ -835,102 +848,547 @@ app.post("/reservas/createReserva", async function (req, res) {
 /*******************************************************************************************************************************
  ******************************************* CONFIRMAR RESERVA DE 3D SECURE *****************************************************
 ********************************************************************************************************************************/
-app.get(
-  "/reservas/confirmReserva/:paymentIntentID",
-  async function (req, res) {
-    try {
-      const { paymentIntentID } = req.params;
+app.get("/reservas/confirmReserva/:paymentIntentID", async function (req, res) {
+  try {
+    const { paymentIntentID } = req.params;
 
-      // Validar que exista el parametro de id de paymentIntent
-      if (!paymentIntentID) {
-        console.log(req);
-        res.status(404);
-        res.json({
-          error: "Error, no se recibio paymentIntentID",
-        });
-        return;
-      }
-
-      // Obtener el payment intent que se quiere confirmar
-      const paymentIntent = await stripe.paymentIntents.retrieve(
-        paymentIntentID
-      );
-
-      // Si el estado del payment intent no es confirmado, dar error
-      if (paymentIntent.status !== "succeeded") {
-        // Devolver error de last payment error o mensaje generico
-        const mes = paymentIntent.last_payment_error?.message
-          ? paymentIntent.last_payment_error.message
-          : "ocurrio un error confirmando tu cargo, no se pudo realizar.";
-        return formatResponse({
-          res,
-          error: mes,
-          statusCode: 400,
-        });
-      }
-
-      // Crear la reserva obteniendo informacion a partir de la metadata del payment intent
-      await createReservaFromPaymentIntent(paymentIntent);
-
-      // Resolver con payment intent si fue exitosa
-      return formatResponse({
-        res,
-        statusCode: 200,
-        body: paymentIntent,
+    // Validar que exista el parametro de id de paymentIntent
+    if (!paymentIntentID) {
+      console.log(req);
+      res.status(404);
+      res.json({
+        error: "Error, no se recibio paymentIntentID",
       });
-    } catch (error) {
+      return;
+    }
+
+    // Obtener el payment intent que se quiere confirmar
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentID);
+
+    // Si el estado del payment intent no es confirmado, dar error
+    if (paymentIntent.status !== "succeeded") {
+      // Devolver error de last payment error o mensaje generico
+      const mes = paymentIntent.last_payment_error?.message
+        ? paymentIntent.last_payment_error.message
+        : "ocurrio un error confirmando tu cargo, no se pudo realizar.";
       return formatResponse({
         res,
-        statusCode: 500,
-        error,
+        error: mes,
+        statusCode: 400,
       });
     }
-  }
-);
 
+    // Crear la reserva obteniendo informacion a partir de la metadata del payment intent
+    await createReservaFromPaymentIntent(paymentIntent);
+
+    // Resolver con payment intent si fue exitosa
+    return formatResponse({
+      res,
+      statusCode: 200,
+      body: paymentIntent,
+    });
+  } catch (error) {
+    return formatResponse({
+      res,
+      statusCode: 500,
+      error,
+    });
+  }
+});
 
 /*******************************************************************************************************************************
  **************************************************** ONPAY( OXXO ) *************************************************************
 ********************************************************************************************************************************/
-app.post("/reservas/onPay", function (req, res) {
+app.post("/reservas/onPay", async function (req, res) {
+  // Usar rawBody
+  app.use(require('body-parser').raw({ type: '*/*' }));
+
+  if (!req?.body) {
+    return formatResponse({
+      statusCode: 400,
+
+      error: {
+        description: "No se recibio cuerpo de la solicitud",
+      },
+    });
+  }
 
 
-  const { body } = req
-  const sig = request.headers['stripe-signature'];
+
+  const { body, rawBody } = req;
+  const sig = req.headers["stripe-signature"];
 
   let event;
 
+
+
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, WEBHOOK_KEY);
+    // Verificar que coincida con la firma del webook
+    event = stripe.webhooks.constructEvent(rawBody, sig, WEBHOOK_KEY);
 
     if (event.type !== "payment_intent.succeeded") {
-      throw "El tipo de evento no es de payment_intent.succeeded"
+      throw "El tipo de evento no es de payment_intent.succeeded";
     }
 
     const paymentIntent = event.data.object;
 
-    console.log({ body, event })
+    console.log({ paymentIntent });
 
+    // Operacion para obtener la reserva on graphql
+    const getReserva = /* GraphQL */ `
+        query GetReserva($id: ID!) {
+          getReserva(id: $id) {
+            id
+            total
+            comision
+            pagadoAlOrganizador
+            organizadorID
+            usuarioID
+            _version
+            eventoID
+            cancelado
+          }
+        }
+      `;
 
+    const { status, metadata } = paymentIntent;
 
+    if (status !== "succeeded") {
+      return formatResponse({
+        res,
+        body: {
+          ...body,
+          message: "La transaccion no tiene status.succeeded",
+        },
+      });
+    }
+
+    // Obtener info de la reserva
+    const { reservaID } = metadata;
+    const amount = paymentIntent.amount / 100;
+
+    if (!reservaID) {
+      throw new Error(
+        "Error no se encontro reserva ID  en los metadatos recibidos"
+      );
+    }
+
+    let clientPaymentID = "",
+      ownerPaymentID = "",
+      notificationToken = "",
+      notificacionABorrar = {};
+
+    const reserva = await graphqlRequest({
+      query: getReserva,
+      variables: { id: reservaID },
+    }).then(async (r) => {
+      r = r.data.getReserva;
+      const { usuarioID, organizadorID } = r;
+
+      await graphqlRequest({
+        query: /* GraphQL */ `
+                query getUsuarios {
+                  client: getUsuario(id: "${usuarioID}") {
+                    paymentClientID
+                    notificationToken
+                  }
+                  organizador: getUsuario(id: "${organizadorID}") {
+                    paymentAccountID
+                  }
+                  
+                  listNotificacions(filter: {reservaID: {eq: "${reservaID}"}, tipo: {eq: RECORDATORIOPAGO}, usuarioID: {eq: "${usuarioID}"}}) {
+                    items {
+                      id
+                      _version
+                  }
+                  }
+                }
+              `,
+      }).then((r) => {
+        r = r.data;
+        notificacionABorrar = r.listNotificacions?.items[0];
+
+        clientPaymentID = r.client.paymentClientID;
+        notificationToken = r.client.notificationToken;
+
+        ownerPaymentID = r.organizador.paymentAccountID;
+      });
+
+      return r;
+    });
+
+    // Obtener detalles del fee y cuanto se lleva el organizador
+    const {
+      pagadoAlOrganizador,
+      comision,
+      organizadorID,
+      usuarioID,
+      _version,
+      eventoID,
+      cancelado,
+    } = reserva;
+
+    // Aqui manejar movimientos de dinero hacia el organizador y RP's
+
+    const updateReservaInput = {
+      id: reservaID,
+      pagado: true,
+      paymentTime: new Date().toISOString(),
+      fechaExpiracionUTC: undefined,
+      cancelado: false,
+      canceledAt: undefined,
+      _version,
+    };
+
+    const q = /*GraphQL*/ `
+      mutation UpdateReserva($input: UpdateReservaInput!) {
+        ${!cancelado
+        ? `
+        updateReserva(input: $input) {
+          ${reservaReturns}
+      }
+      `
+        : ""
+      }
+
+        ${notificacionABorrar?.id
+        ? `
+        deleteNotificacion(input: {id: "${notificacionABorrar.id}" _version:${notificacionABorrar._version}}) {
+          id
+          _version
+          _deleted
+          _lastChangedAt
+          createdAt
+          updatedAt
+      }
+  `
+        : ""
+      }
+
+        createNotificacion(input: {
+        tipo: RESERVAEFECTIVOPAGADA,
+        showAt: "${new Date().toISOString()}",
+        titulo:"Pago exitoso",
+        usuarioID:"${usuarioID}",
+        reservaID:"${reservaID}",
+        organizadorID:"${organizadorID}",
+        descripcion: "Tu pago en efectivo por $${amount} fue procesado con exito. ${cancelado
+        ? `Como la reserva esta cancelada se agrego al saldo de tu cuenta`
+        : `Haz click aqui para ver tu boleto`
+      }"
+    }){
+      ${createNotificacionReturns}
+    }
+    }
+    `;
+
+    ///////////////////////////////////////////////////////
+    // Modificar estado de reserva y mandar notificacion //
+    ///////////////////////////////////////////////////////
+    await graphqlRequest({
+      query: q,
+      variables: { input: updateReservaInput },
+    });
+
+    // Enviar push notification
+    if (notificationToken) {
+      let data = {
+        reservaID,
+        eventoID,
+        type: "PAYMENTRECEIVED",
+      };
+
+      let message = {
+        to: notificationToken,
+        sound: "default",
+        title: "Pago recibido",
+        body:
+          `Tu pago en efectivo por $${amount} fue procesado con exito. ` +
+          (cancelado
+            ? "Como la reserva esta cancelada se agrego al saldo de tu cuenta"
+            : "Entra a la app para ver tu boleto"),
+        badge: 1,
+        priority: "high",
+        data,
+      };
+
+      if (!data) {
+        delete message.data;
+      }
+
+      await axios({
+        method: "POST",
+        url: "https://exp.host/--/api/v2/push/send",
+        headers: {
+          Accept: "application/json",
+          "Accept-encoding": "gzip, deflate",
+          "Content-Type": "application/json",
+        },
+        data: JSON.stringify(message),
+      }).then((r) => {
+        console.log("Push notification send to ", notificationToken);
+      });
+    }
 
     // Return a 200 response to acknowledge receipt of the event
-    response.send();
+    res.send();
   } catch (err) {
-    console.log(err)
-    response.status(400).send(`Webhook Error: ${err.message}`);
+    console.log(err);
+    res.status(400).send(`Webhook Error: ${err.message}`);
     return;
   }
-
-
 });
 
 /*******************************************************************************************************************************
  *************************************************** CANCELAR RESERVA ************************************************************
 ********************************************************************************************************************************/
 app.post("/reservas/cancel", function (req, res) {
-  // Add your code here
-  res.json({ success: "get call succeed!", url: req.url });
+  try {
+
+
+    const { paymentIntentID,
+      reservaID,
+      organizadorID,
+      clientID,
+    } = req.body;
+
+
+
+
+    // Validacion de parametros
+    if (!reservaID) {
+      return formatResponse({
+        statusCode: 400,
+        error: {
+          description: "Error no se recibio ID de reserva",
+        },
+      })
+    }
+
+    if (!organizadorID) {
+      return formatResponse({
+        statusCode: 400,
+        error: {
+          description: "Error no se recibio ID de organizador",
+        },
+      })
+    }
+
+    if (!clientID) {
+      return formatResponse({
+        statusCode: 400,
+        error: {
+          description: "Error no se recibio ID de cliente",
+        },
+      })
+    }
+
+
+    if (!paymentIntentID) {
+      console.log(req);
+      res.status(404);
+      res.json({
+        error: "Error, no se recibio paymentIntentID",
+      });
+      return;
+    }
+
+
+    // Operacion para verificar que es posible cancelar la reserva
+
+    const getData = /* GraphQL */ `
+  query GetData($reservaID: ID!, $clientID: ID!, $organizadorID: ID!) {
+    getReserva(id: $reservaID) {
+      id
+      total
+      comision
+      pagadoAlOrganizador
+      cantidad
+      pagado
+      paymentTime
+      tipoPago
+      chargeID
+
+      cashBarcode
+      cashReference
+      ingreso
+      horaIngreso
+      cancelado
+      canceledAt
+      cancelReason
+      fechaExpiracionUTC
+      eventoID
+      usuarioID
+      cuponID
+      organizadorID
+      _version
+    }
+    client: getUsuario(id: $clientID) {
+      paymentClientID
+    }
+
+    organizador: getUsuario(id: $organizadorID) {
+      paymentAccountID
+    }
+  }
+`;
+
+
+    return await // Pedir la reserva a cancelar desde la base de datos para verificar que es posible cancelarla
+
+      (
+        graphqlRequest({
+          query: getData,
+          variables: { reservaID, clientID, organizadorID },
+        })
+      ).then(async (r) => {
+        const res = r.data.getReserva;
+        // Verificar si la reserva no esta ya cancelada
+        if (res.cancelado) {
+          throw new Error("La reserva ya fue cancelada");
+        }
+
+        // Verificar que la reserva no haya sido ingresada
+        if (res.ingreso) {
+          throw new Error("La reserva ya fue ingresada");
+        }
+
+        // Verificar que el organizador de la reserva es de quien tenemos el id de pago
+        if (res.organizadorID !== organizadorID) {
+          throw new Error("El organizador no coincide");
+        }
+
+        // Verificar que el usuario de la reserva es de quien tenemos el id de pago
+        if (res.usuarioID !== clientID) {
+          throw new Error("El cliente no coincide");
+        }
+
+        const paymentClientID =
+          r?.data?.client?.paymentClientID;
+        const paymentAccountID =
+          r?.data?.organizador?.paymentAccountID;
+
+        // Si ya se pago y no tiene fee asociado significa que ocurio algo raro y no se guardo o el usuario
+        // modifico el parametro de pagado alternativamente
+        if (
+          res.pagado &&
+          (!res.chargeID ||
+            !paymentClientID ||
+            !paymentAccountID)
+        ) {
+          console.log({
+            paymentClientID,
+            paymentAccountID,
+            res
+          });
+          throw new Error(
+            "La reserva tiene un error, contactanos para mas informacion"
+          );
+        }
+
+        // Opciones para cancelar la reserva
+        const updateReservaInput = {
+          id: reservaID,
+          cancelado: true,
+          fechaExpiracionUTC: undefined,
+          cancelReason: "CANCELADOPORCLIENTE",
+          canceledAt: new Date().toISOString(),
+        };
+
+
+
+        // Si aparece como pagada, rastrear la informacion del paymentIntentID y cancelarlo
+        if (res.pagado) {
+          const { paymentIntentID, pagadoAlOrganizador } = res;
+
+
+          await Promise.all([
+            // new Promise((res, rej) =>
+            //   // Cancelar transaccion desde el organizador hacia el cliente
+            //   openpay.customers.transfers.create(
+            //     paymentAccountID,
+            //     {
+            //       customer_id: clientPaymentID,
+            //       amount: pagadoAlOrganizador,
+            //       description: "canceltransfer>>>" + reservaID + "><" + "Cancelacion reserva ",
+            //       order_id: "canceltransfer>>>" + reservaID,
+            //     },
+            //     (error, r) => {
+
+            //       if (error) {
+            //         // Si el organizador no tiene fondos entonces modificar el mensaje de error
+            //         if (error.error_code === 4001) {
+            //           error.description =
+            //             "No se pudo cancelar la transferencia, el organizador ya retirado el dinero. Contactanos para mas detalles";
+            //         }
+
+
+            //         rej(error.description);
+            //       }
+
+
+            //       console.log("\nTRANSFER RESULT:\n");
+            //       console.log(r);
+            //       res();
+            //     }
+            //   )
+            // ),
+
+
+            // // Cancelar comision de partyus por http
+            // axios({
+            //   method: "post",
+            //   url: url + process.env.MERCHANT_ID + "/fees/" + feeID + "/refund",
+            //   headers: {
+            //     "Authorization": "Basic " + authKey,
+            //     'Content-Type': 'application/json'
+
+            //   },
+            //   data: JSON.stringify({
+            //     description: "Cancelacion comision reserva " + reservaID,
+            //   }),
+            // }).then((fee) => {
+            //   console.log("\nFEE RESULT:\n");
+            //   console.log(fee);
+            // })
+          ]);
+        }
+
+        //////////////////////////
+        ///Cancelar la reserva ///
+        //////////////////////////
+        await (
+          graphqlRequest({
+            query: /* GraphQL */ `
+                mutation UpdateReserva($updateReservaInput:UpdateReservaInput!) {
+                    updateReserva(input: $updateReservaInput) {
+                        ${reservaReturns}
+                    }
+                }
+            `,
+            variables: { updateReservaInput },
+          })
+        ).then((r) => {
+          console.log(r);
+        });
+
+        return formatResponse({
+          statusCode: 200,
+          body: "Reserva cancelada con exito",
+        });
+      });
+
+
+
+
+  } catch (error) {
+    return formatResponse({
+      res,
+      statusCode: 500,
+      error,
+    });
+
+  }
 });
 
 // Export the app object. When executing the application local this does nothing. However,
@@ -943,9 +1401,7 @@ app.listen(3000);
  ************************************************** FUNCIONES MISC ******************************************************************
 ************************************************************************************************************************************/
 
-async function createReservaFromPaymentIntent(
-  paymentIntent
-) {
+async function createReservaFromPaymentIntent(paymentIntent) {
   // Obtener datos para crear la reserva de los metadatos del payment intent
 
   let {
@@ -959,28 +1415,19 @@ async function createReservaFromPaymentIntent(
   } = paymentIntent?.metadata;
 
   boletos = JSON.parse(boletos);
-  console.log({
-    boletos,
-    eventoID,
-    reservaID,
-    usuarioID,
-    tipoPago,
-    cuponID,
-    pagadoAlOrganizador,
-  });
-
   // Si nos falta cualquiera de esos parametros, dar error
   if (!boletos || !eventoID || !reservaID || !usuarioID || !tipoPago) {
     throw "No se encontro los metadatos del payment intent";
   }
 
   // Obtener el total de la reserva y comision (de centavos a pesos)
-  const total = paymentIntent.amount / 100
-  const comision = paymentIntent.application_fee_amount / 100
+  const total = paymentIntent.amount / 100;
+  const comision = paymentIntent.application_fee_amount / 100;
 
-  const personasReservadas = (
-    boletos
-  ).reduce((prev, bol) => prev + bol.quantity, 0);
+  const personasReservadas = boletos.reduce(
+    (prev, bol) => prev + bol.quantity,
+    0
+  );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /////////////////////PEDIR EVENTO Y BOLETOS PARA SACAR VERSIONES Y PERSONAS RESERVADAS//////////////////////
@@ -1000,30 +1447,30 @@ async function createReservaFromPaymentIntent(
     evento,
   } = await graphqlRequest({
     query: /* GraphQL */ `
-    query fetchData($eventoID: ID!, ${cuponID ? `,$cuponID:ID!` : ""}) {
-      getEvento(id: $eventoID) {
-        CreatorID
-        _version
-        id
-        personasReservadas
-      }
-      listBoletos(filter:{or:[${string}]}) {
-        items{
+      query fetchData($eventoID: ID!, ${cuponID ? `,$cuponID:ID!` : ""}) {
+        getEvento(id: $eventoID) {
+          CreatorID
+          _version
           id
           personasReservadas
-          _version
         }
-      }
-      ${cuponID
+        listBoletos(filter:{or:[${string}]}) {
+          items{
+            id
+            personasReservadas
+            _version
+          }
+        }
+        ${cuponID
         ? /* GraphQL */ `getCupon(id: $cuponID) {
-        _version
-        id
-        restantes
-      }`
+          _version
+          id
+          restantes
+        }`
         : ""
       }
-    }
-  `,
+      }
+    `,
     variables: cuponID
       ? {
         eventoID,
@@ -1033,7 +1480,6 @@ async function createReservaFromPaymentIntent(
         eventoID,
       },
   }).then((r) => {
-
     r = r.data;
 
     return {
@@ -1042,7 +1488,6 @@ async function createReservaFromPaymentIntent(
       boletos: r.listBoletos.items,
     };
   });
-
 
   //////////////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////CREAR RESERVA GRAPHQL////////////////////////////////
@@ -1069,7 +1514,6 @@ async function createReservaFromPaymentIntent(
     paymentTime: new Date().toISOString(),
   };
 
-
   // Sacar las personas reservadas en el evento
   let reservadosEvento = evento.personasReservadas
     ? evento.personasReservadas
@@ -1078,8 +1522,8 @@ async function createReservaFromPaymentIntent(
   reservadosEvento += personasReservadas;
 
   const q = `
-  mutation myMutation($reservaInput:CreateReservaInput!) {
-  ${boletosFetched.map((e, idx) => {
+    mutation myMutation($reservaInput:CreateReservaInput!) {
+    ${boletosFetched.map((e, idx) => {
     // Mapear los boletos obtenidos y cuadrarlo con los que teniamos en los metadatos del payment intent
     const boletoCliente = boletos.find((cli) => cli.id === e.id);
     if (!boletoCliente) {
@@ -1090,41 +1534,42 @@ async function createReservaFromPaymentIntent(
     }
 
     const personasReservadas =
-      (e.personasReservadas ? e.personasReservadas : 0) + boletoCliente.quantity;
+      (e.personasReservadas ? e.personasReservadas : 0) +
+      boletoCliente.quantity;
 
     return `
-    bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
-        ${updateBoletoReturns}
-    }
-    bol${idx}rel: createReservasBoletos(input:{
-      boletoID:"${e.id}",
-      reservaID:"${reservaID}",
-      quantity:${boletoCliente.quantity},
-    }){
-        ${createReservasBoletosReturns}
-        }
-    `;
+      bol${idx}: updateBoleto(input: {id:"${e.id}",personasReservadas:${personasReservadas},_version:${e._version}}) {
+          ${updateBoletoReturns}
+      }
+      bol${idx}rel: createReservasBoletos(input:{
+        boletoID:"${e.id}",
+        reservaID:"${reservaID}",
+        quantity:${boletoCliente.quantity},
+      }){
+          ${createReservasBoletosReturns}
+          }
+      `;
   })}
 
-        updateEvento(input:{id:"${eventoID}", personasReservadas:${reservadosEvento}, _version:${evento._version
+          updateEvento(input:{id:"${eventoID}", personasReservadas:${reservadosEvento}, _version:${evento._version
     }}){
-        ${updateEventoReturns}                    
-    }
+          ${updateEventoReturns}                    
+      }
 
-  ${
+    ${
     // Restar de cupon si existe ID
     cuponID
       ? `updateCupon(input: {id: "${cuponID}", restantes: ${cupon.restantes ? cupon.restantes - personasReservadas : 0
       },_version:${cupon._version}}) {
-            ${updateCuponReturns}
-      }`
+              ${updateCuponReturns}
+        }`
       : ``
     }
-  createReserva(input: $reservaInput) {
-    ${reservaReturns}
-  }
-  }
-  `;
+    createReserva(input: $reservaInput) {
+      ${reservaReturns}
+    }
+    }
+    `;
 
   // Mutacion para actualizar los boletos, el evento, crear reservacion y restar el personas disponibles de cupon
   await graphqlRequest({
@@ -1132,13 +1577,15 @@ async function createReservaFromPaymentIntent(
     variables: {
       reservaInput,
     },
-  })
+  });
 }
 
 // Sacar el precio con comision de in precio inicial
 function precioConComision(inicial, comision) {
   if (!inicial) return 0;
-  return redondear(inicial * (1 + comisionApp), 10);
+
+  return redondear(Math.round(inicial * (1 + comision))
+    , 5);
 }
 
 const redondear = (numero, entero) => {
@@ -1159,8 +1606,9 @@ async function graphqlRequest({ query, variables }) {
   let body = {};
 
   console.log({
-    query, variables
-  })
+    query,
+    variables,
+  });
 
   body = await graphqlOperation(
     !!variables
@@ -1171,11 +1619,11 @@ async function graphqlRequest({ query, variables }) {
     endpoint
   );
   if (body.errors) {
-
-    throw body.errors[0].message + "\nSi se realizo el cargo, contactanos para cancelarlo"
-
+    throw (
+      body.errors[0].message +
+      "\nSi se realizo el cargo, contactanos para cancelarlo"
+    );
   }
-
 
   return body;
 }
@@ -1188,14 +1636,12 @@ function formatResponse({ error, res, body, statusCode }) {
     error,
   };
 
-
   if (error) {
-
     handleError(res, {
       error,
       statusCode,
     });
-    return
+    return;
   }
 
   handleResponse(res, body);
@@ -1208,7 +1654,7 @@ function formatResponse({ error, res, body, statusCode }) {
 // Estandarizar respuestas exitosas y errores
 
 function handleResponse(res, input) {
-  console.log({ response: input })
+  console.log({ response: input });
 
   res.status(200);
   res.json({
@@ -1218,17 +1664,19 @@ function handleResponse(res, input) {
 }
 
 function handleError(res, error) {
-  console.log({ error })
+  console.log({ error });
 
-  error = error.error ? error.error : error
+  error = error.error ? error.error : error;
 
-  const msg = error.raw ? (error.raw.code + ": " + error.raw.message)
-    : error.message ? error.message : error.description
-      ? error.description
-      : error.errorMessage
-        ? error.errorMessage
-        : error;
-
+  const msg = error.raw
+    ? error.raw.code + ": " + error.raw.message
+    : error.message
+      ? error.message
+      : error.description
+        ? error.description
+        : error.errorMessage
+          ? error.errorMessage
+          : error;
 
   const statusCode = error?.statusCode ? error.statusCode : 500;
 

@@ -302,6 +302,7 @@ type EagerReserva = {
   readonly total?: number | null;
   readonly comision?: number | null;
   readonly pagadoAlOrganizador?: number | null;
+  readonly pagadoARP?: number | null;
   readonly cantidad?: number | null;
   readonly pagado?: boolean | null;
   readonly paymentTime?: string | null;
@@ -335,6 +336,7 @@ type LazyReserva = {
   readonly total?: number | null;
   readonly comision?: number | null;
   readonly pagadoAlOrganizador?: number | null;
+  readonly pagadoARP?: number | null;
   readonly cantidad?: number | null;
   readonly pagado?: boolean | null;
   readonly paymentTime?: string | null;

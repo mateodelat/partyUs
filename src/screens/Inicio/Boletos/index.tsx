@@ -50,7 +50,7 @@ export default function Index({
   route: { params: EventoType };
   navigation: NavigationProp;
 }) {
-  const { id: eventID } = route.params;
+  const { id: eventID, comisionPercent: comisionEvento } = route.params;
 
   enum cuponEnum {
     "loading",
@@ -80,7 +80,9 @@ export default function Index({
     if (!e.precio) return;
 
     subtotal += e.precio * quantity;
-    comision += precioConComision(e.precio) * quantity - e.precio * quantity;
+    comision +=
+      precioConComision(e.precio, comisionEvento) * quantity -
+      e.precio * quantity;
   });
 
   let total =
@@ -286,6 +288,7 @@ export default function Index({
             return (
               <BoletoItem
                 item={item}
+                comisionEvento={comisionEvento}
                 showDescripcion={showDescripcion}
                 handleShowDescripcion={() =>
                   setDescriptionShownIdx(showDescripcion ? undefined : index)

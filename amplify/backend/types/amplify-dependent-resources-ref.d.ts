@@ -12,20 +12,8 @@ export type AmplifyDependentResourcesAttributes = {
             "Region": "string",
             "LambdaExecutionRole": "string"
         },
-        "onPay": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
-        },
         "partyusgraphqlOperations": {
             "Arn": "string"
-        },
-        "cancelReserva": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
         },
         "partyuslambdaDependencies": {
             "Arn": "string"

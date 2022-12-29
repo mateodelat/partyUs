@@ -21,7 +21,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   azulClaro,
   azulFondo,
-  enumToArray,
   formatAMPM,
   formatDay,
   getImageUrl,
@@ -32,17 +31,12 @@ import {
   shadowMedia,
   getUserSub,
   precioConComision,
-  timer,
   formatMoney,
   azulOscuro,
   AsyncAlert,
   fetchFromAPI,
-  shadowBaja,
-  shadowMuyBaja,
-  formatDateShort,
-  mayusFirstLetter,
 } from "../../../../constants";
-import { API, DataStore, Predicates, Storage } from "aws-amplify";
+import { DataStore } from "aws-amplify";
 import { OpType } from "@aws-amplify/datastore";
 
 import Line from "../../../components/Line";
@@ -352,10 +346,15 @@ export default function ({
         if (!r) return;
 
         setLoading(true);
-        const result = await fetchFromAPI("/cancelReserva", "POST", {
-          reservaID: reserva.id,
-          organizadorID: reserva.organizadorID,
-          clientID: usuario.id,
+        const result = await fetchFromAPI({
+          path: "/reservas/cancel" + reserva.id,
+          type: "POST",
+          input: {
+            reservaID: reserva.id,
+            organizadorID: reserva.organizadorID,
+            paymentIntentID: reserva.chargeID,
+            clientID: usuario.id,
+          },
         });
         setLoading(false);
         console.log(result);
@@ -459,8 +458,7 @@ export default function ({
         amount: reserva.total,
         titulo,
         codebar: {
-          uri: reserva.cashBarcode,
-          reference: reserva.cashReference,
+          number: reserva.cashBarcode,
         },
         limitDate: new Date(reserva.fechaExpiracionUTC).getTime(),
       });
@@ -716,7 +714,10 @@ export default function ({
                           <Text style={styles.subtitle}>Precio total</Text>
                           <Text style={{ ...styles.value, color: rojoClaro }}>
                             {formatMoney(
-                              precioConComision(e.boleto.precio) * e.quantity
+                              precioConComision(
+                                e.boleto.precio,
+                                evento.comisionPercent
+                              ) * e.quantity
                             )}
                           </Text>
                         </View>
