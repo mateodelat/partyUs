@@ -136,7 +136,7 @@ export default function ({
   function assignDefaultValues() {
     if (produccion) return;
     setNumber({
-      value: "4242424242424242",
+      value: "4000002500003155",
       validation: {
         card: {
           cvv: 3,
@@ -146,7 +146,7 @@ export default function ({
         isValid: true,
       },
     });
-    setName("Valid card");
+    setName("3D secure");
     setExpiry({
       value: "02/24",
       validation: {

@@ -75,6 +75,11 @@ export default function Pagar({
   route: {
     params: EventoType & {
       total: number;
+
+      // Verificar que lo que se calcula en la base de datos coincide con el de la nube
+      comision: number;
+      enviarACreador: number;
+
       boletos: BoletoType[];
       imagenes: {
         uri: string;
@@ -91,7 +96,9 @@ export default function Pagar({
     imagenPrincipalIDX,
     titulo,
     fechaInicial,
-    fechaFinal,
+    enviarACreador,
+    comision,
+
     comisionPercent,
     creator,
     descuento,
@@ -362,10 +369,6 @@ export default function Pagar({
         return;
       }
       if (tipoPago !== "EFECTIVO") {
-        // Si el tipo de pago es un numero seleccionar la tarjeta de la lista
-        setButtonLoading(true);
-        setLoading(true);
-
         const tarjeta = tarjetasGuardadas[tipoPago];
         tarjetaID = await tarjeta.id;
 
@@ -386,6 +389,16 @@ export default function Pagar({
         return;
     }
 
+    // Si el propio organizador se quiere pagar en su evento
+    if (
+      sub === CreatorID &&
+      !(await AsyncAlert(
+        "Atencion",
+        "Este es tu evento, quieres reservar aqui mismo?"
+      ))
+    ) {
+      return;
+    }
     setButtonLoading(true);
     setLoading(true);
     try {
@@ -416,6 +429,8 @@ export default function Pagar({
           receipt_email: correoElectronicoEnabled ? usuario.email : undefined,
 
           sourceID: tarjetaID,
+          enviarACreador,
+          comision,
           total,
         },
       });
@@ -481,7 +496,7 @@ export default function Pagar({
 
         navigation.popToTop();
         navigation.navigate("Perfil");
-        navigation.navigate("MisReservas", { reservaID });
+        navigation.navigate("MisReservas");
         // Si el tipo de pago fue en efectivo, obtener la referencia y navegar a la pestaña pago
         navigation.navigate("ReferenciaPago", {
           amount: total,

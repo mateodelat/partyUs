@@ -9,9 +9,6 @@
     "body-parser": "~1.17.1",
     "express": "~4.15.2"
   },
-  "scripts": {
-    "updateAppsyncOperations": "amplify api gql-compile && amplify codegen && babel src/graphql --config-file ./babel.config.json -d ./amplify/backend/function/partyusgraphqlOperations/opt/graphql/"
-  },
   "devDependencies": {
     "@types/aws-lambda": "~8.10.92"
   }

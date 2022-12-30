@@ -38,7 +38,6 @@ export default function ({
   const navigation = useNavigation() as any;
 
   function navigateHelp() {
-    navigation.pop();
     navigation.navigate("Soporte");
   }
 

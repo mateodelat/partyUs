@@ -255,11 +255,12 @@ export default async function (
   }
 
   // Si se elige actualizar se manda a otra direccion
-  const res = await fetchFromAPI<Stripe.Account>(
-    "/payments/" + (opType === "create" ? "createAccount" : "updateAccount"),
-    "POST",
-    accountObject
-  );
+  const res = await fetchFromAPI<Stripe.Account>({
+    path:
+      "/payments/" + (opType === "create" ? "createAccount" : "updateAccount"),
+    type: "POST",
+    input: accountObject,
+  });
 
   if (res?.error) {
     throw new Error(res as any);

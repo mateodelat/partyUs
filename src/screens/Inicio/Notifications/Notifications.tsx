@@ -7,6 +7,7 @@ import {
   Pressable,
   View,
   FlatList,
+  TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 
@@ -189,24 +190,27 @@ export default function Notifi({ navigation }) {
             >
               <Text style={styles.header}>Notificaciones</Text>
               {confirmDelete ? (
-                <Text
-                  onPress={deleteAll}
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: 16,
-                    paddingHorizontal: 5,
-                    color: rojoClaro,
-                  }}
-                >
-                  BORRAR
-                </Text>
+                <TouchableOpacity onPress={deleteAll}>
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: 16,
+                      paddingHorizontal: 5,
+                      color: rojoClaro,
+                    }}
+                  >
+                    BORRAR
+                  </Text>
+                </TouchableOpacity>
               ) : (
-                <Entypo
-                  onPress={deleteAll}
-                  name="cross"
-                  size={25}
-                  color={rojoClaro}
-                />
+                <TouchableOpacity onPress={deleteAll}>
+                  <Entypo
+                    onPress={deleteAll}
+                    name="cross"
+                    size={25}
+                    color={rojoClaro}
+                  />
+                </TouchableOpacity>
               )}
             </Pressable>
             <FlatList

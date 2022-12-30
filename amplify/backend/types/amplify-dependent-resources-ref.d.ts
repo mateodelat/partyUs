@@ -12,9 +12,6 @@ export type AmplifyDependentResourcesAttributes = {
             "Region": "string",
             "LambdaExecutionRole": "string"
         },
-        "partyusgraphqlOperations": {
-            "Arn": "string"
-        },
         "partyuslambdaDependencies": {
             "Arn": "string"
         },

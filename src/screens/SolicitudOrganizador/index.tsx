@@ -100,15 +100,19 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
       setLoading(true);
 
       // Se suben documentos a la cuenta stripe
-      fetchFromAPI<Stripe.Account>("/payments/updateAccount", "POST", {
-        accountID: usuario.paymentAccountID,
+      fetchFromAPI<Stripe.Account>({
+        path: "/payments/updateAccount",
+        type: "POST",
+        input: {
+          accountID: usuario.paymentAccountID,
 
-        // Actualizar informacion del individuo dueño de la cuenta
-        individual: {
-          verification: {
-            document: {
-              front: stripeIdFrontKey,
-              back: stripeIdBackKey,
+          // Actualizar informacion del individuo dueño de la cuenta
+          individual: {
+            verification: {
+              document: {
+                front: stripeIdFrontKey,
+                back: stripeIdBackKey,
+              },
             },
           },
         },

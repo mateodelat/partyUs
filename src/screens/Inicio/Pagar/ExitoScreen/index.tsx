@@ -35,7 +35,10 @@ export default function ExitoScreen({ navigation, route }) {
       </Text>
       {descripcion && <Text style={styles.descripcion}>{descripcion}</Text>}
 
-      <TouchableOpacity onPress={onPress} style={styles.buttonContainer}>
+      <TouchableOpacity
+        onPress={() => onPress()}
+        style={styles.buttonContainer}
+      >
         <Text style={styles.buttonTxt}>{txtOnPress}</Text>
       </TouchableOpacity>
     </View>
