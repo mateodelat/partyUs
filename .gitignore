@@ -39,3 +39,4 @@ amplify/team-provider-info.json
 #amplify-do-not-edit-end
 amplify/team-provider-info.json
 googleServiceAccount.json
+constants/keys.js
