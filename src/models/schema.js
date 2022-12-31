@@ -73,6 +73,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "rfc": {
+                    "name": "rfc",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "imagenFondo": {
                     "name": "imagenFondo",
                     "isArray": false,
@@ -129,10 +136,26 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "idKey": {
-                    "name": "idKey",
+                "idFrontKey": {
+                    "name": "idFrontKey",
                     "isArray": false,
                     "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "idBackKey": {
+                    "name": "idBackKey",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "tipoDocumento": {
+                    "name": "tipoDocumento",
+                    "isArray": false,
+                    "type": {
+                        "enum": "TipoDocumento"
+                    },
                     "isRequired": false,
                     "attributes": []
                 },
@@ -164,8 +187,15 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "userPaymentID": {
-                    "name": "userPaymentID",
+                "paymentClientID": {
+                    "name": "paymentClientID",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "paymentAccountID": {
+                    "name": "paymentAccountID",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -403,6 +433,27 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "comisionPercent": {
+                    "name": "comisionPercent",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "comisionRP": {
+                    "name": "comisionRP",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "allowPaymentsInPlace": {
+                    "name": "allowPaymentsInPlace",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "personasReservadas": {
                     "name": "personasReservadas",
                     "isArray": false,
@@ -428,6 +479,13 @@ export const schema = {
                     "name": "precioMax",
                     "isArray": false,
                     "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "paymentProductID": {
+                    "name": "paymentProductID",
+                    "isArray": false,
+                    "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -619,6 +677,13 @@ export const schema = {
                     "name": "precio",
                     "isArray": false,
                     "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "paymentPriceID": {
+                    "name": "paymentPriceID",
+                    "isArray": false,
+                    "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -924,6 +989,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "pagadoARP": {
+                    "name": "pagadoARP",
+                    "isArray": false,
+                    "type": "Float",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "cantidad": {
                     "name": "cantidad",
                     "isArray": false,
@@ -942,6 +1014,13 @@ export const schema = {
                     "name": "paymentTime",
                     "isArray": false,
                     "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "referedFrom": {
+                    "name": "referedFrom",
+                    "isArray": false,
+                    "type": "ID",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -976,20 +1055,6 @@ export const schema = {
                 },
                 "chargeID": {
                     "name": "chargeID",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "transactionID": {
-                    "name": "transactionID",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "feeID": {
-                    "name": "feeID",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -1685,6 +1750,13 @@ export const schema = {
         }
     },
     "enums": {
+        "TipoDocumento": {
+            "name": "TipoDocumento",
+            "values": [
+                "PASAPORTE",
+                "INE"
+            ]
+        },
         "PlaceEnum": {
             "name": "PlaceEnum",
             "values": [
@@ -1698,7 +1770,7 @@ export const schema = {
             "values": [
                 "REGGAETON",
                 "POP",
-                "TECHNO",
+                "TECNO",
                 "RAP",
                 "BANDA",
                 "ROCK",
@@ -1711,6 +1783,7 @@ export const schema = {
                 "DJ",
                 "ALBERCA",
                 "BARRALIBRE",
+                "ESTACIONAMIENTO",
                 "COMIDA",
                 "SEGURIDAD"
             ]
@@ -1750,5 +1823,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.3.2",
-    "version": "186a0549df851277e571dc92ae2e07a3"
+    "version": "917de69f615b88e34667068ec2f4b59a"
 };

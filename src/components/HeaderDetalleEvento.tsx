@@ -13,7 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 
 import { rojoClaro } from "../../constants";
 
-export default ({
+const DetalleEvento = ({
   scrollY,
   height,
   titulo,
@@ -137,3 +137,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+export default DetalleEvento;

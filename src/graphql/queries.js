@@ -14,6 +14,7 @@ export const getUsuario = /* GraphQL */ `
       cuentaBancaria
       titularCuenta
       receiveNewReservations
+      rfc
       imagenFondo
       direccion
       phoneNumber
@@ -22,12 +23,15 @@ export const getUsuario = /* GraphQL */ `
       admin
       idUploaded
       idData
-      idKey
+      idFrontKey
+      idBackKey
+      tipoDocumento
       fechaNacimiento
       calificacion
       numResenas
       notificationToken
-      userPaymentID
+      paymentClientID
+      paymentAccountID
       verified
       owner
       Eventos {
@@ -45,10 +49,14 @@ export const getUsuario = /* GraphQL */ `
           musica
           comodities
           musOtra
+          comisionPercent
+          comisionRP
+          allowPaymentsInPlace
           personasReservadas
           personasMax
           precioMin
           precioMax
+          paymentProductID
           CreatorID
           createdAt
           updatedAt
@@ -65,14 +73,14 @@ export const getUsuario = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -120,6 +128,7 @@ export const listUsuarios = /* GraphQL */ `
         cuentaBancaria
         titularCuenta
         receiveNewReservations
+        rfc
         imagenFondo
         direccion
         phoneNumber
@@ -128,12 +137,15 @@ export const listUsuarios = /* GraphQL */ `
         admin
         idUploaded
         idData
-        idKey
+        idFrontKey
+        idBackKey
+        tipoDocumento
         fechaNacimiento
         calificacion
         numResenas
         notificationToken
-        userPaymentID
+        paymentClientID
+        paymentAccountID
         verified
         owner
         Eventos {
@@ -179,6 +191,7 @@ export const syncUsuarios = /* GraphQL */ `
         cuentaBancaria
         titularCuenta
         receiveNewReservations
+        rfc
         imagenFondo
         direccion
         phoneNumber
@@ -187,12 +200,15 @@ export const syncUsuarios = /* GraphQL */ `
         admin
         idUploaded
         idData
-        idKey
+        idFrontKey
+        idBackKey
+        tipoDocumento
         fechaNacimiento
         calificacion
         numResenas
         notificationToken
-        userPaymentID
+        paymentClientID
+        paymentAccountID
         verified
         owner
         Eventos {
@@ -230,10 +246,14 @@ export const getEvento = /* GraphQL */ `
       musica
       comodities
       musOtra
+      comisionPercent
+      comisionRP
+      allowPaymentsInPlace
       personasReservadas
       personasMax
       precioMin
       precioMax
+      paymentProductID
       CreatorID
       creator {
         id
@@ -246,6 +266,7 @@ export const getEvento = /* GraphQL */ `
         cuentaBancaria
         titularCuenta
         receiveNewReservations
+        rfc
         imagenFondo
         direccion
         phoneNumber
@@ -254,12 +275,15 @@ export const getEvento = /* GraphQL */ `
         admin
         idUploaded
         idData
-        idKey
+        idFrontKey
+        idBackKey
+        tipoDocumento
         fechaNacimiento
         calificacion
         numResenas
         notificationToken
-        userPaymentID
+        paymentClientID
+        paymentAccountID
         verified
         owner
         Eventos {
@@ -284,6 +308,7 @@ export const getEvento = /* GraphQL */ `
           cantidad
           personasReservadas
           precio
+          paymentPriceID
           eventoID
           createdAt
           updatedAt
@@ -301,14 +326,14 @@ export const getEvento = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -359,10 +384,14 @@ export const listEventos = /* GraphQL */ `
         musica
         comodities
         musOtra
+        comisionPercent
+        comisionRP
+        allowPaymentsInPlace
         personasReservadas
         personasMax
         precioMin
         precioMax
+        paymentProductID
         CreatorID
         creator {
           id
@@ -375,6 +404,7 @@ export const listEventos = /* GraphQL */ `
           cuentaBancaria
           titularCuenta
           receiveNewReservations
+          rfc
           imagenFondo
           direccion
           phoneNumber
@@ -383,12 +413,15 @@ export const listEventos = /* GraphQL */ `
           admin
           idUploaded
           idData
-          idKey
+          idFrontKey
+          idBackKey
+          tipoDocumento
           fechaNacimiento
           calificacion
           numResenas
           notificationToken
-          userPaymentID
+          paymentClientID
+          paymentAccountID
           verified
           owner
           createdAt
@@ -443,10 +476,14 @@ export const syncEventos = /* GraphQL */ `
         musica
         comodities
         musOtra
+        comisionPercent
+        comisionRP
+        allowPaymentsInPlace
         personasReservadas
         personasMax
         precioMin
         precioMax
+        paymentProductID
         CreatorID
         creator {
           id
@@ -459,6 +496,7 @@ export const syncEventos = /* GraphQL */ `
           cuentaBancaria
           titularCuenta
           receiveNewReservations
+          rfc
           imagenFondo
           direccion
           phoneNumber
@@ -467,12 +505,15 @@ export const syncEventos = /* GraphQL */ `
           admin
           idUploaded
           idData
-          idKey
+          idFrontKey
+          idBackKey
+          tipoDocumento
           fechaNacimiento
           calificacion
           numResenas
           notificationToken
-          userPaymentID
+          paymentClientID
+          paymentAccountID
           verified
           owner
           createdAt
@@ -594,6 +635,7 @@ export const getBoleto = /* GraphQL */ `
       cantidad
       personasReservadas
       precio
+      paymentPriceID
       eventoID
       Reservas {
         items {
@@ -633,6 +675,7 @@ export const listBoletos = /* GraphQL */ `
         cantidad
         personasReservadas
         precio
+        paymentPriceID
         eventoID
         Reservas {
           nextToken
@@ -670,6 +713,7 @@ export const syncBoletos = /* GraphQL */ `
         cantidad
         personasReservadas
         precio
+        paymentPriceID
         eventoID
         Reservas {
           nextToken
@@ -701,14 +745,14 @@ export const getCupon = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -807,6 +851,8 @@ export const getRetiro = /* GraphQL */ `
       organizadorID
       amount
       adminID
+      feeID
+      transferID
       mensaje
       Reservas {
         items {
@@ -814,14 +860,14 @@ export const getRetiro = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -863,6 +909,8 @@ export const listRetiros = /* GraphQL */ `
         organizadorID
         amount
         adminID
+        feeID
+        transferID
         mensaje
         Reservas {
           nextToken
@@ -897,6 +945,8 @@ export const syncRetiros = /* GraphQL */ `
         organizadorID
         amount
         adminID
+        feeID
+        transferID
         mensaje
         Reservas {
           nextToken
@@ -920,15 +970,19 @@ export const getReserva = /* GraphQL */ `
       total
       comision
       pagadoAlOrganizador
+      pagadoARP
       cantidad
       pagado
       paymentTime
+      referedFrom
       transaccionAOrganizadorID
       transaccionAOrganizador {
         id
         organizadorID
         amount
         adminID
+        feeID
+        transferID
         mensaje
         Reservas {
           nextToken
@@ -942,8 +996,6 @@ export const getReserva = /* GraphQL */ `
       }
       tipoPago
       chargeID
-      transactionID
-      feeID
       cashBarcode
       cashReference
       ingreso
@@ -967,10 +1019,14 @@ export const getReserva = /* GraphQL */ `
         musica
         comodities
         musOtra
+        comisionPercent
+        comisionRP
+        allowPaymentsInPlace
         personasReservadas
         personasMax
         precioMin
         precioMax
+        paymentProductID
         CreatorID
         creator {
           id
@@ -983,6 +1039,7 @@ export const getReserva = /* GraphQL */ `
           cuentaBancaria
           titularCuenta
           receiveNewReservations
+          rfc
           imagenFondo
           direccion
           phoneNumber
@@ -991,12 +1048,15 @@ export const getReserva = /* GraphQL */ `
           admin
           idUploaded
           idData
-          idKey
+          idFrontKey
+          idBackKey
+          tipoDocumento
           fechaNacimiento
           calificacion
           numResenas
           notificationToken
-          userPaymentID
+          paymentClientID
+          paymentAccountID
           verified
           owner
           createdAt
@@ -1031,6 +1091,7 @@ export const getReserva = /* GraphQL */ `
         cuentaBancaria
         titularCuenta
         receiveNewReservations
+        rfc
         imagenFondo
         direccion
         phoneNumber
@@ -1039,12 +1100,15 @@ export const getReserva = /* GraphQL */ `
         admin
         idUploaded
         idData
-        idKey
+        idFrontKey
+        idBackKey
+        tipoDocumento
         fechaNacimiento
         calificacion
         numResenas
         notificationToken
-        userPaymentID
+        paymentClientID
+        paymentAccountID
         verified
         owner
         Eventos {
@@ -1114,15 +1178,19 @@ export const listReservas = /* GraphQL */ `
         total
         comision
         pagadoAlOrganizador
+        pagadoARP
         cantidad
         pagado
         paymentTime
+        referedFrom
         transaccionAOrganizadorID
         transaccionAOrganizador {
           id
           organizadorID
           amount
           adminID
+          feeID
+          transferID
           mensaje
           createdAt
           updatedAt
@@ -1132,8 +1200,6 @@ export const listReservas = /* GraphQL */ `
         }
         tipoPago
         chargeID
-        transactionID
-        feeID
         cashBarcode
         cashReference
         ingreso
@@ -1157,10 +1223,14 @@ export const listReservas = /* GraphQL */ `
           musica
           comodities
           musOtra
+          comisionPercent
+          comisionRP
+          allowPaymentsInPlace
           personasReservadas
           personasMax
           precioMin
           precioMax
+          paymentProductID
           CreatorID
           createdAt
           updatedAt
@@ -1180,6 +1250,7 @@ export const listReservas = /* GraphQL */ `
           cuentaBancaria
           titularCuenta
           receiveNewReservations
+          rfc
           imagenFondo
           direccion
           phoneNumber
@@ -1188,12 +1259,15 @@ export const listReservas = /* GraphQL */ `
           admin
           idUploaded
           idData
-          idKey
+          idFrontKey
+          idBackKey
+          tipoDocumento
           fechaNacimiento
           calificacion
           numResenas
           notificationToken
-          userPaymentID
+          paymentClientID
+          paymentAccountID
           verified
           owner
           createdAt
@@ -1249,15 +1323,19 @@ export const syncReservas = /* GraphQL */ `
         total
         comision
         pagadoAlOrganizador
+        pagadoARP
         cantidad
         pagado
         paymentTime
+        referedFrom
         transaccionAOrganizadorID
         transaccionAOrganizador {
           id
           organizadorID
           amount
           adminID
+          feeID
+          transferID
           mensaje
           createdAt
           updatedAt
@@ -1267,8 +1345,6 @@ export const syncReservas = /* GraphQL */ `
         }
         tipoPago
         chargeID
-        transactionID
-        feeID
         cashBarcode
         cashReference
         ingreso
@@ -1292,10 +1368,14 @@ export const syncReservas = /* GraphQL */ `
           musica
           comodities
           musOtra
+          comisionPercent
+          comisionRP
+          allowPaymentsInPlace
           personasReservadas
           personasMax
           precioMin
           precioMax
+          paymentProductID
           CreatorID
           createdAt
           updatedAt
@@ -1315,6 +1395,7 @@ export const syncReservas = /* GraphQL */ `
           cuentaBancaria
           titularCuenta
           receiveNewReservations
+          rfc
           imagenFondo
           direccion
           phoneNumber
@@ -1323,12 +1404,15 @@ export const syncReservas = /* GraphQL */ `
           admin
           idUploaded
           idData
-          idKey
+          idFrontKey
+          idBackKey
+          tipoDocumento
           fechaNacimiento
           calificacion
           numResenas
           notificationToken
-          userPaymentID
+          paymentClientID
+          paymentAccountID
           verified
           owner
           createdAt
@@ -1377,15 +1461,19 @@ export const getReservasBoletos = /* GraphQL */ `
         total
         comision
         pagadoAlOrganizador
+        pagadoARP
         cantidad
         pagado
         paymentTime
+        referedFrom
         transaccionAOrganizadorID
         transaccionAOrganizador {
           id
           organizadorID
           amount
           adminID
+          feeID
+          transferID
           mensaje
           createdAt
           updatedAt
@@ -1395,8 +1483,6 @@ export const getReservasBoletos = /* GraphQL */ `
         }
         tipoPago
         chargeID
-        transactionID
-        feeID
         cashBarcode
         cashReference
         ingreso
@@ -1420,10 +1506,14 @@ export const getReservasBoletos = /* GraphQL */ `
           musica
           comodities
           musOtra
+          comisionPercent
+          comisionRP
+          allowPaymentsInPlace
           personasReservadas
           personasMax
           precioMin
           precioMax
+          paymentProductID
           CreatorID
           createdAt
           updatedAt
@@ -1443,6 +1533,7 @@ export const getReservasBoletos = /* GraphQL */ `
           cuentaBancaria
           titularCuenta
           receiveNewReservations
+          rfc
           imagenFondo
           direccion
           phoneNumber
@@ -1451,12 +1542,15 @@ export const getReservasBoletos = /* GraphQL */ `
           admin
           idUploaded
           idData
-          idKey
+          idFrontKey
+          idBackKey
+          tipoDocumento
           fechaNacimiento
           calificacion
           numResenas
           notificationToken
-          userPaymentID
+          paymentClientID
+          paymentAccountID
           verified
           owner
           createdAt
@@ -1496,6 +1590,7 @@ export const getReservasBoletos = /* GraphQL */ `
         cantidad
         personasReservadas
         precio
+        paymentPriceID
         eventoID
         Reservas {
           nextToken
@@ -1533,14 +1628,14 @@ export const listReservasBoletos = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -1566,6 +1661,7 @@ export const listReservasBoletos = /* GraphQL */ `
           cantidad
           personasReservadas
           precio
+          paymentPriceID
           eventoID
           createdAt
           updatedAt
@@ -1608,14 +1704,14 @@ export const syncReservasBoletos = /* GraphQL */ `
           total
           comision
           pagadoAlOrganizador
+          pagadoARP
           cantidad
           pagado
           paymentTime
+          referedFrom
           transaccionAOrganizadorID
           tipoPago
           chargeID
-          transactionID
-          feeID
           cashBarcode
           cashReference
           ingreso
@@ -1641,6 +1737,7 @@ export const syncReservasBoletos = /* GraphQL */ `
           cantidad
           personasReservadas
           precio
+          paymentPriceID
           eventoID
           createdAt
           updatedAt

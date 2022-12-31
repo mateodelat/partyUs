@@ -1,23 +1,21 @@
 /* Amplify Params - DO NOT EDIT
-	API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
-	API_PARTYUSAPI_GRAPHQLAPIIDOUTPUT
-	API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT
-	ENV
-	REGION
-Amplify Params - DO NOT EDIT */const express = require('express')
+  API_PARTYUSAPI_GRAPHQLAPIENDPOINTOUTPUT
+  API_PARTYUSAPI_GRAPHQLAPIIDOUTPUT
+  API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT
+  ENV
+  REGION
+Amplify Params - DO NOT EDIT */
+const express = require('express')
 const bodyParser = require('body-parser')
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 
 
 const production = process.env.ENV === "production"
 
-const MERCHANT_ID = production ? process.env.MERCHANT_ID_PROD : process.env.MERCHANT_ID_STAG
 const SECRET_KEY = production ? process.env.SECRET_KEY_PROD : process.env.SECRET_KEY_STAG
 
+const stripe = require('stripe')(SECRET_KEY);
 
-var Openpay = require('openpay');
-var openpay = new Openpay(MERCHANT_ID, SECRET_KEY);
-openpay.setProductionReady(production);
 
 
 // declare a new express app
@@ -34,466 +32,280 @@ app.use(function (req, res, next) {
 
 
 
+/*******************************************************************************************************************************
+*************************************************** ACCOUNTS *******************************************************************
+********************************************************************************************************************************/
 
-/******************************
- * GET obtener cuenta cliente *
- *****************************/
-app.get('/payments/clientInfo', async function (req, res) {
+/*****************************************
+* POST Crear account de cliente en stripe *
+*****************************************/
+
+async function createAccount(req, res) {
   try {
-    const id = req.query.id
-    const external_id = req.query.external_id
 
-
-    // Si tengo id de cliente devolerlo
-    if (id) {
-      openpay.customers.get(id, function (error, body, response) {
-        if (error?.http_code) {
-          res.status(error?.http_code)
-        }
-
-        res.json({
-          error,
-          body
-        })
-      })
-    } else if (external_id) {
-      openpay.customers.list({
-        external_id
-      }, function (error, body, response) {
-        if (error?.http_code) {
-          res.status(error?.http_code)
-        }
-
-        // Si la lista esta vacia es porque no hay datos
-        if (!body.length) {
-          res.status(404)
-          error = {
-            "error_code": 1005, "category": "request", "description": `The customer with id '${external_id}' does not exist`
-          }
-          body = null
-
-        }
-
-        if (body) {
-          body = body[0]
-        }
-
-        res.json({
-          error,
-          body
-        })
-      })
-
-    }
-    else {
+    if (!req || !req.body) {
+      res.status(404)
       res.json({
-        error: "Error, no se recibio id de customer o external_id",
+        error: "Error, no se recibio cuerpo de peticion",
+        body: req.body
       })
-
     }
+
+    const input = req.body
+
+    const account = await stripe.accounts.create(input);
+
+
+    handleResponse(res, account)
   }
   catch (e) {
+    handleError(res, e)
+  }
+}
+app.post('/payments/createAccount', createAccount)
 
-    console.log(e)
-    res.status(500)
+
+/***********************************************
+* POST Actualizar account de cliente en stripe *
+***********************************************/
+app.post('/payments/updateAccount', async function (req, res) {
+
+  // Validar que existan los parametros de body y accountID
+  if (!req || !req.body) {
+    res.status(404)
     res.json({
-      error: "Hubo un error",
-      body: JSON.stringify(e)
+      error: "Error, no se recibio cuerpo de peticion",
+      body: null
     })
+    return
+  }
+  const accountID = req.body?.accountID
+
+  if (!accountID) {
+    res.status(404)
+    res.json({
+      error: "Error, no se accountID",
+      body: req.body
+    })
+    return
   }
 
+
+  let input = req.body
+  delete input.accountID
+
+  try {
+
+    // Intentar crear la cuenta con el account id
+    let account = await stripe.accounts.update(accountID, input);
+
+
+    handleResponse(res, account)
+  }
+  catch (e) {
+    // Si nos da error de tipo accountInvalid, es porque no existe la cuenta, crearla
+    if (e.code === "account_invalid") {
+      createAccount({
+        body: {
+          ...input,
+          type: "custom",
+          country: "MX",
+
+        }
+      }
+        , res)
+      return
+    }
+
+    // De lo contrario, enviar el error
+    handleError(res, e)
+  }
+});
+
+
+
+
+/*******************************************************************************************************************************
+*********************************************** PAYMENT INTENT *****************************************************************
+********************************************************************************************************************************/
+
+/********************************************************
+* POST Crear payment intent y obtener el client secret  *
+********************************************************/
+app.post('/payments/createPaymentIntent', async (req, res) => {
+  try {
+    // Validar que existan los parametros de body y accountID
+    if (!req || !req.body) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio cuerpo de peticion",
+      })
+      return
+    }
+
+    let { body } = req
+
+    // Create the PaymentIntent
+    let intent = await stripe.paymentIntents.create(body);
+
+    return handleResponse(res, intent);
+  } catch (e) {
+    handleError(res, e)
+  }
+});
+
+/*******************************************************************************************************************************
+*********************************************** CLIENT CARDS *******************************************************************
+********************************************************************************************************************************/
+
+/**************************************
+* GET Obtener tarjetas de un cliente  *
+**************************************/
+app.get('/payments/card/:clientID', async (req, res) => {
+  try {
+    const { clientID } = req.params
+
+
+    // Validar que existan los parametros clientID
+    if (!clientID) {
+      console.log(req)
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio clientID",
+      })
+      return
+    }
+
+    let cards = await stripe.customers.listPaymentMethods(clientID,
+      { type: 'card' });
+
+    return handleResponse(res, cards);
+  } catch (e) {
+    handleError(res, e)
+  }
 });
 
 /******************************************
- * GET obtener transferencias del usuario *
- ******************************************/
-app.get('/payments/getClientTransfers', async function (req, res) {
-  try {
-    const id = req.query.id
-    const limit = req.query.limit
-    const offset = req.query.offset
-
-    var searchParams = {
-      limit,
-      offset
-    };
-
-    openpay.customers.transfers.list(id, searchParams, function (error, body, response) {
-      if (error?.http_code) {
-        res.status(error?.http_code)
-      }
-
-      res.json({
-        error,
-        body
-      })
-    })
-  }
-  catch (e) {
-
-    console.log(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: JSON.stringify(e)
-    })
-  }
-
-});
-
-/******************************************
- * GET obtener cargos del usuario *
- ******************************************/
-app.get('/payments/getClientCharges', async function (req, res) {
-  try {
-    const id = req.query.id
-    const limit = req.query.limit
-    const offset = req.query.offset
-
-    var searchParams = {
-      limit,
-      offset
-    };
-
-    openpay.customers.charges.list(id, searchParams, function (error, body, response) {
-      if (error?.http_code) {
-        res.status(error?.http_code)
-      }
-
-      res.json({
-        error,
-        body
-      })
-    })
-  }
-  catch (e) {
-
-    console.log(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: JSON.stringify(e)
-    })
-  }
-
-});
-
-
-
-/*******************************
- * GET listar tarjetas cliente *
- ******************************/
-
-app.get('/payments/card', async function (req, res) {
-  try {
-    const customer_id = req.query.customer_id
-
-    if (!customer_id) {
-      res.status(404)
-      res.json({
-        error: "Error, no se recibio customer_id",
-        body: req.body
-      })
-    }
-
-    openpay.customers.cards.list(customer_id, function (error, body, response) {
-      if (error?.http_code) {
-        res.status(error?.http_code)
-      }
-
-      res.json({
-        error,
-        body
-      })
-    })
-  }
-  catch (e) {
-
-    console.log(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: JSON.stringify(e)
-    })
-  }
-
-});
-
-/****************************************
- * GET listar cuentas bancarias cliente *
- ***************************************/
-
-app.get('/payments/bankaccount', async function (req, res) {
-  try {
-    const customer_id = req.query.customer_id
-
-    if (!customer_id) {
-      res.status(404)
-      res.json({
-        error: "Error, no se recibio customer_id",
-        body: req.body
-      })
-    }
-
-    openpay.customers.bankaccounts.list(customer_id, function (error, body, response) {
-      if (error?.http_code) {
-        res.status(error?.http_code)
-      }
-
-      res.json({
-        error,
-        body
-      })
-    })
-  }
-  catch (e) {
-
-    console.log(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: JSON.stringify(e)
-    })
-  }
-
-});
-
-
-
-/****************************
-* POST Crear tarjeta con token *
-****************************/
-
-app.post('/payments/card', function (req, res) {
-  // Add your code here
-  try {
-    const token_id = req.body.token_id
-    const device_session_id = req.body.device_session_id
-    const customer_id = req.body.customer_id
-
-    if (!customer_id || !token_id || !device_session_id) {
-      res.status(404)
-      res.json({
-        error: "Error, no se recibio customer_id, token_id o device_session_id",
-        body: req.body
-      })
-    }
-
-    openpay.customers.cards.create(customer_id, {
-      device_session_id,
-      token_id
-    }, function (error, body, response) {
-      if (error?.http_code) {
-        res.status(error?.http_code)
-      }
-
-      res.json({
-        error,
-        body
-      })
-    })
-  }
-  catch (e) {
-    console.log(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: e.message
-    })
-  }
-});
-
-
-/****************************************
-* POST Crear cuenta de banco en usuario *
-****************************************/
-
-app.post('/payments/bankaccount', function (req, res) {
-  // Add your code here
-  try {
-    const holder_name = req.body.holder_name
-    const customer_id = req.body.customer_id
-    const clabe = req.body.clabe
-    const alias = req.body.alias ? req.body.alias : "Cuenta principal"
-
-    if (!customer_id || !holder_name || !clabe) {
-      res.status(404)
-      res.json({
-        error: "Error, no se recibio customer_id, clabe o holder_name",
-        body: req.body
-      })
-    }
-
-    openpay.customers.bankaccounts.create(customer_id, {
-      holder_name, clabe,
-
-    }, function (error, body, response) {
-      if (error?.http_code) {
-        res.status(error?.http_code)
-      }
-
-      res.json({
-        error,
-        body
-      })
-    })
-  }
-  catch (e) {
-    console.log(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: e.message
-    })
-  }
-});
-
-
-
-
-/******************************************
-* POST Crear transferencia entre cuentas  *
+* GET Agregar tipo de pago a un cliente  *
 ******************************************/
-app.post('/payments/transfer', function (req, res) {
-  // Add your code here
+app.post('/payments/card', async (req, res) => {
   try {
-    const source_id = req.body.source_id
-    const target_id = req.body.target_id
-    const amount = req.body.amount
+    const { body } = req
 
-
-    const description = req.body.description
-    const order_id = req.body.order_id
-
-    if (!target_id || !source_id || !amount) {
-      res.status(404)
-      res.json({
-        error: "Error, no se recibio target_id, source_id o amount",
-        body: req.body
-      })
-    }
-
-    openpay.customers.transfers.create(source_id, {
-      customer_id: target_id,
-      amount,
-      description,
-      order_id
-
-    }, function (error, body) {
-      if (error?.http_code) {
-        res.status(error?.http_code)
-      }
-
-      res.json({
-        error,
-        body
-      })
-    })
-  }
-  catch (e) {
-    console.log(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: e.message
-    })
-  }
-});
-
-
-
-
-
-/*******************************
-* POST Crear fee sobre cuenta  *
-*******************************/
-app.post('/payments/fee', function (req, res) {
-  // Add your code here
-  try {
-    const source_id = req.body.source_id
-    const amount = req.body.amount
-
-
-    const description = req.body.description
-    const order_id = req.body.order_id
-
-    if (!source_id || !amount) {
-      res.status(404)
-      res.json({
-        error: "Error, no se recibio source_id o amount",
-        body: req.body
-      })
-    }
-
-    openpay.fees.create({
-      customer_id: source_id,
-      amount,
-      description,
-      order_id
-
-    }, function (error, body) {
-      if (error?.http_code) {
-        res.status(error?.http_code)
-      }
-
-      res.json({
-        error,
-        body
-      })
-    })
-  }
-  catch (e) {
-    console.log(e)
-    res.status(500)
-    res.json({
-      error: "Hubo un error",
-      body: e.message
-    })
-  }
-});
-
-
-
-
-
-/****************************
-* Borrar tarjetas cliente *
-****************************/
-app.delete('/payments/card/:card_id', function (req, res) {
-  const { card_id } = req.params
-  const { customer_id } = req.query
-
-  if (!customer_id) {
-    res.status(404)
-    res.json({
-      error: "Error, no se recibio customer_id",
-      body: req.query
-    })
-  }
-
-  if (!card_id) {
-    res.status(404)
-    res.json({
-      error: "Error, no se recibio card_id",
-      body: req.params
-    })
-  }
-
-
-
-  openpay.customers.cards.delete(customer_id, card_id, function (error, body, response) {
-    if (error?.http_code) {
-      res.status(error?.http_code)
-    }
-
-    res.json({
-      error,
+    console.log({
       body
     })
-  })
 
+    if (!body) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio body en la solicitud GET",
+        body: body
+
+      })
+      return
+    }
+    if (!body.customerID) {
+      res.status(404)
+      res.json({
+        error: "Error, no se customerID en body de solicitud GET",
+        body: body
+
+      })
+      return
+    }
+    if (!body.paymentMethodID) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio paymentMethodID en la solicitud GET",
+        body: body
+
+      })
+      return
+    }
+    const { customerID, paymentMethodID } = body
+
+    let result = await stripe.paymentMethods.attach(
+      paymentMethodID,
+      { customer: customerID }
+    );
+
+
+    return handleResponse(res, result);
+  } catch (e) {
+    handleError(res, e)
+  }
 });
 
+/******************************************************
+* DELETE Borrar tipo de pago (tarjeta) de un cliente  *
+******************************************************/
+app.delete('/payments/card/:id', async (req, res) => {
+  try {
+    console.log(req.params)
+
+    const { id } = req?.params
+
+
+    if (!id) {
+      res.status(404)
+      res.json({
+        error: "Error, no se recibio ruta del cliente a borrar en solicitud DELETE",
+      })
+      return
+    }
+
+    let result = await stripe.paymentMethods.detach(
+      id,
+    );
+
+
+    return handleResponse(res, "Deleted sucessfull");
+  } catch (e) {
+    handleError(res, e)
+  }
+});
+
+
+/***********************************************************************************************************************************
+************************************************* RESPONSE HANDLERS *****************************************************************
+************************************************************************************************************************************/
+
+// Estandarizar respuestas exitosas y errores
+function handleResponse(res, input) {
+  console.log("Repuesta exitosa")
+
+  res.status(200)
+  res.json({
+    error: null,
+    body: input
+  })
+}
+
+function handleError(res, e) {
+
+  console.log(e)
+
+  // Si no hay e.type es que no es de stripe, codigo de error 500
+  if (!e.type) {
+    return res.json({
+      error: "error interno",
+      body: e
+    });
+
+  }
+
+  const mes = e.message
+  const statusCode = e?.statusCode ? e.statusCode : 500
+
+  res.status(statusCode)
+
+  return res.json({
+    error: mes,
+    body: e.error
+  });
+
+}
 
 
 app.listen(3000);

@@ -25,6 +25,8 @@ type Usuario
 
   receiveNewReservations: Boolean
 
+  rfc: String
+
   imagenFondo: String
   direccion: AWSJSON
     @auth(rules: [{ allow: owner }, { allow: groups, groups: ["Admin"] }])
@@ -48,14 +50,24 @@ type Usuario
       ]
     )
   idUploaded: Boolean
+
+  # Data extraida de la imagen a texto
   idData: AWSJSON
     @auth(rules: [{ allow: owner }, { allow: groups, groups: ["Admin"] }])
-  idKey: String
+
+  # Ids de llaves de S3 para las imagenes de los documentos
+  idFrontKey: String
+  idBackKey: String
+
+  # Tipo del documento de identidad (INE o Pasaporte)
+  tipoDocumento: tipoDocumento
+
   fechaNacimiento: String
   calificacion: Float
   numResenas: Int
   notificationToken: String
-  userPaymentID: String
+  paymentClientID: String
+  paymentAccountID: String
   verified: Boolean
     @auth(
       rules: [
@@ -106,11 +118,32 @@ type Evento
   comodities: [comoditiesEnum]
   musOtra: String
 
+  # Comision por evento solo modificable por admins
+  # Que todos la puedan ver
+  comisionPercent: Float
+    @auth(
+      rules: [
+        { allow: private, operations: [read] }
+        { allow: public, provider: apiKey, operations: [read] }
+        { allow: public, provider: iam, operations: [read] }
+        { allow: groups, groups: ["Admin"] }
+      ]
+    )
+
+  # Comision del RP que lo refirio
+  comisionRP: Float
+
+  # Permitir pagos en el lugar
+  allowPaymentsInPlace: Boolean
+
   personasReservadas: Int
   personasMax: Int
 
   precioMin: Int
   precioMax: Int
+
+  # Crear un producto por cada evento
+  paymentProductID: String
 
   CreatorID: ID @index(name: "byUsuario")
   creator: Usuario @belongsTo
@@ -173,6 +206,9 @@ type Boleto
   cantidad: Int
   personasReservadas: Int
   precio: Float
+
+  # Crear un precio por cada boleto en evento
+  paymentPriceID: String
 
   eventoID: ID @index(name: "byEvento")
   Reservas: [ReservasBoletos] @hasMany(indexName: "byBoletos", fields: ["id"])
@@ -259,22 +295,27 @@ type Reserva
   id: ID
   total: Float
   comision: Float
+
   pagadoAlOrganizador: Float
+  pagadoARP: Float
+
   cantidad: Int
 
   pagado: Boolean
   paymentTime: AWSDateTime
+
+  # Persona que lo refirio
+  referedFrom: ID
 
   transaccionAOrganizadorID: ID @index(name: "byRetiro")
   transaccionAOrganizador: Retiro @belongsTo
 
   tipoPago: tipoPago
 
-  # Tipos de cargo para el evento
+  # Guardar el payment intent
   chargeID: String
-  transactionID: String
-  feeID: String
 
+  # Ver datos de pago en oxxo
   cashBarcode: String
   cashReference: String
 
@@ -348,17 +389,23 @@ enum placeEnum {
 enum musicEnum {
   REGGAETON
   POP
-  TECHNO
+  TECNO
   RAP
   BANDA
   ROCK
   OTRO
 }
 
+enum tipoDocumento {
+  PASAPORTE
+  INE
+}
+
 enum comoditiesEnum {
   DJ
   ALBERCA
   BARRALIBRE
+  ESTACIONAMIENTO
   COMIDA
   SEGURIDAD
 }

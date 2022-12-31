@@ -43,14 +43,14 @@ export type BoletoType = Boleto & {
   quantity?: number;
 };
 
-export default function ({
+export default function Index({
   route,
   navigation,
 }: {
   route: { params: EventoType };
   navigation: NavigationProp;
 }) {
-  const { id: eventID } = route.params;
+  const { id: eventID, comisionPercent: comisionEvento } = route.params;
 
   enum cuponEnum {
     "loading",
@@ -80,16 +80,20 @@ export default function ({
     if (!e.precio) return;
 
     subtotal += e.precio * quantity;
-    comision += precioConComision(e.precio) * quantity - e.precio * quantity;
+    comision +=
+      precioConComision(e.precio, comisionEvento) * quantity -
+      e.precio * quantity;
   });
 
   let total =
     subtotal +
     comision -
-    (descuento?.cantidadDescuento
+    (cuponStatus === cuponEnum.Disponible
       ? descuento?.cantidadDescuento
-      : descuento?.porcentajeDescuento
-      ? descuento.porcentajeDescuento * (subtotal + comision)
+        ? descuento?.cantidadDescuento
+        : descuento?.porcentajeDescuento
+        ? descuento.porcentajeDescuento * (subtotal + comision)
+        : 0
       : 0);
 
   total = total < 0 ? 0 : total;
@@ -108,10 +112,13 @@ export default function ({
       Alert.alert("Error", "Agrega minimo un boleto");
       return;
     }
+
     navigation.navigate("Pagar", {
       ...route.params,
       boletos,
-      descuento,
+      enviarACreador: subtotal,
+      comision,
+      descuento: cuponStatus === cuponEnum.Disponible ? descuento : undefined,
       total,
     });
   }
@@ -144,6 +151,20 @@ export default function ({
         quantity: cantidad,
       };
 
+      // Si las personas totales ya caben en el cupon ponerlo
+      if (descuento) {
+        const personasTotales = [...prev].reduce(
+          (p, a: any) => p + a.quantity,
+          0
+        );
+
+        if (personasTotales <= descuento.restantes) {
+          setCuponStatus(cuponEnum.Disponible);
+        } else {
+          setCuponStatus(cuponEnum.Invalido);
+        }
+      }
+
       return [...prev];
     });
   }
@@ -163,20 +184,27 @@ export default function ({
       const cupon = await DataStore.query(Cupon, (e) =>
         e.id("eq", cuponDescuento.replace(/ /g, "").toUpperCase())
       ).then((r) => r[0]);
-      // .vencimiento("gt", new Date().getTime())
-      // .restantes("gt", 0)
+
+      const personasTotales = boletos.reduce(
+        (prev, a: any) => prev + a.quantity,
+        0
+      );
 
       // Si hay porcentaje de descuento, tomarlo primero
       if (cupon) {
         if (cupon.vencimiento < new Date().getTime()) {
           Alert.alert("Error", "El cupon ya vencio");
           setCuponStatus(cuponEnum.Invalido);
-          setDescuento(undefined);
           return;
-        } else if (cupon.restantes < 0) {
-          Alert.alert("Error", "No quedan cupones restantes");
+        } else if (cupon.restantes < personasTotales) {
+          Alert.alert(
+            "Error",
+            "A este cupon le quedan " +
+              cupon.restantes +
+              " personas disponibles y tu quieres " +
+              personasTotales
+          );
           setCuponStatus(cuponEnum.Invalido);
-          setDescuento(undefined);
           return;
         } else {
           setDescuento(cupon);
@@ -185,12 +213,10 @@ export default function ({
         }
       } else {
         setCuponStatus(cuponEnum.Invalido);
-        setDescuento(undefined);
         Alert.alert("Error", "Cupon de descuento no valido");
       }
     } catch (error) {
       setCuponStatus(cuponEnum.Invalido);
-      setDescuento(undefined);
       Alert.alert("Error", "Cupon de descuento no valido");
 
       console.log(error);
@@ -286,6 +312,7 @@ export default function ({
             return (
               <BoletoItem
                 item={item}
+                comisionEvento={comisionEvento}
                 showDescripcion={showDescripcion}
                 handleShowDescripcion={() =>
                   setDescriptionShownIdx(showDescripcion ? undefined : index)

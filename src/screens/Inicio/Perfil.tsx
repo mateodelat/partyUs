@@ -22,10 +22,7 @@ import {
   getUserSub,
   isUrl,
   mayusFirstLetter,
-  shadowBaja,
-  shadowMarcada,
   subirImagen,
-  timer,
 } from "../../../constants";
 import HeaderModal from "../../components/HeaderModal";
 
@@ -39,7 +36,6 @@ import { Auth, DataStore, Storage } from "aws-amplify";
 import ModalTipoImagen from "../../components/ModalTipoImagen";
 import InputOnFocusV2 from "../../components/InputOnFocusV2";
 import { Usuario } from "../../models";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EmptyProfile from "../../components/EmptyProfile";
 
 export default function Perfil({ navigation }: { navigation: any }) {
@@ -181,7 +177,11 @@ export default function Perfil({ navigation }: { navigation: any }) {
   }
 
   function handlePayments() {
-    navigation.navigate("Saldo", { organizador });
+    Alert.alert(
+      "Atencion",
+      "Por el momento no se puede consultar el saldo, las transferencias de dinero se mandan automaticamente 7 dias despues de que el cliente paga el evento. Cualquier duda contacta con nosotros"
+    );
+    // navigation.navigate("Saldo", { organizador });
   }
 
   function handleSoporte() {
@@ -339,22 +339,24 @@ export default function Perfil({ navigation }: { navigation: any }) {
           />
         </TouchableOpacity> */}
 
-        {/* Pagos */}
-        <TouchableOpacity
-          style={styles.optionsTxtContainer}
-          onPress={handlePayments}
-        >
-          <View style={{ width: 30, alignItems: "center" }}>
-            <Feather name="credit-card" size={24} color="black" />
-          </View>
+        {/* Pagos por ahora solo lo ve el organizador */}
+        {usuario.organizador && (
+          <Pressable
+            style={styles.optionsTxtContainer}
+            onPress={handlePayments}
+          >
+            <View style={{ width: 30, alignItems: "center" }}>
+              <Feather name="credit-card" size={24} color="black" />
+            </View>
 
-          <Text style={styles.optionsTxt}>Pagos</Text>
-          <MaterialIcons
-            name={"keyboard-arrow-right"}
-            size={35}
-            color={"#555"}
-          />
-        </TouchableOpacity>
+            <Text style={styles.optionsTxt}>Pagos</Text>
+            <MaterialIcons
+              name={"keyboard-arrow-right"}
+              size={35}
+              color={"#555"}
+            />
+          </Pressable>
+        )}
 
         {/* Soporte */}
         <TouchableOpacity

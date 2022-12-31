@@ -103,6 +103,14 @@ export default function Agregar2({
         alerta = true;
       }
 
+      // Si el valor del boleto es menos de 10 pesos, dar error
+      if (e.precio < minEventPrice) {
+        err =
+          "Tu boleto " +
+          (e.titulo ? e.titulo : "") +
+          " debe costar minimo 10 pesos";
+      }
+
       if (!e.titulo) {
         err = "Asegurate de agregar titulo a todos tus boletos";
       }
@@ -170,7 +178,7 @@ export default function Agregar2({
   function handleInfoPagos() {
     Alert.alert(
       "Envio de fondos",
-      "Dependiendo del tipo de pago del cliente, el dinero puede tomar hasta 3 dias en llegarte a tu cuenta bancaria"
+      "Por politicas de nuestro manejador de pagos, los pagos de los boletos aparecen en tu saldo pero llegaran a tu banco en 7 dias"
     );
   }
 
@@ -267,7 +275,6 @@ export default function Agregar2({
                     value={boleto.precio}
                     cambio={50}
                     onChangeValue={(n) => {
-                      n = n < minEventPrice ? minEventPrice : n;
                       n = n > maxEventPrice ? maxEventPrice : n;
 
                       let b = [...boletos];
@@ -358,7 +365,7 @@ export default function Agregar2({
             </TouchableOpacity>
           </ScrollView>
           <Text style={styles.infoTxt}>
-            El dinero puede tardar hasta 3 dias en llegar a tu cuenta
+            El dinero llega a tu cuenta en 7 dias
             <Text onPress={handleInfoPagos} style={styles.masInfo}>
               {" "}
               mas info

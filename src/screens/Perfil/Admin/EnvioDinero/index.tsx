@@ -20,6 +20,8 @@ import {
   fetchFromAPI,
   formatCuentaCLABE,
   formatMoney,
+  openWhatsapp,
+  partyusPhone,
   produccion,
   rojoClaro,
   sendPushNotification,
@@ -126,21 +128,7 @@ export default function ({
           return;
         }
 
-        AsyncAlert(
-          "Abrir whatsapp",
-          "Se te dirigira a whatsapp para comunicarte con el organizador"
-        ).then((r) => {
-          if (!r) return;
-          Linking.openURL(
-            "whatsapp://send?text=Hola, tengo un problema con partyus: &phone=" +
-              telefono
-          ).catch((e) => {
-            Alert.alert(
-              "Error",
-              "Es probable que no tengas whatsapp instalado"
-            );
-          });
-        });
+        openWhatsapp(partyusPhone);
 
         break;
 

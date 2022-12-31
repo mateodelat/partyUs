@@ -32,10 +32,14 @@
       "Type": "String",
       "Default": "functionpartyuslayerArn"
     },
-    "secretKeyProd": {
-      "Type": "String"
+    "functionpartyuslambdaDependenciesArn": {
+      "Type": "String",
+      "Default": "functionpartyuslambdaDependenciesArn"
     },
     "secretKeyStag": {
+      "Type": "String"
+    },
+    "secretKeyProd": {
       "Type": "String"
     }
   },
@@ -101,11 +105,11 @@
             "API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT": {
               "Ref": "apipartyUsAPIGraphQLAPIKeyOutput"
             },
-            "SECRET_KEY_PROD": {
-              "Ref": "secretKeyProd"
-            },
             "SECRET_KEY_STAG": {
               "Ref": "secretKeyStag"
+            },
+            "SECRET_KEY_PROD": {
+              "Ref": "secretKeyProd"
             }
           }
         },
@@ -118,7 +122,7 @@
         "Runtime": "nodejs14.x",
         "Layers": [
           {
-            "Ref": "functionpartyuslayerArn"
+            "Ref": "functionpartyuslambdaDependenciesArn"
           }
         ],
         "Timeout": 25

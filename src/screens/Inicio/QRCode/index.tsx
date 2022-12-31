@@ -46,7 +46,13 @@ export default function ({
   const reserva = route.params;
 
   const {
-    evento: { titulo, fechaInicial, imagenes, imagenPrincipalIDX },
+    evento: {
+      titulo,
+      fechaInicial,
+      imagenes,
+      imagenPrincipalIDX,
+      comisionPercent,
+    },
   } = reserva;
 
   const ubicacion: locationType = reserva.evento.ubicacion as any;
@@ -223,7 +229,8 @@ export default function ({
                       <Text style={styles.subtitle}>Precio total</Text>
                       <Text style={{ ...styles.value, color: rojoClaro }}>
                         {formatMoney(
-                          precioConComision(e.boleto.precio) * e.quantity
+                          precioConComision(e.boleto.precio, comisionPercent) *
+                            e.quantity
                         )}
                       </Text>
                     </View>

@@ -56,7 +56,7 @@ export type locationType = Region & {
 // Abrir un link a google maps en el celular
 let mapsAlertShown = false;
 
-export default ({
+const ModalMap = ({
   style,
 
   selectedPlace,
@@ -678,3 +678,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 });
+export default ModalMap;

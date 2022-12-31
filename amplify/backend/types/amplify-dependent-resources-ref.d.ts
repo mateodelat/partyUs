@@ -1,8 +1,5 @@
 export type AmplifyDependentResourcesAttributes = {
     "function": {
-        "partyuslayer": {
-            "Arn": "string"
-        },
         "paymentsHandler": {
             "Name": "string",
             "Arn": "string",
@@ -15,22 +12,10 @@ export type AmplifyDependentResourcesAttributes = {
             "Region": "string",
             "LambdaExecutionRole": "string"
         },
-        "createReserva": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
-        },
-        "onPay": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
-        },
-        "partyusgraphqlOperations": {
+        "partyuslambdaDependencies": {
             "Arn": "string"
         },
-        "cancelReserva": {
+        "reservaHandler": {
             "Name": "string",
             "Arn": "string",
             "Region": "string",

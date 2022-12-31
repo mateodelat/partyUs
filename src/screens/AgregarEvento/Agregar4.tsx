@@ -16,14 +16,20 @@ import {
   AsyncAlert,
   azulClaro,
   azulFondo,
+  comisionApp,
+  currency,
   enumToArray,
+  fetchFromStripe,
   formatDiaMesCompleto,
   getBlob,
+  getIpAddress,
   getUserSub,
   graphqlRequest,
   isUrl,
   mayusFirstLetter,
+  precioConComision,
   sendAdminNotification,
+  subirImagen,
   vibrar,
   VibrationType,
 } from "../../../constants";
@@ -35,7 +41,7 @@ import InputOnFocus from "../../components/InputOnFocus";
 import useEvento from "../../Hooks/useEvento";
 import RadioButton from "../../components/RadioButton";
 import NetInfo from "@react-native-community/netinfo";
-import { API, DataStore, Storage } from "aws-amplify";
+import { DataStore } from "aws-amplify";
 import {
   Boleto,
   ComoditiesEnum,
@@ -50,6 +56,9 @@ import { TipoNotificacion } from "../../models";
 import { notificacionesRecordatorio } from "../Inicio/Notifications/functions";
 import useUser from "../../Hooks/useUser";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { logger } from "react-native-logs";
+import { STRIPE_PRODUCTS_KEY } from "../../../constants/keys";
+import Stripe from "stripe";
 
 const musicList = enumToArray(MusicEnum);
 const comoditiesList = enumToArray(ComoditiesEnum);
@@ -61,6 +70,8 @@ export default function Agregar2({
 }: {
   navigation: NavigationProp;
 }) {
+  const log = logger.createLogger();
+
   const { evento, setEvento } = useEvento();
 
   const { usuario } = useUser();
@@ -88,11 +99,11 @@ export default function Agregar2({
     | false
   >(evento.tosAceptance ? (evento.tosAceptance as any) : false);
 
-  const [ip, setIp] = useState("");
+  const [ip, setIp] = useState("8.8.8.8");
   useEffect(() => {
-    NetInfo.fetch().then((state: any) => {
-      setIp(state?.details?.ipAddress);
-    });
+    (async () => {
+      setIp(await getIpAddress());
+    })();
   });
 
   async function handleGuardar() {
@@ -171,8 +182,109 @@ export default function Agregar2({
       let count = 0;
       let imagenPrincipalIDX: number = 0;
 
-      // Subir fotos a S3 y crear el evento en la base de datos
+      // Objeto de promesas de todas las operaciones
       let promises: any = [];
+
+      // Tenemos que esperar a que se resuelva productID para poder crear los precios
+      let stripePromises: {
+        productID?: Promise<string>;
+        prices?: Promise<any>[];
+      } = {
+        productID: undefined,
+        prices: [],
+      };
+
+      const sub = await getUserSub();
+      if (!sub) {
+        Alert.alert("Error", "Usuario no autenticado");
+        throw new Error(
+          "No se encontro el sub del usuario al crear el evento (No esta autenticado)"
+        );
+      }
+      let personasMax = evento.boletos.reduce(
+        (prev, bol) => prev + bol.cantidad,
+        0
+      );
+
+      // Crear el producto con los datos del evento
+      stripePromises.productID = fetchFromStripe<Stripe.Product>({
+        path: "/v1/products",
+        type: "POST",
+        input: {
+          name: evento.titulo,
+          unit_label: "boleto",
+          statement_descriptor: evento.titulo,
+          type: "service",
+          description: evento.detalles?.slice(0, 50),
+          metadata: {
+            cantidad: personasMax,
+            creatorID: usuario.id,
+            eventoID: evento.id,
+          },
+
+          images: [await evento.stripeFileImagenPrincipal],
+        } as Stripe.ProductCreateParams,
+        secretKey: STRIPE_PRODUCTS_KEY,
+      }).then((r) => {
+        return r.id;
+      });
+
+      let precioMin: number = 0;
+      let precioMax: number = 0;
+
+      evento.boletos.map(async (value: Boleto) => {
+        precioMin = !precioMin
+          ? value.precio
+          : value.precio < precioMin
+          ? value.precio
+          : precioMin;
+        precioMax = !precioMax
+          ? value.precio
+          : value.precio > precioMax
+          ? value.precio
+          : precioMax;
+
+        // Crear los precios de stripe y guardar el nuevo boleto
+
+        stripePromises.prices.push(
+          fetchFromStripe<Stripe.Price>({
+            path: "/v1/prices",
+            type: "POST",
+            input: {
+              billing_scheme: "per_unit",
+              nickname: value.titulo,
+              product: await stripePromises.productID,
+              currency,
+              unit_amount_decimal: String(
+                // Poner la comision default
+                precioConComision(value.precio, comisionApp) * 100
+              ),
+              metadata: {
+                cantidad: value.cantidad,
+                // Poner la comision default
+                precioConComision: precioConComision(value.precio, comisionApp),
+                precioSinComision: value.precio,
+              },
+            } as Stripe.PriceCreateParams,
+            secretKey: STRIPE_PRODUCTS_KEY,
+          }).then((r) => {
+            return r.id;
+          })
+        );
+
+        // Agegar a las promesas globales por si hay un error
+        promises.push(
+          DataStore.save(
+            new Boleto({
+              cantidad: value.cantidad,
+              eventoID: evento.id,
+              precio: value.precio,
+              titulo: value.titulo,
+              descripcion: value.descripcion,
+            })
+          )
+        );
+      });
 
       evento.imagenes?.map((e: any, idx: number) => {
         let url: string;
@@ -180,7 +292,7 @@ export default function Agregar2({
         if (!isUrl(e.uri)) {
           const key = "evento-" + evento.id + "|" + count + ".jpg";
           getBlob(e?.uri).then((r) => {
-            promises.push(Storage.put(key, r));
+            promises.push(subirImagen(key, r));
           });
           url = key;
           count++;
@@ -195,62 +307,25 @@ export default function Agregar2({
         imagenes.push(url);
       });
 
-      // Esperar a que se resuelvan todas las promesas
-      await Promise.all(promises);
-
-      const sub = await getUserSub();
-      if (!sub) {
-        Alert.alert("Error", "Usuario no autenticado");
-        throw new Error(
-          "No se encontro el sub del usuario al crear el evento (No esta autenticado)"
-        );
-      }
-
-      let personasMax = 0;
-      let precioMin: number = 0;
-      let precioMax: number = 0;
-
-      evento.boletos.map((value: Boleto) => {
-        personasMax += value.cantidad;
-        precioMin = !precioMin
-          ? value.precio
-          : value.precio < precioMin
-          ? value.precio
-          : precioMin;
-        precioMax = !precioMax
-          ? value.precio
-          : value.precio > precioMax
-          ? value.precio
-          : precioMax;
-
-        DataStore.save(
-          new Boleto({
-            cantidad: value.cantidad,
-            eventoID: evento.id,
-            precio: value.precio,
-            titulo: value.titulo,
-            descripcion: value.descripcion,
-          })
-        );
-      });
-
       // Mandar notificacion al guia de nueva reserva
-      DataStore.save(
-        new Notificacion({
-          tipo: TipoNotificacion.EVENTOCREADO,
-          titulo: "Nuevo evento",
-          descripcion: `Tu evento ${
-            evento.titulo
-          } para el ${formatDiaMesCompleto(
-            evento.fechaInicial
-          )} se ha creado con exito.`,
-          usuarioID: sub,
+      promises.push(
+        DataStore.save(
+          new Notificacion({
+            tipo: TipoNotificacion.EVENTOCREADO,
+            titulo: "Nuevo evento",
+            descripcion: `Tu evento ${
+              evento.titulo
+            } para el ${formatDiaMesCompleto(
+              evento.fechaInicial
+            )} se ha creado con exito.`,
+            usuarioID: sub,
 
-          showAt: new Date().toISOString(),
+            showAt: new Date().toISOString(),
 
-          eventoID: evento.id,
-          organizadorID: sub,
-        })
+            eventoID: evento.id,
+            organizadorID: sub,
+          })
+        )
       );
 
       // Crear evento con id personalizado para coincidir con los boletos y manejar las imagenes con precision
@@ -281,8 +356,10 @@ export default function Agregar2({
         comodities,
         tosAceptance: JSON.stringify(aceptoTerminos),
 
+        paymentProductID: await stripePromises.productID,
+
         CreatorID: sub,
-      };
+      } as Evento;
 
       // Enviar notificaciones de recordatorio evento al organizador
       notificacionesRecordatorio({
@@ -295,6 +372,13 @@ export default function Agregar2({
         query: createEvento,
         variables: { input: eventoAEnviar },
       });
+
+      // Esperar a que se resuelvan todas las promesas de upload de imagenes y stripe prices
+      await Promise.all(promises);
+      await Promise.all([
+        stripePromises.productID,
+        Promise.all(stripePromises?.prices),
+      ]);
 
       setLoading(false);
 
@@ -323,8 +407,12 @@ export default function Agregar2({
       setLoading(false);
 
       if (error) {
-        console.log(error);
-        Alert.alert("Error", "Sucedio un error creando el evento");
+        log.debug(error);
+        Alert.alert(
+          "Error",
+          "Sucedio un error creando el evento: " +
+            (error?.message ? error.message : "")
+        );
       }
     }
   }
@@ -444,11 +532,6 @@ export default function Agregar2({
           }}
           style={styles.termsContainer}
         >
-          <View
-            style={{
-              width: 30.5,
-            }}
-          />
           <Text style={styles.textoTerminos}>
             Acepto{" "}
             <Text style={{ color: azulClaro }} onPress={abrirTerminos}>

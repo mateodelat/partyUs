@@ -1,15 +1,11 @@
-import {
-  Amplify,
-  Auth,
-  AuthModeStrategyType,
-  DataStore,
-  Hub,
-} from "aws-amplify";
+import { Amplify, AuthModeStrategyType, DataStore, Hub } from "aws-amplify";
 
 import awsconfig from "./src/aws-exports";
 
 import "react-native-gesture-handler";
 import { useEffect, useState } from "react";
+import * as React from "react";
+import { LogBox, View } from "react-native";
 
 import ContextProvider from "./src/contexts/ContextProvider";
 import Router from "./src/navigation/Router";
@@ -19,12 +15,13 @@ import Loading from "./src/components/Loading";
 import { StatusBar, StatusBarStyle } from "expo-status-bar";
 import moment from "moment";
 
+import { STRIPE_PUBLISHABLE_KEY } from "./constants/keys";
 import Bugsnag from "@bugsnag/expo";
 
-// LogBox.ignoreAllLogs();
+LogBox.ignoreLogs(["new NativeEventEmitter"]); // Ignore log notification by message
 moment.locale("es");
 
-export default function App() {
+const App = () => {
   Amplify.configure({
     ...awsconfig,
     DataStore: {
@@ -44,7 +41,7 @@ export default function App() {
 
   useEffect(() => {
     DataStore.start();
-    // Bugsnag.start();
+    Bugsnag.start();
 
     // Crear listener para cuando se acaben de obtener los modelos de datastore en caso de cierre de sesion
     const dstore = Hub.listen("datastore", async (hubData) => {
@@ -65,16 +62,19 @@ export default function App() {
   if (loading) return <Loading />;
   else
     return (
-      <ErrorWrapper>
-        <ContextProvider
-          usuario={usuario}
-          setUsuario={setUsuario}
-          setStatusStyle={setStatusStyle}
-        >
-          <StatusBar style={statusStyle} translucent={true} />
+      <View style={{ flex: 1 }}>
+        <ErrorWrapper>
+          <ContextProvider
+            usuario={usuario}
+            setUsuario={setUsuario}
+            setStatusStyle={setStatusStyle}
+          >
+            <StatusBar style={statusStyle} translucent={true} />
 
-          <Router />
-        </ContextProvider>
-      </ErrorWrapper>
+            <Router />
+          </ContextProvider>
+        </ErrorWrapper>
+      </View>
     );
-}
+};
+export default App;

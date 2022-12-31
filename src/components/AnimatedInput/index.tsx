@@ -4,8 +4,9 @@ import React, {
   useCallback,
   forwardRef,
   ForwardedRef,
+  useRef,
 } from "react";
-import { TextInputProps } from "react-native";
+import { Pressable, TextInputProps } from "react-native";
 import {
   View,
   TextInput,
@@ -28,6 +29,7 @@ interface AnimatedInputType extends TextInputProps {
   placeholder: string;
   errorText?: string;
   valid?: boolean;
+  focused?: boolean;
   errorColor?: ColorValue;
   disabled?: boolean;
   value?: string;
@@ -38,7 +40,6 @@ interface AnimatedInputType extends TextInputProps {
   styleError?: TextStyle;
   styleContent?: ViewStyle;
   styleBodyContent?: ViewStyle;
-  innerRef?: ForwardedRef<any>;
   selectionColor?: ColorValue;
   labelInitialSize?: number;
   labelFinalSize?: number;
@@ -54,6 +55,7 @@ const AnimatedTextInput = ({
   valid,
   errorColor,
   disabled,
+  focused,
   value,
   prefix,
   sufix,
@@ -62,7 +64,6 @@ const AnimatedTextInput = ({
   styleError,
   styleContent,
   styleBodyContent,
-  innerRef,
   selectionColor,
   labelInitialSize,
   labelFinalSize,
@@ -76,9 +77,13 @@ const AnimatedTextInput = ({
   const [animatedIsFocused] = useState(new Animated.Value(1));
   const [isInputFocused, setInputFocus] = useState(false);
 
+  const innerRef = useRef<TextInput>();
+
   const inputFontSize = styleLabel?.fontSize || styles.label.fontSize;
   const labelFontSize = styleLabel?.fontSize || styles.label.fontSize;
   const errorFontSize = styleError?.fontSize || styles.error.fontSize;
+
+  valid = valid !== undefined ? valid : true;
 
   const onBlur = () => {
     setInputFocus(false);
@@ -160,6 +165,11 @@ const AnimatedTextInput = ({
   }, [animatedIsFocused, inputFontSize, labelFontSize]);
 
   useEffect(() => {
+    // Si esta seleccionado ponerlo por defecto selected
+    if (focused) {
+      onFocus();
+    }
+
     setShowError(!valid);
     if (value) {
       setShowInput(true);
@@ -179,8 +189,9 @@ const AnimatedTextInput = ({
   ]);
 
   return (
-    <View
+    <Pressable
       style={[styles.content, styleContent, { height: setContentHeight() }]}
+      onPress={() => !disabled && onFocus()}
     >
       <Animated.View
         style={[
@@ -197,7 +208,6 @@ const AnimatedTextInput = ({
         <View style={styles.wrapper}>
           <Animated.Text
             style={[styles.label, styleLabel, animationLabelFontSize()]}
-            onPress={() => !disabled && onFocus()}
           >
             {placeholder}
           </Animated.Text>
@@ -217,6 +227,7 @@ const AnimatedTextInput = ({
                 <TextInputMask
                   {...others}
                   value={value}
+                  ref={innerRef as any}
                   pointerEvents={disabled ? "box-none" : "auto"}
                   selectionColor={selectionColor}
                   autoFocus
@@ -233,12 +244,12 @@ const AnimatedTextInput = ({
                   }}
                   type={mask || "cpf"}
                   options={maskOptions}
-                  ref={innerRef}
                 />
               ) : (
                 <TextInput
                   {...others}
                   value={value}
+                  ref={innerRef}
                   pointerEvents={disabled ? "box-none" : "auto"}
                   selectionColor={selectionColor}
                   autoFocus
@@ -247,7 +258,6 @@ const AnimatedTextInput = ({
                   onBlur={() => onBlur()}
                   style={[styles.input, styleInput]}
                   onEndEditing={() => onBlur()}
-                  ref={innerRef}
                 />
               )}
             </View>
@@ -266,22 +276,7 @@ const AnimatedTextInput = ({
           {errorText}
         </Text>
       )}
-    </View>
+    </Pressable>
   );
 };
-
-const AnimatedInput = forwardRef((props: AnimatedInputType, ref) => (
-  <AnimatedTextInput {...props} innerRef={ref} />
-));
-
-AnimatedInput.defaultProps = {
-  valid: true,
-  disabled: false,
-  value: "",
-  styleInput: {},
-  styleBodyContent: {},
-  styleLabel: {},
-  styleError: {},
-};
-
-export default AnimatedInput;
+export default AnimatedTextInput;

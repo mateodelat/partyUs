@@ -5,9 +5,16 @@ import { tipoDocumento } from "../../constants";
 import { Usuario } from "../models";
 import { TextoAbajoPasaporteType } from "../screens/SolicitudOrganizador/components/functions";
 
+type LocalUserType = Usuario & {
+  stripeIdFrontKey?: string;
+  stripeIdBackKey?: string;
+  localUriIdFront?: string;
+  localUriIdBack?: string;
+};
+
 const UserContext: Context<{
-  usuario: Usuario;
-  setUsuario: Dispatch<SetStateAction<Usuario>>;
+  usuario: LocalUserType;
+  setUsuario: Dispatch<SetStateAction<LocalUserType>>;
 
   setStatusStyle: Dispatch<SetStateAction<StatusBarStyle>>;
 
@@ -28,7 +35,7 @@ const UserContext: Context<{
     nickname: "guest",
     email: "guest",
   },
-  setUsuario: (v: SetStateAction<Usuario>) => {
+  setUsuario: (v: SetStateAction<LocalUserType>) => {
     return;
   },
   setStatusStyle: (a: any) => null,

@@ -17,18 +17,21 @@ export default function ({
   handleChange,
   showDescripcion,
   handleShowDescripcion,
+  comisionEvento,
 }: {
   item: BoletoType;
   handleChange: (minus: boolean, cambio: number) => void;
 
   showDescripcion: boolean;
   handleShowDescripcion: () => void;
+
+  comisionEvento: number;
 }) {
   let { titulo, descripcion, cantidad, precio, personasReservadas, quantity } =
     item;
 
   // Precio incluyendo comision
-  precio = precioConComision(precio);
+  precio = precioConComision(precio, comisionEvento);
 
   personasReservadas = personasReservadas ? personasReservadas : 0;
 

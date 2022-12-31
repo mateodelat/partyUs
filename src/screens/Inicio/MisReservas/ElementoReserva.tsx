@@ -65,8 +65,7 @@ export default function ElementoReserva({
         amount: data.total,
         titulo: data.evento.titulo,
         codebar: {
-          uri: data.cashBarcode,
-          reference: data.cashReference,
+          number: data.cashBarcode,
         },
         limitDate: new Date(data.fechaExpiracionUTC).getTime(),
       });
@@ -178,13 +177,15 @@ export default function ElementoReserva({
           <View style={{ flexDirection: "row", flex: 1 }}>
             {/* Imagen principal */}
             <View style={styles.image}>
-              <ActivityIndicator
-                size={"small"}
-                color={"#000"}
-                style={{
-                  position: "absolute",
-                }}
-              />
+              {!data.expirado && !data.cancelado && (
+                <ActivityIndicator
+                  size={"small"}
+                  color={"#000"}
+                  style={{
+                    position: "absolute",
+                  }}
+                />
+              )}
               <Image
                 style={{ width: "100%", height: "100%" }}
                 source={{

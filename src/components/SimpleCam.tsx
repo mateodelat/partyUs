@@ -12,6 +12,8 @@ import { Camera, CameraCapturedPicture, CameraType } from "expo-camera";
 import Boton from "./Boton";
 import { azulClaro, getBase64FromUrl, matchWholeWord } from "../../constants";
 
+import * as Device from "expo-device";
+
 import { Feather } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 
@@ -21,10 +23,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function App({
   onTakePicture,
-  credentialPic,
+  isPassport,
 }: {
   onTakePicture: (props: CameraCapturedPicture) => any;
-  credentialPic?: boolean;
+  isPassport?: boolean;
 }) {
   const [hasPermission, setHasPermission] = useState<null | Boolean>(null);
   const [isloaded, setIsloaded] = useState(false);
@@ -66,29 +68,46 @@ export default function App({
     }
   }
 
+  async function simulateImg() {
+    const base64 = await getBase64FromUrl(
+      !isPassport
+        ? "https://cdn.forbes.com.mx/2019/06/INE.jpg"
+        : "https://www.immihelp.com/assets/article-images/sample-usa-passport.jpg"
+    );
+
+    setTakenImage({
+      uri: !isPassport
+        ? "https://cdn.forbes.com.mx/2019/06/INE.jpg"
+        : "https://www.immihelp.com/assets/article-images/sample-usa-passport.jpg",
+      width: 0,
+      height: 0,
+      base64: base64 ? base64 : undefined,
+    });
+  }
+
   async function handleTakePicture() {
     try {
+      // Si es emulator, simular imagen
+
+      if (!Device.isDevice) {
+        simulateImg();
+        return;
+      }
+
       cameraRef.current
         ?.takePictureAsync({ base64: true, quality: 0.6 })
         .then(async (r) => {
+          console.log("Image taken");
+
           setTakenImage(r);
         })
-        .catch(async (err: string) => {
-          const base64 = await getBase64FromUrl(
-            // "https://cdn.forbes.com.mx/2019/06/INE.jpg"
-            "https://www.immihelp.com/assets/article-images/sample-usa-passport.jpg"
-          );
-
-          setTakenImage({
-            uri:
-              // "https://cdn.forbes.com.mx/2019/06/INE.jpg",
-              "https://www.immihelp.com/assets/article-images/sample-usa-passport.jpg",
-            width: 0,
-            height: 0,
-            base64: base64 ? base64 : undefined,
-          });
-        });
+        .catch(async (err: string) => {});
     } catch (error) {
+      simulateImg();
+      Alert.alert(
+        "Error",
+        "Ocurrio un error tomando la foto, usando imagen test"
+      );
       console.log(error);
     }
   }
@@ -163,13 +182,13 @@ export default function App({
             backgroundColor={"#fff"}
             imageUrls={[{ url: takenImage?.uri ? takenImage.uri : "" }]}
           />
+          {/* Texto de confirmar o cancelar imagen */}
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
               position: "absolute",
               width: "100%",
-              paddingTop: top + 10,
             }}
           >
             <Entypo

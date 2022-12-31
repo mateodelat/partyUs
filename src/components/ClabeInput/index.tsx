@@ -16,7 +16,7 @@ import Boton from "../Boton";
 import { AsyncAlert, azulClaro, formatCuentaCLABE } from "../../../constants";
 import InputOnFocusV2 from "../InputOnFocusV2";
 import { AntDesign } from "@expo/vector-icons";
-import { clabe } from "../../../constants/ClabeValidator";
+import { clabe } from "../ClabeValidator";
 
 export type saveParamsClabeInput = {
   clabe: string; //"4242 4242"

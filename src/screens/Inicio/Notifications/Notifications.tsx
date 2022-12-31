@@ -7,6 +7,7 @@ import {
   Pressable,
   View,
   FlatList,
+  TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 
@@ -20,7 +21,7 @@ import { Entypo } from "@expo/vector-icons";
 import useUser from "../../../Hooks/useUser";
 import Header from "../../../navigation/components/Header";
 
-export default function ({ navigation }) {
+export default function Notifi({ navigation }) {
   useEffect(() => {
     handleFetch().then(setNotificaciones);
   }, []);
@@ -112,6 +113,8 @@ export default function ({ navigation }) {
       case TipoNotificacion.ADMIN:
         navigation.navigate("AdminStack");
         break;
+      case TipoNotificacion.BIENVENIDA:
+        break;
 
       default:
         Alert.alert("Error", "Tipo de notificacion no programado");
@@ -187,24 +190,22 @@ export default function ({ navigation }) {
             >
               <Text style={styles.header}>Notificaciones</Text>
               {confirmDelete ? (
-                <Text
-                  onPress={deleteAll}
-                  style={{
-                    fontWeight: "bold",
-                    fontSize: 16,
-                    paddingHorizontal: 5,
-                    color: rojoClaro,
-                  }}
-                >
-                  BORRAR
-                </Text>
+                <TouchableOpacity onPress={deleteAll}>
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: 16,
+                      paddingHorizontal: 5,
+                      color: rojoClaro,
+                    }}
+                  >
+                    BORRAR
+                  </Text>
+                </TouchableOpacity>
               ) : (
-                <Entypo
-                  onPress={deleteAll}
-                  name="cross"
-                  size={25}
-                  color={rojoClaro}
-                />
+                <TouchableOpacity onPress={deleteAll}>
+                  <Entypo name="cross" size={25} color={rojoClaro} />
+                </TouchableOpacity>
               )}
             </Pressable>
             <FlatList

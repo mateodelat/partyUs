@@ -68,7 +68,16 @@ export default function ({
                   padding: 4,
                 }}
               >
-                <Ionicons name="md-qr-code" size={16} color="#0009" />
+                <Ionicons name="md-qr-code" size={20} color="#0009" />
+                <Ionicons
+                  name="md-scan-outline"
+                  size={35}
+                  color="#0009"
+                  style={{
+                    position: "absolute",
+                    paddingLeft: 2,
+                  }}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -146,9 +155,11 @@ const styles = StyleSheet.create({
     backgroundColor: claros,
   },
   iconContainer: {
-    width: 35,
+    width: 50,
+
+    aspectRatio: 1,
+
     alignItems: "center",
-    height: 35,
     justifyContent: "center",
 
     borderRadius: 40,

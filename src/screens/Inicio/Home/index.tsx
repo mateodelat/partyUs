@@ -1,12 +1,12 @@
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Image,
   Keyboard,
   Modal,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -32,8 +32,6 @@ import {
   normalizeString,
   mayusFirstLetter,
   getImageUrl,
-  sendPushNotification,
-  sendNotifcationsAll,
 } from "../../../../constants";
 
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -72,6 +70,7 @@ export type EventoType = Evento & {
   creator?: Usuario;
   comodities?: ComoditiesEnum[];
   ubicacion: locationType;
+  stripeFileImagenPrincipal?: Promise<string>;
 };
 
 export async function queryNewNotifications() {
@@ -86,7 +85,7 @@ export async function queryNewNotifications() {
   });
 }
 
-export default function ({ navigation }: { navigation: NavigationProp }) {
+export default function Home({ navigation }: { navigation: NavigationProp }) {
   const {
     usuario: { foto },
     setUsuario,
@@ -113,9 +112,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
 
   const [loadingHidden, setLoadingHidden] = useState(false);
 
-  const [eventosFiltrados, setEventosFiltrados] = useState<EventoType[] | []>(
-    []
-  );
+  const [eventosFiltrados, setEventosFiltrados] = useState<EventoType[]>([]);
 
   // Al cambiar la imagen de perfil del usuario pedirla
   useEffect(() => {
@@ -158,7 +155,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           { sort: (e) => e.precio("DESCENDING") }
         ).then((boletos) => {
           boletos.map((bo) => {
-            const precio = precioConComision(bo.precio);
+            const precio = precioConComision(bo.precio, e.comisionPercent);
 
             precioMin = !precioMin
               ? precio
@@ -634,7 +631,7 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
           </View>
         </View>
 
-        <FlatList
+        <ScrollView
           refreshControl={
             <RefreshControl
               onRefresh={onRefresh}
@@ -642,42 +639,42 @@ export default function ({ navigation }: { navigation: NavigationProp }) {
             />
           }
           showsVerticalScrollIndicator={false}
-          keyExtractor={(_, idx) => idx.toString()}
-          data={eventosFiltrados}
-          ListEmptyComponent={
-            loading ? (
-              <View style={{ flex: 1 }}>
-                <ActivityIndicator size={"large"} color={"black"} />
-              </View>
-            ) : (
-              <Text
-                style={{
-                  fontWeight: "bold",
-                  fontSize: 20,
-                  marginBottom: 5,
-                  textAlign: "center",
-                }}
-              >
-                No hay eventos
-              </Text>
-            )
-          }
-          renderItem={({ item, index }) => {
-            if (!item) return <View />;
-            return (
-              <View
-                style={{
-                  marginBottom: index === eventosFiltrados.length - 1 ? 100 : 0,
-                }}
-              >
-                <ElementoEvento
-                  data={item}
-                  onPress={() => handlePressItem(item.id)}
-                />
-              </View>
-            );
-          }}
-        />
+        >
+          {loading ? (
+            <View style={{ flex: 1 }}>
+              <ActivityIndicator size={"large"} color={"black"} />
+            </View>
+          ) : !eventosFiltrados.length ? (
+            <Text
+              style={{
+                fontWeight: "bold",
+                fontSize: 20,
+                marginBottom: 5,
+                textAlign: "center",
+              }}
+            >
+              No hay eventos
+            </Text>
+          ) : (
+            eventosFiltrados.map((item, index) => {
+              if (!item) return <View />;
+              return (
+                <View
+                  key={index}
+                  style={{
+                    marginBottom:
+                      index === eventosFiltrados.length - 1 ? 100 : 0,
+                  }}
+                >
+                  <ElementoEvento
+                    data={item}
+                    onPress={() => handlePressItem(item.id)}
+                  />
+                </View>
+              );
+            })
+          )}
+        </ScrollView>
       </Pressable>
 
       <Modal

@@ -1,15 +1,6 @@
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from "react-native";
-import React, { useState } from "react";
-import { azulFondo, formatMoney, redondear } from "../../constants";
-
-import { Entypo } from "@expo/vector-icons";
+import { StyleSheet, TextInput, View, ViewStyle } from "react-native";
+import React from "react";
+import { formatMoney } from "../../constants";
 
 export default function ({
   style,
@@ -31,17 +22,6 @@ export default function ({
   function handleChangeText(ne: string) {
     const num = Number(ne.replace(/\$|\..{0,}|\,/gm, ""));
     onChangeValue(num ? num : 0);
-  }
-
-  function handleAdd() {
-    cambio = cambio ? cambio : 1;
-    onChangeValue(redondear(value + cambio, cambio));
-  }
-
-  function handleMinus() {
-    cambio = cambio ? cambio : 1;
-
-    onChangeValue(redondear(value > 0 ? value - cambio : 0, cambio));
   }
 
   return (

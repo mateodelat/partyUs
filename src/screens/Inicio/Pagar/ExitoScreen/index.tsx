@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Image, StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { azulClaro, vibrar, VibrationType } from "../../../../../constants";
 
-export default ({ navigation, route }) => {
+export default function ExitoScreen({ navigation, route }) {
   useEffect(() => {
     vibrar(VibrationType.sucess);
   }, []);
@@ -35,12 +35,15 @@ export default ({ navigation, route }) => {
       </Text>
       {descripcion && <Text style={styles.descripcion}>{descripcion}</Text>}
 
-      <TouchableOpacity onPress={onPress} style={styles.buttonContainer}>
+      <TouchableOpacity
+        onPress={() => onPress()}
+        style={styles.buttonContainer}
+      >
         <Text style={styles.buttonTxt}>{txtOnPress}</Text>
       </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

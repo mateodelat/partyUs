@@ -1,26 +1,28 @@
 {
   "permissions": {
     "api": {
-      "partyUsAPI": ["Mutation"]
+      "partyUsAPI": [
+        "Mutation"
+      ]
     }
   },
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
-      "resourceName": "partyuslayer",
+      "resourceName": "partyuslambdaDependencies",
+      "env": "staging",
       "version": "Always choose latest version",
-      "isLatestVersionSelected": true,
-      "env": "production"
+      "isLatestVersionSelected": true
     }
   ],
   "environmentVariableList": [
     {
-      "cloudFormationParameterName": "secretKeyProd",
-      "environmentVariableName": "SECRET_KEY_PROD"
-    },
-    {
       "cloudFormationParameterName": "secretKeyStag",
       "environmentVariableName": "SECRET_KEY_STAG"
+    },
+    {
+      "cloudFormationParameterName": "secretKeyProd",
+      "environmentVariableName": "SECRET_KEY_PROD"
     }
   ]
 }

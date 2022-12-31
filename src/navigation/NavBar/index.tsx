@@ -18,7 +18,7 @@ function PlusScreen() {
   return null;
 }
 
-export default function () {
+export default function NavBar() {
   const organizador = useUser()?.usuario;
 
   const insets = useSafeAreaInsets();

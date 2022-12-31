@@ -7,7 +7,7 @@ import NombreApellidos from "../../screens/SolicitudOrganizador/DatosPersonales/
 import FechaNacimiento from "../../screens/SolicitudOrganizador/DatosPersonales/FechaNacimiento";
 import DatosBancarios from "../../screens/SolicitudOrganizador/DatosPersonales/DatosBancarios";
 
-export default function () {
+export default function PersonalData() {
   const Stack = createStackNavigator();
 
   const pasos = 3;

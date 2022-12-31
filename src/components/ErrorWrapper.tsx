@@ -11,10 +11,6 @@ class ErrorRouter extends React.Component {
     error: false,
   };
 
-  static getDerivedStateFromError() {
-    return { error: true };
-  }
-
   componentDidCatch(error: Error) {
     console.log(error);
     Alert.alert("Ocurrio un error", error.message);
@@ -56,14 +52,12 @@ class ErrorRouter extends React.Component {
         </SafeAreaView>
       );
     } else {
-      return this.props.children;
+      return (this.props as any).children;
     }
   }
 }
 
-export default function ({ children }: { children: ReactChild }) {
-  return <ErrorRouter>{children}</ErrorRouter>;
-}
+export default ErrorRouter;
 
 const styles = StyleSheet.create({
   container: {

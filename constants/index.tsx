@@ -2,21 +2,26 @@ import * as Location from "expo-location";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
+import * as Device from "expo-device";
 
-import { Alert, Linking } from "react-native";
+import { Alert, Linking, Platform } from "react-native";
 import { API, Auth, DataStore, Storage } from "aws-amplify";
 import { TipoNotificacion, Usuario } from "../src/models";
 
-import base64 from "react-native-base64";
 import awsmobile from "../src/aws-exports";
-import { errorOpenPay } from "../types/openpay";
 import { Notificacion } from "../src/models";
 import {
   AndroidNotificationPriority,
   scheduleNotificationAsync,
 } from "expo-notifications";
 
-import { clabe } from "./ClabeValidator";
+import { clabe } from "../src/components/ClabeValidator";
+import { STRIPE_FILES_KEY, STRIPE_PUBLISHABLE_KEY } from "./keys";
+import Stripe from "stripe";
+import { logger } from "react-native-logs";
+import { cardBrand_type } from "../types/stripe";
+
+export const log = logger.createLogger().debug;
 
 export const rojo = "#f01829";
 export const rojoClaro = "#f34856";
@@ -61,6 +66,7 @@ export function formatMoney(num?: number | null, showCents?: boolean) {
   );
 }
 export const partyusPhone = "+5213312897347";
+export const partyusEmail = "partyus_mx@outlook.com";
 
 export async function sendNotifcationsAll({
   titulo,
@@ -147,8 +153,8 @@ export async function sendAdminNotification({
   });
 }
 
-export const minEventPrice = 0;
-export const maxEventPrice = 8000;
+export const minEventPrice = 10;
+export const maxEventPrice = 7000;
 
 export async function fetchWithTimeout(url: string, timeout = 2000) {
   return Promise.race([
@@ -169,6 +175,55 @@ export async function timer(time: number) {
 
 export const randomImageUri = () =>
   "https://picsum.photos/300/200?random=" + Math.floor(1000 * Math.random());
+
+export async function uploadImageToStripe({
+  uri,
+  purpose,
+  name,
+  getLink,
+}: {
+  uri: string;
+  purpose: string;
+  name: string;
+  getLink?: boolean;
+}) {
+  const i = new Date();
+  const data = new FormData();
+  data.append("purpose", purpose);
+  // Obtener link de stripe
+  getLink && data.append("file_link_data[create]", "true");
+  data.append("file", {
+    name: name,
+    type: "image/jpg",
+    uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
+  } as any);
+
+  // Change file upload URL
+  var url = "https://files.stripe.com/v1/files";
+
+  let res = await fetch(url, {
+    method: "POST",
+    body: data,
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Accept: "application/json",
+      Authorization: "Bearer " + STRIPE_FILES_KEY,
+    },
+  });
+  let responseJson = await res.json();
+
+  if (!responseJson?.error) {
+    let res = responseJson as Stripe.File;
+
+    // Si se pidio el link, devolver link de la imagen
+    res.url = res.links?.data.length ? res.links?.data[0].url : res.url;
+
+    return res;
+  } else {
+    console.log(responseJson);
+    throw new Error(responseJson);
+  }
+}
 
 /**
  * Funcion que devuelve una cadena de texto a partir de una imagen
@@ -253,6 +308,11 @@ export const formatDateShort = (
     return ddInicial + " " + meses[mmInicial as any];
   }
 };
+
+/**
+ * Moneda a utilizar en todas las operaciones con stripe
+ */
+export const currency = "mxn";
 
 export const meses = [
   "ene",
@@ -511,8 +571,13 @@ export function generarCurp(
     return dv == 0 ? 0 : 10 - dv;
   }
 }
-
-export async function fetchFromOpenpay<T>({
+/**
+ * Funcion que manda una solictud a la api de stripe
+ * @param type `POST`,`CREATE`,`DELETE`,`GET`,
+ * @param path Ruta a enviar de stripe
+ * @returns Cadena sin acentos y en mayusculas
+ */
+export async function fetchFromStripe<T>({
   path,
   type,
   input,
@@ -520,55 +585,69 @@ export async function fetchFromOpenpay<T>({
 }: {
   path: string;
   type: "POST" | "CREATE" | "DELETE" | "GET";
-  input?: Object;
+  input?: Object | undefined;
   secretKey?: string;
 }) {
-  let myHeaders = new Headers();
-  myHeaders.append(
-    "Authorization",
-    "Basic " + base64.encode((secretKey ? secretKey : PUBLIC_KEY) + ":")
-  );
-  myHeaders.append("Content-Type", "application/json");
+  const encodedData = new URLSearchParams();
 
-  const raw = JSON.stringify(input);
+  // Limpiar valores inexistentes
+  input &&
+    Object.keys(input).forEach((key) =>
+      !input[key] ? delete input[key] : null
+    );
+
+  // Funcion que codifica objectos nesteados en tipo www-url-formencoded
+  function nestedObjEncode(prevKey: string, nestedObj: Object) {
+    if (!nestedObj) return;
+    for (const [key, value] of Object.entries(nestedObj)) {
+      const actualKey = `${prevKey ? prevKey : ""}[${key}]`;
+
+      // Funcion recursiva si es objeto se llama con la key actual
+      if (typeof value === "object") {
+        nestedObjEncode(actualKey, value);
+        // Si el valor es null o undefined, no ponerlo
+      } else if (!value) return;
+      else {
+        encodedData.append(actualKey, value);
+      }
+    }
+  }
+  input && nestedObjEncode(null, input);
 
   const requestOptions = {
     method: type,
-    headers: myHeaders,
-    body: raw,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization:
+        "Bearer " + (secretKey ? secretKey : STRIPE_PUBLISHABLE_KEY),
+      Accept: "application/json",
+    },
+    body: encodedData.toString(),
   };
 
-  const url = produccion
-    ? "https://api.openpay.mx/v1/"
-    : "https://sandbox-api.openpay.mx/v1/";
-  return fetch(url + MERCHANT_ID + path, requestOptions).then(
-    async (res: any) => {
-      res = await res.json();
+  const url = "https://api.stripe.com";
 
-      if (res.error_code) {
-        // Alert.alert(
-        //   "Error",
-        //   res.description ? res.description : JSON.stringify(res)
-        // );
+  return fetch(url + path, requestOptions).then(async (res: any) => {
+    res = await res.json();
 
-        throw {
-          ...res,
-          error: new Error(
-            res.description ? res.description : JSON.stringify(res)
-          ),
-        };
-      }
-      return res as T;
+    if (res.error) {
+      throw new Error(res.error.message);
     }
-  );
+    return res as T;
+  });
 }
 
-export async function fetchFromAPI<T>(
-  path: string,
-  type: "POST" | "CREATE" | "DELETE" | "GET",
-  input?: Object,
-  query?: { [key: string]: string }
-) {
+export async function fetchFromAPI<T>({
+  path,
+  type,
+  input,
+  query,
+}: {
+  path: string;
+  type: "POST" | "CREATE" | "DELETE" | "GET";
+  input?: Object | undefined;
+  query?: { [key: string]: string };
+}) {
   let myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
 
@@ -598,49 +677,67 @@ export async function fetchFromAPI<T>(
         .join("&");
   }
 
-  return fetch(url, requestOptions).then(async (res: any) => {
-    res = await res.json();
-    if (res.error) {
-      throw res as {
-        error: errorOpenPay | null;
-        body: T | null;
-      };
+  return fetch(url, requestOptions).then(async (res) => {
+    let json;
+    try {
+      json = await res.json();
+    } catch (error) {
+      log(res);
+      json = res.body;
     }
-    return res;
+
+    if (json.error) {
+      throw json.error?.error ? json.error.error : json.error;
+    }
+
+    if (!res.ok)
+      throw {
+        error: json,
+        body: null,
+      };
+
+    // Si hay body.data, formatearlo para que sea directo en body y evitar seccion de pagination
+    if (json.body?.data) {
+      json.body = json.body.data;
+    }
+
+    return json;
   }) as Promise<{
-    error: errorOpenPay | null;
+    error: null;
     body: T | null;
   }>;
 }
+export function validateRFC(rfc: string) {
+  const regexp = new RegExp(
+    /^([A-Z,Ñ,&]{3,4}([0-9]{2})(0[1-9]|1[0-2])(0[1-9]|1[0-9]|2[0-9]|3[0-1])[A-Z|\d]{3})$/
+  );
+
+  return regexp.exec(rfc);
+}
+
+export const isEmulator = !Device.isDevice;
 
 export function normalizeCardType(tipo: string) {
   switch (tipo) {
     case "master-card":
-      return "mastercard";
-    case "mastercard":
-      return "mastercard";
-    case "visa":
-      return "visa";
+      return "MasterCard";
     case "american-express":
       return "american_express";
 
     default:
-      return;
+      return tipo;
   }
 }
 
-export const getCardIcon = (
-  type?: "visa" | "mastercard" | "carnet" | "american_express" | string
-) => {
+export const getCardIcon = (type?: cardBrand_type | undefined) => {
   if (!type) {
     return require("../assets/icons/stp_card_undefined.png");
   }
 
-  if (
-    !(type === "visa" || type === "mastercard" || type === "american_express")
-  ) {
-    type = normalizeCardType(type);
-  }
+  // Estandarizar tipo quitando espacios, mayusculas o guiones bajos
+  type = type.toLowerCase().replace(/ |_|-/g, "") as any;
+  // Estandarizar dinners
+  if (type === ("dinners" as any)) type = "dinersclub";
 
   switch (type) {
     case "visa":
@@ -649,16 +746,16 @@ export const getCardIcon = (
     case "mastercard":
       return require("../assets/icons/stp_card_mastercard.png");
 
-    case "american_express":
+    case "americanexpress":
       return require("../assets/icons/stp_card_amex.png");
 
-    //     case "discover":
-    //       return require("../assets/icons/stp_card_discover.png");
-    // case "jbc":
-    //   return require("../assets/icons/stp_card_jcb.png");
+    case "discover":
+      return require("../assets/icons/stp_card_discover.png");
+    case "jcb":
+      return require("../assets/icons/stp_card_jcb.png");
 
-    // case "diners":
-    //   return require("../assets/icons/stp_card_diners.png");
+    case "dinersclub":
+      return require("../assets/icons/stp_card_diners.png");
 
     default:
       return require("../assets/icons/stp_card_undefined.png");
@@ -733,14 +830,7 @@ export const shadowMedia = {
   elevation: 4,
 };
 
-export const produccion = true;
-
-export const MERCHANT_ID = produccion
-  ? "m1qt7k7zcarncm0jkvrp"
-  : "mcwffetlymvvcqthcdxu";
-const PUBLIC_KEY = produccion
-  ? "pk_dced8b24006d4a74bd3efd5158f58d15"
-  : "pk_69d96c0ed3bd4ea8a6956d8e51867876";
+export const produccion = false;
 
 export const shadowBaja = {
   shadowColor: "#000",
@@ -1088,6 +1178,79 @@ export function enumToArray<T>(enumme: T) {
   );
 }
 
+export function getWorkingDays(startDate: Date, endDate: Date) {
+  const start = new Date(startDate);
+  // Crea una lista de días festivos para México
+  const mxHolidays = [
+    // Domingo 1 de enero: Año Nuevo
+    { day: 1, month: 1 },
+
+    // Lunes 6 de febrero: Día de la Constitución Mexicana, primer puente de 2023
+    { day: 6, month: 2 },
+
+    // Lunes 20 de marzo: Natalicio de Benito Juárez, segundo puente de 2023
+    { day: 20, month: 3 },
+
+    // Lunes 1 de mayo: Día Internacional de los Trabajadores, tercer puente de 2023
+    { day: 1, month: 5 },
+
+    // Sábado 16 de septiembre: Día de la Independencia de México.
+    { day: 16, month: 9 },
+
+    // Lunes 20 de noviembre: Aniversario de la Revolución Mexicana, cuarto puente de 2023
+    { day: 20, month: 11 },
+
+    // Lunes 25 de diciembre: Navidad, último puente del año
+    { day: 25, month: 12 },
+  ];
+
+  let workingDays = -1;
+
+  // Itera a través de cada día entre las dos fechas
+  for (let date = start; date < endDate; date.setDate(date.getDate() + 1)) {
+    // Verifica si el día es hábil o no es sabado o domingo y no es feriado
+    if (
+      date.getDay() !== 0 &&
+      date.getDay() !== 6 &&
+      !mxHolidays.some(
+        (holiday) =>
+          holiday.month === date.getMonth() + 1 &&
+          holiday.day === date.getDate()
+      )
+    ) {
+      workingDays++;
+    }
+  }
+
+  return workingDays;
+}
+
+export function openWhatsapp(number: string) {
+  return AsyncAlert("Abrir whatsapp", "Se te dirigira a whatsapp").then((r) => {
+    if (!r) return;
+    Linking.openURL(
+      "whatsapp://send?text=Hola, tengo un problema con partyus: &phone=" +
+        number
+    ).catch((e) => {
+      Alert.alert("Error", "Es probable que no tengas whatsapp instalado");
+    });
+  });
+}
+
+export function openEmail(email: string) {
+  AsyncAlert(
+    "Enviar correo",
+    "Se abrira la aplicacion de correos. ¿Quieres continuar?"
+  ).then((r) => {
+    if (!r) return;
+    Linking.openURL("mailto: " + email + "?subject=SOPORTE PARTYUS").catch(
+      (e) => {
+        Alert.alert("Error", "Es probable que no tengas whatsapp instalado");
+      }
+    );
+  });
+}
+
 export function formatAMPM(
   dateInMs: number | Date | undefined | null | string,
   hideAMPM?: boolean,
@@ -1392,9 +1555,21 @@ export const AsyncAlert = async (title: string, body: string) =>
     ]);
   }).catch((e) => e);
 
-export function precioConComision(inicial: number | undefined | null) {
+export function precioConComision(
+  inicial: number | undefined | null,
+  comision: undefined | number
+) {
   if (!inicial) return 0;
-  return redondear(inicial * (1 + comisionApp), 10, tipoRedondeo.ARRIBA);
+
+  // En caso de recibir comision exclusiva del evento ponerla
+  comision = comision === 0 || !!comision ? comision : comisionApp;
+
+  // Redondeo al 5 de arriba
+  return redondear(
+    Math.round(inicial * (1 + comision)),
+    5,
+    tipoRedondeo.ARRIBA
+  );
 }
 
 export const getWeekDay = (d: Date | undefined | number) => {
@@ -1441,6 +1616,14 @@ export const getWeekDay = (d: Date | undefined | number) => {
 };
 
 export const comisionApp = 0.15;
+
+export function getIpAddress() {
+  return fetch("https://api.ipify.org?format=json").then((r) =>
+    r.json().then((r) => {
+      return r.ip as string;
+    })
+  );
+}
 
 /**
  * Toma el tiempo en hora UTC
@@ -1523,7 +1706,7 @@ export const openCameraPickerAsync = async (
     return false;
   }
 
-  let camResult;
+  let camResult: ImagePicker.ImagePickerResult;
 
   // Si se le paso un aspect ratio, respetarlo
   if (aspect) {
@@ -1539,12 +1722,12 @@ export const openCameraPickerAsync = async (
     });
   }
 
-  if (camResult.cancelled === true) {
+  if (camResult.canceled === true) {
     return false;
   } else {
     // Comprimir la imagen
-    camResult = await ImageManipulator.manipulateAsync(
-      camResult.uri,
+    return await ImageManipulator.manipulateAsync(
+      camResult.assets[0].uri,
       [
         {
           resize: {
@@ -1554,8 +1737,6 @@ export const openCameraPickerAsync = async (
       ],
       { compress: quality }
     );
-
-    return camResult;
   }
 };
 
@@ -1575,7 +1756,7 @@ export const openImagePickerAsync = async (
     return false;
   }
 
-  let pickerResult;
+  let pickerResult: ImagePicker.ImagePickerResult;
   if (aspect) {
     pickerResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: denyVideos
@@ -1593,14 +1774,14 @@ export const openImagePickerAsync = async (
     });
   }
 
-  if (pickerResult.cancelled === true) {
+  if (pickerResult.canceled === true) {
     return false;
   } else {
     // Si se le paso un modificador a la calidad se comprime la imagen
 
     if (!!quality && quality > 0 && quality < 1) {
-      pickerResult = await ImageManipulator.manipulateAsync(
-        pickerResult.uri,
+      return await ImageManipulator.manipulateAsync(
+        pickerResult.assets[0].uri,
         [
           {
             resize: {

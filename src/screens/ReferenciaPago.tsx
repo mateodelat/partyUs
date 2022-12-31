@@ -1,5 +1,6 @@
 import {
   Alert,
+  Dimensions,
   Image,
   Modal,
   Pressable,
@@ -17,11 +18,16 @@ import {
   formatAMPM,
   formatDateShort,
   formatMoney,
+  formatTelefono,
+  openEmail,
+  openWhatsapp,
+  partyusEmail,
+  partyusPhone,
 } from "../../constants";
 
-import { Entypo } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+
 import Header from "../navigation/components/Header";
 import {
   requestPermissionsAsync,
@@ -32,7 +38,9 @@ import MessageBox from "../components/MessageBox";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Boton from "../components/Boton";
 
-export default function ({
+import Barcode from "@kichiyaki/react-native-barcode-generator";
+
+export default function Ref({
   route,
 }: {
   route: {
@@ -40,7 +48,7 @@ export default function ({
       amount: number;
       codebar: {
         uri: string;
-        number: number;
+        number: string;
       };
       limitDate: number | Date;
       titulo: string;
@@ -54,16 +62,17 @@ export default function ({
     limitDate = new Date(limitDate);
   }
 
-  // Poner uri con width = 2 (solo para openpay) para subir la calidad del codigo de barras
-  let idx = codebar.uri.search("width=");
-  if (idx) {
-    const i = codebar.uri.slice(0, idx);
-
-    const e = codebar.uri.slice(idx + 7, codebar.uri.length);
-    codebar.uri = i + "width=2" + e;
+  let number = "";
+  for (let index = 0; index < codebar.number?.length; index++) {
+    const element = codebar.number[index];
+    // Si vamos en un multiplo de 4 agregar un espacio
+    if (index % 4 === 0 && !!index) {
+      number += " " + element;
+    } else {
+      number += element;
+    }
   }
 
-  const [showAll, setShowAll] = useState(false);
   const [imageStatus, setImageStatus] = useState<"GUARDANDO..." | "GUARDADA">();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -73,7 +82,6 @@ export default function ({
   async function handleSaveImage() {
     const { granted } = await requestPermissionsAsync(true);
     if (granted) {
-      setShowAll(true);
       setTimeout(async () => {
         setImageStatus("GUARDANDO...");
         const localUri = viewShowRef.current?.capture
@@ -89,18 +97,8 @@ export default function ({
       );
     }
   }
-  const listaNegocios = [
-    "https://www.paynet.com.mx/img/tiendas/walmart.jpg",
-    "https://www.paynet.com.mx/img/tiendas/chedraui.png",
-    "https://www.paynet.com.mx/img/seven.jpg",
-    "https://www.paynet.com.mx/img/guadalajara.jpg",
-    "https://www.paynet.com.mx/img/tiendas/sams.jpg",
-    "https://www.paynet.com.mx/img/tiendas/farmaciaAhorro.jpg",
-    "https://www.paynet.com.mx/img/tiendas/kiosko.jpg",
-    "https://www.paynet.com.mx/img/tiendas/waldos.jpg",
-    "https://www.paynet.com.mx/img/tiendas/walmart_express.png",
-    "https://www.paynet.com.mx/img/tiendas/tiendas-k.jpg",
-  ];
+
+  const { width } = Dimensions.get("screen");
 
   const { top } = useSafeAreaInsets();
   return (
@@ -135,8 +133,7 @@ export default function ({
           <View style={styles.innerContainer}>
             {/* Contenedor de arriba */}
             <View style={styles.topContainer}>
-              <TouchableOpacity
-                onPress={() => setShowAll(!showAll)}
+              <View
                 style={{
                   marginVertical: 10,
                   flexDirection: "row",
@@ -146,51 +143,12 @@ export default function ({
                   width: "100%",
                 }}
               >
-                {listaNegocios.map((item, idx) => {
-                  if (idx < 4 || showAll)
-                    return (
-                      <Image
-                        key={idx}
-                        source={{ uri: item }}
-                        style={styles.iconNegocio}
-                      />
-                    );
-                  else return <View key={idx} />;
-                })}
-                {!showAll && (
-                  <View
-                    style={{
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 70,
-                      marginTop: 20,
-                    }}
-                  >
-                    <Entypo
-                      name="dots-three-horizontal"
-                      size={24}
-                      color={azulClaro}
-                    />
-                  </View>
-                )}
-              </TouchableOpacity>
+                <Image
+                  source={require("../../assets/IMG/Oxxo_Logo.png")}
+                  style={styles.iconNegocio}
+                />
+              </View>
               <Text style={styles.amount}>MX{formatMoney(amount, true)}</Text>
-              <View
-                style={{
-                  ...styles.bolita,
-                  left: -8,
-                  borderRightWidth: 1,
-                  borderTopWidth: 1,
-                }}
-              />
-              <View
-                style={{
-                  ...styles.bolita,
-                  right: -8,
-                  borderLeftWidth: 1,
-                  borderBottomWidth: 1,
-                }}
-              />
               <Text
                 style={{
                   bottom: -9,
@@ -206,11 +164,15 @@ export default function ({
 
             {/* Contenedor de en medio */}
             <View style={styles.middleContainer}>
-              <Image
-                source={{ uri: codebar.uri }}
-                style={styles.codebarImage}
+              <Barcode
+                value={number.replace(/ /g, "")}
+                text={number}
+                maxWidth={width - 80}
+                textStyle={{ marginTop: 10 }}
+                height={80}
+                format={"CODE128"}
+                style={{}}
               />
-              <Text style={styles.number}>{codebar.number}</Text>
               <TouchableOpacity
                 style={styles.buttonContainer}
                 onPress={handleSaveImage}
@@ -235,38 +197,30 @@ export default function ({
                 {formatDateShort(limitDate) + " " + formatAMPM(limitDate)}
               </Text>
             </View>
-            <View
-              style={{
-                ...styles.bottomContainer,
-                borderTopWidth: 1,
-                borderColor: "lightgray",
-              }}
-            >
-              <Text style={{ fontSize: 12 }}>Concepto</Text>
-              <Text style={styles.number}>{titulo}</Text>
-            </View>
-            {/* <View
-              style={{
-                ...styles.bottomContainer,
-                borderBottomWidth: 0,
-                justifyContent: "flex-start",
-              }}
-            >
-              <Feather name="clock" size={20} color="black" />
-              <Text style={{ fontSize: 12, marginLeft: 20 }}>
-                Pagas y se acredita en 1 hora
-              </Text>
-            </View> */}
           </View>
-          <View style={styles.footerImageContainer}>
-            <Image
-              source={require("../../assets/IMG/logoLetras.png")}
-              style={styles.footerImage}
+          <View
+            style={{
+              ...styles.bottomContainer,
+              borderBottomWidth: 0,
+              paddingHorizontal: 0,
+            }}
+          >
+            <Feather
+              style={{ marginLeft: 20 }}
+              name="clock"
+              size={20}
+              color="black"
             />
-            <Image
-              source={{ uri: "https://www.paynet.com.mx/img/paynetv2.png" }}
-              style={styles.footerImage}
-            />
+            <Text
+              style={{
+                fontSize: 12,
+                width: "100%",
+                textAlign: "center",
+                position: "absolute",
+              }}
+            >
+              Pagas y se acredita tu reserva en 1 dia hábil
+            </Text>
           </View>
         </ViewShot>
       </ScrollView>
@@ -287,26 +241,45 @@ export default function ({
 
         <View style={{ backgroundColor: "#00000099" }}>
           <View style={styles.modalContainer}>
-            <Text style={styles.tituloModal}>Pagar reserva en efectivo</Text>
+            <Text style={styles.tituloModal}>Pagar reserva en tienda</Text>
             <View style={styles.line} />
             <Text style={styles.descripcionModal}>
-              1. Acude a cualquier tienda aliada dentro de la fecha límite de
-              pago.
+              1. Entrega el cupón al cajero para que escanee el código de
+              barras.
             </Text>
             <Text style={styles.descripcionModal}>
-              2. Dile a la persona de caja que realizarás un pago en efectivo
-              Paynet, proporciona el código o número de referencia.
+              2. Entrega el pago en efectivo al cajero.
             </Text>
             <Text style={styles.descripcionModal}>
-              3. Antes de pagar verifica que los datos coincidan con los de este
-              recibo de pago.
+              3. Cuando se haya completado el pago, guarda el recibo de pago
+              para tu archivo.
             </Text>
             <Text style={styles.descripcionModal}>
-              4. Realiza el pago en efectivo por el total a pagar, este se
-              reflejará a mas tardar en una hora.
-            </Text>
-            <Text style={styles.descripcionModal}>
-              5. Conserva tu comprobante de pago para cualquier aclaración.
+              4. Si tienes alguna pregunta, ponte en contacto con nosotros
+              escribiendo al{" "}
+              <Text
+                onPress={() => openWhatsapp(partyusPhone)}
+                style={{
+                  color: azulClaro,
+                }}
+              >
+                +52{" "}
+                {formatTelefono(
+                  partyusPhone.slice(
+                    partyusPhone.length - 10,
+                    partyusPhone.length
+                  )
+                )}
+              </Text>{" "}
+              o al correo{" "}
+              <Text
+                onPress={() => openEmail(partyusEmail)}
+                style={{
+                  color: azulClaro,
+                }}
+              >
+                {partyusEmail}
+              </Text>
             </Text>
             <Boton
               titulo="OK"
@@ -405,8 +378,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   iconNegocio: {
-    width: 70,
-    height: 40,
+    height: 50,
     marginTop: 20,
     resizeMode: "contain",
     marginRight: 3,

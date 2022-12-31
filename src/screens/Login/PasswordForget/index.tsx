@@ -5,7 +5,7 @@ import { NavigationProp } from "../../../shared/interfaces/navigation.interface"
 import Boton from "../../../components/Boton";
 import AnimatedInput from "../../../components/AnimatedInput";
 
-export default ({
+export default function Password({
   route: { params },
   navigation,
 }: {
@@ -15,7 +15,7 @@ export default ({
     };
   };
   navigation: NavigationProp;
-}) => {
+}) {
   const [email, setEmail] = useState(params.username);
   const [check, setCheck] = useState(true);
 
@@ -98,7 +98,7 @@ export default ({
       </Pressable>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

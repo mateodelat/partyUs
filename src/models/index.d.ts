@@ -2,6 +2,11 @@ import { ModelInit, MutableModel } from "@aws-amplify/datastore";
 // @ts-ignore
 import { LazyLoading, LazyLoadingDisabled, AsyncCollection, AsyncItem } from "@aws-amplify/datastore";
 
+export enum TipoDocumento {
+  PASAPORTE = "PASAPORTE",
+  INE = "INE"
+}
+
 export enum PlaceEnum {
   EXTERIOR = "EXTERIOR",
   INTERIOR = "INTERIOR",
@@ -11,7 +16,7 @@ export enum PlaceEnum {
 export enum MusicEnum {
   REGGAETON = "REGGAETON",
   POP = "POP",
-  TECHNO = "TECHNO",
+  TECNO = "TECNO",
   RAP = "RAP",
   BANDA = "BANDA",
   ROCK = "ROCK",
@@ -22,6 +27,7 @@ export enum ComoditiesEnum {
   DJ = "DJ",
   ALBERCA = "ALBERCA",
   BARRALIBRE = "BARRALIBRE",
+  ESTACIONAMIENTO = "ESTACIONAMIENTO",
   COMIDA = "COMIDA",
   SEGURIDAD = "SEGURIDAD"
 }
@@ -95,6 +101,7 @@ type EagerUsuario = {
   readonly cuentaBancaria?: string | null;
   readonly titularCuenta?: string | null;
   readonly receiveNewReservations?: boolean | null;
+  readonly rfc?: string | null;
   readonly imagenFondo?: string | null;
   readonly direccion?: string | null;
   readonly phoneNumber?: string | null;
@@ -103,12 +110,15 @@ type EagerUsuario = {
   readonly admin?: boolean | null;
   readonly idUploaded?: boolean | null;
   readonly idData?: string | null;
-  readonly idKey?: string | null;
+  readonly idFrontKey?: string | null;
+  readonly idBackKey?: string | null;
+  readonly tipoDocumento?: TipoDocumento | keyof typeof TipoDocumento | null;
   readonly fechaNacimiento?: string | null;
   readonly calificacion?: number | null;
   readonly numResenas?: number | null;
   readonly notificationToken?: string | null;
-  readonly userPaymentID?: string | null;
+  readonly paymentClientID?: string | null;
+  readonly paymentAccountID?: string | null;
   readonly verified?: boolean | null;
   readonly owner?: string | null;
   readonly Eventos?: (Evento | null)[] | null;
@@ -128,6 +138,7 @@ type LazyUsuario = {
   readonly cuentaBancaria?: string | null;
   readonly titularCuenta?: string | null;
   readonly receiveNewReservations?: boolean | null;
+  readonly rfc?: string | null;
   readonly imagenFondo?: string | null;
   readonly direccion?: string | null;
   readonly phoneNumber?: string | null;
@@ -136,12 +147,15 @@ type LazyUsuario = {
   readonly admin?: boolean | null;
   readonly idUploaded?: boolean | null;
   readonly idData?: string | null;
-  readonly idKey?: string | null;
+  readonly idFrontKey?: string | null;
+  readonly idBackKey?: string | null;
+  readonly tipoDocumento?: TipoDocumento | keyof typeof TipoDocumento | null;
   readonly fechaNacimiento?: string | null;
   readonly calificacion?: number | null;
   readonly numResenas?: number | null;
   readonly notificationToken?: string | null;
-  readonly userPaymentID?: string | null;
+  readonly paymentClientID?: string | null;
+  readonly paymentAccountID?: string | null;
   readonly verified?: boolean | null;
   readonly owner?: string | null;
   readonly Eventos: AsyncCollection<Evento>;
@@ -170,10 +184,14 @@ type EagerEvento = {
   readonly musica?: MusicEnum | keyof typeof MusicEnum | null;
   readonly comodities?: (ComoditiesEnum | null)[] | keyof typeof ComoditiesEnum | null;
   readonly musOtra?: string | null;
+  readonly comisionPercent?: number | null;
+  readonly comisionRP?: number | null;
+  readonly allowPaymentsInPlace?: boolean | null;
   readonly personasReservadas?: number | null;
   readonly personasMax?: number | null;
   readonly precioMin?: number | null;
   readonly precioMax?: number | null;
+  readonly paymentProductID?: string | null;
   readonly CreatorID?: string | null;
   readonly creator?: Usuario | null;
   readonly Boletos?: (Boleto | null)[] | null;
@@ -196,10 +214,14 @@ type LazyEvento = {
   readonly musica?: MusicEnum | keyof typeof MusicEnum | null;
   readonly comodities?: (ComoditiesEnum | null)[] | keyof typeof ComoditiesEnum | null;
   readonly musOtra?: string | null;
+  readonly comisionPercent?: number | null;
+  readonly comisionRP?: number | null;
+  readonly allowPaymentsInPlace?: boolean | null;
   readonly personasReservadas?: number | null;
   readonly personasMax?: number | null;
   readonly precioMin?: number | null;
   readonly precioMax?: number | null;
+  readonly paymentProductID?: string | null;
   readonly CreatorID?: string | null;
   readonly creator: AsyncItem<Usuario | undefined>;
   readonly Boletos: AsyncCollection<Boleto>;
@@ -221,6 +243,7 @@ type EagerBoleto = {
   readonly cantidad?: number | null;
   readonly personasReservadas?: number | null;
   readonly precio?: number | null;
+  readonly paymentPriceID?: string | null;
   readonly eventoID?: string | null;
   readonly Reservas?: (ReservasBoletos | null)[] | null;
   readonly createdAt?: string | null;
@@ -234,6 +257,7 @@ type LazyBoleto = {
   readonly cantidad?: number | null;
   readonly personasReservadas?: number | null;
   readonly precio?: number | null;
+  readonly paymentPriceID?: string | null;
   readonly eventoID?: string | null;
   readonly Reservas: AsyncCollection<ReservasBoletos>;
   readonly createdAt?: string | null;
@@ -279,15 +303,15 @@ type EagerReserva = {
   readonly total?: number | null;
   readonly comision?: number | null;
   readonly pagadoAlOrganizador?: number | null;
+  readonly pagadoARP?: number | null;
   readonly cantidad?: number | null;
   readonly pagado?: boolean | null;
   readonly paymentTime?: string | null;
+  readonly referedFrom?: string | null;
   readonly transaccionAOrganizadorID?: string | null;
   readonly transaccionAOrganizador?: Retiro | null;
   readonly tipoPago?: TipoPago | keyof typeof TipoPago | null;
   readonly chargeID?: string | null;
-  readonly transactionID?: string | null;
-  readonly feeID?: string | null;
   readonly cashBarcode?: string | null;
   readonly cashReference?: string | null;
   readonly ingreso?: boolean | null;
@@ -313,15 +337,15 @@ type LazyReserva = {
   readonly total?: number | null;
   readonly comision?: number | null;
   readonly pagadoAlOrganizador?: number | null;
+  readonly pagadoARP?: number | null;
   readonly cantidad?: number | null;
   readonly pagado?: boolean | null;
   readonly paymentTime?: string | null;
+  readonly referedFrom?: string | null;
   readonly transaccionAOrganizadorID?: string | null;
   readonly transaccionAOrganizador: AsyncItem<Retiro | undefined>;
   readonly tipoPago?: TipoPago | keyof typeof TipoPago | null;
   readonly chargeID?: string | null;
-  readonly transactionID?: string | null;
-  readonly feeID?: string | null;
   readonly cashBarcode?: string | null;
   readonly cashReference?: string | null;
   readonly ingreso?: boolean | null;

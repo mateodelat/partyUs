@@ -21,7 +21,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   azulClaro,
   azulFondo,
-  enumToArray,
   formatAMPM,
   formatDay,
   getImageUrl,
@@ -32,21 +31,16 @@ import {
   shadowMedia,
   getUserSub,
   precioConComision,
-  timer,
   formatMoney,
   azulOscuro,
   AsyncAlert,
   fetchFromAPI,
-  shadowBaja,
-  shadowMuyBaja,
-  formatDateShort,
-  mayusFirstLetter,
 } from "../../../../constants";
-import { API, DataStore, Predicates, Storage } from "aws-amplify";
+import { DataStore } from "aws-amplify";
 import { OpType } from "@aws-amplify/datastore";
 
 import Line from "../../../components/Line";
-import { MusicEnum, Reserva, Usuario } from "../../../models";
+import { Cupon, MusicEnum, Reserva, TipoPago, Usuario } from "../../../models";
 import Descripcion from "./Descripcion";
 
 import { Feather } from "@expo/vector-icons";
@@ -149,6 +143,7 @@ export default function ({
     Usuario[] | undefined
   >();
   const [reservas, setReservas] = useState<ReservaType[]>();
+  const [cupon, setCupon] = useState<Cupon>();
 
   function handleBack() {
     navigation.pop();
@@ -175,7 +170,7 @@ export default function ({
             .pagado("eq", true)
         )
     ).then(async (r: ReservaType[]) => {
-      let usuarios = [];
+      let usuarios: Usuario[] = [];
       let personasReservadas = 0;
 
       const res = await Promise.all(
@@ -197,7 +192,7 @@ export default function ({
               ...usr,
               foto,
             },
-          ];
+          ] as any;
           return {
             ...e,
             usuario: {
@@ -214,6 +209,8 @@ export default function ({
           };
         })
       );
+
+      usuarios = usuarios.sort((a, b) => (a.foto ? -1 : b.foto ? 1 : 0));
 
       setEvento((prev) => ({
         ...prev,
@@ -342,20 +339,37 @@ export default function ({
 
   async function handleCancelar() {
     try {
+      if (
+        reserva.tipoPago === TipoPago.EFECTIVO &&
+        reserva.pagado &&
+        reserva.total
+      ) {
+        Alert.alert(
+          "Error",
+          "Por el momento los pagos en oxxo no se pueden cancelar. Si ocurrio algun problema por favor contactanos"
+        );
+        return;
+      }
+
       await AsyncAlert(
         "Cancelar reserva",
         // Mensaje dependiendo si el usuario tiene dinero en la cuenta
         reserva.pagado === true
-          ? "Al cancelar una reserva, se te devolvera el dinero a tu cuenta para que puedas reservar en otro evento. ¿Quieres continuar?"
+          ? "Al cancelar una reserva, se te devolvera todo el dinero en un lapso de 5 a 10 dias. ¿Quieres continuar?"
           : "¿Seguro que quieres cancelar tu reserva?"
       ).then(async (r) => {
         if (!r) return;
 
         setLoading(true);
-        const result = await fetchFromAPI("/cancelReserva", "POST", {
-          reservaID: reserva.id,
-          organizadorID: reserva.organizadorID,
-          clientID: usuario.id,
+        const result = await fetchFromAPI({
+          path: "/reservas/cancel",
+          type: "POST",
+          input: {
+            reservaID: reserva.id,
+            organizadorID: reserva.organizadorID,
+            paymentIntentID: reserva.chargeID,
+            clientID: usuario.id,
+          },
         });
         setLoading(false);
         console.log(result);
@@ -459,8 +473,7 @@ export default function ({
         amount: reserva.total,
         titulo,
         codebar: {
-          uri: reserva.cashBarcode,
-          reference: reserva.cashReference,
+          number: reserva.cashBarcode,
         },
         limitDate: new Date(reserva.fechaExpiracionUTC).getTime(),
       });
@@ -470,6 +483,15 @@ export default function ({
   useEffect(() => {
     if (reserva?.id) {
       setBoletos("loading");
+      // Pedir el cupon de descuento asociado con esa reserva
+      DataStore.query(Reserva, reserva.id).then(async (res) => {
+        // Pedir el cupon de descuento asociado a la reserva si es que hay
+        if (res.cuponID) {
+          const cup = await DataStore.query(Cupon, res.cuponID);
+          setCupon(cup);
+        }
+      });
+
       DataStore.query(ReservasBoletos, (e) =>
         e.reservaID("eq", reserva.id)
       ).then(async (r) => {
@@ -709,41 +731,75 @@ export default function ({
                 {boletos === "loading" ? (
                   <Loading indicator style={{ marginTop: 30 }} />
                 ) : (
-                  boletos?.map((e, idx) => {
-                    return (
-                      <View style={styles.boletoContainer} key={idx}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.subtitle}>Precio total</Text>
-                          <Text style={{ ...styles.value, color: rojoClaro }}>
-                            {formatMoney(
-                              precioConComision(e.boleto.precio) * e.quantity
-                            )}
-                          </Text>
-                        </View>
-                        <View>
-                          <Text style={styles.subtitle}>{e.boleto.titulo}</Text>
-                          <View
-                            style={{
-                              justifyContent: "flex-end",
-                              alignItems: "center",
-                              marginRight: 0,
-                              flexDirection: "row",
-                            }}
-                          >
-                            <Text style={styles.value}>{e.quantity}</Text>
-                            <Ionicons
+                  <>
+                    {boletos?.map((e, idx) => {
+                      // Precio con reduccion del descuento si es que hubo
+                      const precioBoleto =
+                        precioConComision(
+                          e.boleto.precio,
+                          evento.comisionPercent
+                        ) -
+                        (cupon
+                          ? cupon?.porcentajeDescuento *
+                            precioConComision(
+                              e.boleto.precio,
+                              evento.comisionPercent
+                            )
+                          : 0);
+
+                      return (
+                        <View style={styles.boletoContainer} key={idx}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.subtitle}>Precio total</Text>
+                            <Text style={{ ...styles.value, color: rojoClaro }}>
+                              {formatMoney(precioBoleto * e.quantity)}
+                            </Text>
+                          </View>
+                          <View>
+                            <Text style={styles.subtitle}>
+                              {e.boleto.titulo}
+                            </Text>
+                            <View
                               style={{
-                                marginLeft: 5,
+                                justifyContent: "flex-end",
+                                alignItems: "center",
+                                marginRight: 0,
+                                flexDirection: "row",
                               }}
-                              name="person"
-                              size={20}
-                              color="black"
-                            />
+                            >
+                              <Text style={styles.value}>{e.quantity}</Text>
+                              <Ionicons
+                                style={{
+                                  marginLeft: 5,
+                                }}
+                                name="person"
+                                size={20}
+                                color="black"
+                              />
+                            </View>
                           </View>
                         </View>
+                      );
+                    })}
+                    {cupon && (
+                      <View
+                        style={{
+                          flex: 1,
+                          width: "100%",
+                          paddingTop: 20,
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text style={styles.subtitle}>Cupon de descuento</Text>
+                        <Text style={{ ...styles.value, color: rojoClaro }}>
+                          -{" "}
+                          {cupon.porcentajeDescuento
+                            ? cupon.porcentajeDescuento * 100 + "%"
+                            : formatMoney(cupon.cantidadDescuento)}
+                        </Text>
                       </View>
-                    );
-                  })
+                    )}
+                  </>
                 )}
               </TouchableOpacity>
             ) : (

@@ -22,7 +22,6 @@ import { DataStore } from "aws-amplify";
 import { Evento } from "../../../models";
 import { Usuario } from "../../../models";
 import ElementoReserva from "./ElementoReserva";
-import { listReservas } from "../../../graphql/queries";
 import Loading from "../../../components/Loading";
 import useUser from "../../../Hooks/useUser";
 

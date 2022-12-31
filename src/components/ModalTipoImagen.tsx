@@ -78,7 +78,7 @@ export default function ({
     );
     if (!image) return;
 
-    setImage(image);
+    setImage(image as any);
     handleCloseModal();
   }
 
@@ -111,7 +111,7 @@ export default function ({
     setRandomLoading(true);
     await fetchWithTimeout(
       "https://source.unsplash.com/random/1100x800/?party",
-      3000
+      5000
     )
       .then((r) => {
         setImage({

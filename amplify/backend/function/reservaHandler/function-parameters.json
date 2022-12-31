@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "api": {
+      "partyUsAPI": [
+        "Query",
+        "Mutation"
+      ]
+    }
+  },
+  "lambdaLayers": [
+    {
+      "type": "ProjectLayer",
+      "resourceName": "partyuslambdaDependencies",
+      "env": "staging",
+      "version": "Always choose latest version",
+      "isLatestVersionSelected": true
+    }
+  ],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "secretKeyStag",
+      "environmentVariableName": "SECRET_KEY_STAG"
+    },
+    {
+      "cloudFormationParameterName": "webhookKeyStag",
+      "environmentVariableName": "WEBHOOK_KEY_STAG"
+    },
+    {
+      "cloudFormationParameterName": "secretKeyProd",
+      "environmentVariableName": "SECRET_KEY_PROD"
+    }
+  ]
+}
