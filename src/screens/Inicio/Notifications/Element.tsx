@@ -48,6 +48,27 @@ const Icon = ({ tipo }: { tipo: TipoNotificacion }) => {
         </View>
       );
 
+    case TipoNotificacion.RESERVAENEVENTO:
+      return (
+        <View style={styles.center}>
+          <FontAwesome5 name="calendar" size={sizeIcon} color={"black"} />
+          <FontAwesome
+            name="plus"
+            size={16}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: -5,
+              padding: 2,
+              backgroundColor: "#fff",
+              borderRadius: 20,
+              ...shadowBaja,
+            }}
+            color={rojoClaro}
+          />
+        </View>
+      );
+
     case TipoNotificacion.RESERVAEFECTIVOPAGADA:
       return (
         <FontAwesome5 name="hand-holding-usd" size={sizeIcon} color={"black"} />
@@ -67,6 +88,26 @@ const Icon = ({ tipo }: { tipo: TipoNotificacion }) => {
 
     case TipoNotificacion.RECORDATORIOPAGO:
       return <Feather name="clock" size={sizeIcon} color={"black"} />;
+
+    case TipoNotificacion.RESERVACANCELADA:
+    case TipoNotificacion.EVENTOCANCELADO:
+      return (
+        <View style={styles.center}>
+          <MaterialCommunityIcons
+            name="ticket-outline"
+            size={sizeIcon}
+            color="black"
+          />
+          <Entypo
+            name="cross"
+            size={16}
+            style={{
+              position: "absolute",
+            }}
+            color={rojoClaro}
+          />
+        </View>
+      );
 
     case TipoNotificacion.CALIFICAUSUARIO:
       return (

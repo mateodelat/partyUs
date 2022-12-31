@@ -440,16 +440,6 @@ app.post("/reservas/createReserva", async function (req, res) {
           "no se encontro id de account para la cuenta de pagos del creador del evento ",
       });
     }
-
-    // Verificar que el owner id no sea igual a client id para evitar problemas de transferencias
-    if (ownerPaymentID === clientPaymentID && total !== 0) {
-      return formatResponse({
-        res,
-        statusCode: 409,
-        error: "no puedes registrarte en tu mismo evento",
-      });
-    }
-
     // Fecha de expiracion pagos en efectivo
     // Calcular fecha de expiracion
     let limitDate = new Date();
@@ -1274,6 +1264,7 @@ app.post("/reservas/cancel", async function (req, res) {
     // Validacion de parametros
     if (!reservaID) {
       return formatResponse({
+        res,
         statusCode: 400,
         error: {
           description: "Error no se recibio ID de reserva",
@@ -1283,6 +1274,7 @@ app.post("/reservas/cancel", async function (req, res) {
 
     if (!organizadorID) {
       return formatResponse({
+        res,
         statusCode: 400,
         error: {
           description: "Error no se recibio ID de organizador",
@@ -1292,6 +1284,7 @@ app.post("/reservas/cancel", async function (req, res) {
 
     if (!clientID) {
       return formatResponse({
+        res,
         statusCode: 400,
         error: {
           description: "Error no se recibio ID de cliente",
@@ -1357,24 +1350,24 @@ app.post("/reservas/cancel", async function (req, res) {
       variables: { reservaID, clientID, organizadorID },
     })
       .then(async (r) => {
-        const res = r.data.getReserva;
+        const reserva = r.data.getReserva;
         // Verificar si la reserva no esta ya cancelada
-        if (res.cancelado) {
+        if (reserva.cancelado) {
           throw new Error("La reserva ya fue cancelada");
         }
 
         // Verificar que la reserva no haya sido ingresada
-        if (res.ingreso) {
+        if (reserva.ingreso) {
           throw new Error("La reserva ya fue ingresada");
         }
 
         // Verificar que el organizador de la reserva es de quien tenemos el id de pago
-        if (res.organizadorID !== organizadorID) {
+        if (reserva.organizadorID !== organizadorID) {
           throw new Error("El organizador no coincide");
         }
 
         // Verificar que el usuario de la reserva es de quien tenemos el id de pago
-        if (res.usuarioID !== clientID) {
+        if (reserva.usuarioID !== clientID) {
           throw new Error("El cliente no coincide");
         }
 
@@ -1386,15 +1379,15 @@ app.post("/reservas/cancel", async function (req, res) {
         // Si ya se pago y no tiene fee asociado significa que ocurio algo raro y no se guardo o el usuario
         // modifico el parametro de pagado alternativamente
         if (
-          res.pagado &&
-          (!res.chargeID ||
+          reserva.pagado &&
+          (!reserva.chargeID ||
             !paymentClientID ||
             !paymentAccountID)
         ) {
           console.log({
             paymentClientID,
             paymentAccountID,
-            res
+            reserva
           });
           throw new Error(
             "La reserva tiene un error, contactanos para mas informacion"
@@ -1413,13 +1406,13 @@ app.post("/reservas/cancel", async function (req, res) {
 
 
         // Si aparece como pagada, rastrear la informacion del paymentIntentID y cancelarlo
-        if (res.pagado) {
-          const { paymentIntentID } = res;
+        if (reserva.pagado) {
+          const { chargeID } = reserva
 
 
           // Sacar el codigo a mandar en el refund
           var urlencoded = new URLSearchParams();
-          urlencoded.append("payment_intent", "pi_3MKqVPEigD6kxjjg0RzWe40p");
+          urlencoded.append("payment_intent", chargeID);
 
 
 
@@ -1431,16 +1424,15 @@ app.post("/reservas/cancel", async function (req, res) {
               method: "POST",
               url: "https://api.stripe.com/v1/refunds",
               headers: {
-                Authorization:
+                "Authorization":
                   "Bearer " + (SECRET_KEY),
-                "Content-Type": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Accept": "application/json",
               },
               data: urlencoded
             }).then(r => r.text())
               .catch(e => {
-
-                return "Reserva cancelada pero hubo un error para cancelar el cargo, contactanos para mas informacion"
-
+                throw e.response.data
               })
             ,
 
@@ -1448,7 +1440,7 @@ app.post("/reservas/cancel", async function (req, res) {
             // Pedir la transaccion de dinero al organizador y cancelarla
             stripe.transfers.list({
               // Pedir todas las transferencias que coincide el transferGroup con el de la reserva
-              transfer_group: res.id
+              transfer_group: reserva.id
             })
               .then(transfList => {
                 // Si no hay transferencias asociadas puede ser porque no se le envio nada al organizador
@@ -1490,6 +1482,7 @@ app.post("/reservas/cancel", async function (req, res) {
         });
 
         return formatResponse({
+          res,
           statusCode: 200,
           body: "Reserva cancelada con exito",
         });

@@ -12,6 +12,10 @@
     {
       "cloudFormationParameterName": "secretKeyStag",
       "environmentVariableName": "SECRET_KEY_STAG"
+    },
+    {
+      "cloudFormationParameterName": "secretKeyProd",
+      "environmentVariableName": "SECRET_KEY_PROD"
     }
   ],
   "permissions": {

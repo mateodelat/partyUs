@@ -36,10 +36,10 @@
       "Type": "String",
       "Default": "functionpartyuslambdaDependenciesArn"
     },
-    "secretKeyProd": {
+    "secretKeyStag": {
       "Type": "String"
     },
-    "secretKeyStag": {
+    "secretKeyProd": {
       "Type": "String"
     }
   },
@@ -105,11 +105,11 @@
             "API_PARTYUSAPI_GRAPHQLAPIKEYOUTPUT": {
               "Ref": "apipartyUsAPIGraphQLAPIKeyOutput"
             },
-            "SECRET_KEY_PROD": {
-              "Ref": "secretKeyProd"
-            },
             "SECRET_KEY_STAG": {
               "Ref": "secretKeyStag"
+            },
+            "SECRET_KEY_PROD": {
+              "Ref": "secretKeyProd"
             }
           }
         },

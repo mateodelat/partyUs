@@ -1783,6 +1783,7 @@ export const schema = {
                 "DJ",
                 "ALBERCA",
                 "BARRALIBRE",
+                "ESTACIONAMIENTO",
                 "COMIDA",
                 "SEGURIDAD"
             ]

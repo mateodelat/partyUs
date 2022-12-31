@@ -405,6 +405,7 @@ enum comoditiesEnum {
   DJ
   ALBERCA
   BARRALIBRE
+  ESTACIONAMIENTO
   COMIDA
   SEGURIDAD
 }

@@ -40,7 +40,7 @@ import { DataStore } from "aws-amplify";
 import { OpType } from "@aws-amplify/datastore";
 
 import Line from "../../../components/Line";
-import { Cupon, MusicEnum, Reserva, Usuario } from "../../../models";
+import { Cupon, MusicEnum, Reserva, TipoPago, Usuario } from "../../../models";
 import Descripcion from "./Descripcion";
 
 import { Feather } from "@expo/vector-icons";
@@ -339,6 +339,18 @@ export default function ({
 
   async function handleCancelar() {
     try {
+      if (
+        reserva.tipoPago === TipoPago.EFECTIVO &&
+        reserva.pagado &&
+        reserva.total
+      ) {
+        Alert.alert(
+          "Error",
+          "Por el momento los pagos en oxxo no se pueden cancelar. Si ocurrio algun problema por favor contactanos"
+        );
+        return;
+      }
+
       await AsyncAlert(
         "Cancelar reserva",
         // Mensaje dependiendo si el usuario tiene dinero en la cuenta

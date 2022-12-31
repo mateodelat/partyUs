@@ -41,6 +41,9 @@
     },
     "webhookKeyStag": {
       "Type": "String"
+    },
+    "secretKeyProd": {
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -110,6 +113,9 @@
             },
             "WEBHOOK_KEY_STAG": {
               "Ref": "webhookKeyStag"
+            },
+            "SECRET_KEY_PROD": {
+              "Ref": "secretKeyProd"
             }
           }
         },

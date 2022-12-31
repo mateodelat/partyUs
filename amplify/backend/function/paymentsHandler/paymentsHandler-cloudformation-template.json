@@ -38,6 +38,9 @@
     },
     "secretKeyStag": {
       "Type": "String"
+    },
+    "secretKeyProd": {
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -104,6 +107,9 @@
             },
             "SECRET_KEY_STAG": {
               "Ref": "secretKeyStag"
+            },
+            "SECRET_KEY_PROD": {
+              "Ref": "secretKeyProd"
             }
           }
         },

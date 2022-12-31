@@ -204,12 +204,7 @@ export default function Notifi({ navigation }) {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity onPress={deleteAll}>
-                  <Entypo
-                    onPress={deleteAll}
-                    name="cross"
-                    size={25}
-                    color={rojoClaro}
-                  />
+                  <Entypo name="cross" size={25} color={rojoClaro} />
                 </TouchableOpacity>
               )}
             </Pressable>

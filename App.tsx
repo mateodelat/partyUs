@@ -16,6 +16,7 @@ import { StatusBar, StatusBarStyle } from "expo-status-bar";
 import moment from "moment";
 
 import { STRIPE_PUBLISHABLE_KEY } from "./constants/keys";
+import Bugsnag from "@bugsnag/expo";
 
 LogBox.ignoreLogs(["new NativeEventEmitter"]); // Ignore log notification by message
 moment.locale("es");
@@ -40,7 +41,7 @@ const App = () => {
 
   useEffect(() => {
     DataStore.start();
-    // Bugsnag.start();
+    Bugsnag.start();
 
     // Crear listener para cuando se acaben de obtener los modelos de datastore en caso de cierre de sesion
     const dstore = Hub.listen("datastore", async (hubData) => {
@@ -62,17 +63,17 @@ const App = () => {
   else
     return (
       <View style={{ flex: 1 }}>
-        {/* <ErrorWrapper> */}
-        <ContextProvider
-          usuario={usuario}
-          setUsuario={setUsuario}
-          setStatusStyle={setStatusStyle}
-        >
-          <StatusBar style={statusStyle} translucent={true} />
+        <ErrorWrapper>
+          <ContextProvider
+            usuario={usuario}
+            setUsuario={setUsuario}
+            setStatusStyle={setStatusStyle}
+          >
+            <StatusBar style={statusStyle} translucent={true} />
 
-          <Router />
-        </ContextProvider>
-        {/* </ErrorWrapper> */}
+            <Router />
+          </ContextProvider>
+        </ErrorWrapper>
       </View>
     );
 };
